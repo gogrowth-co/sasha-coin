@@ -1,0 +1,19 @@
+{
+  "_README": "Sasha Coin Buffer registry. Channel + org IDs are public-ish (not secrets). The access token lives in .env as BUFFER_ACCESS_TOKEN_SASHA_COIN (gitignored). Used by the master buffer-publish skill scripts.",
+  "version": "1.0",
+  "default_account": "SASHA_COIN",
+  "accounts": {
+    "SASHA_COIN": {
+      "_description": "Sasha Coin AI agent persona on X/Twitter. Posts via twitter-scheduled-post skill 3x daily.",
+      "organization_id": "6759c02e93d40c0d72e7ff8c",
+      "access_token_env": "BUFFER_ACCESS_TOKEN_SASHA_COIN",
+      "channels": {
+        "x": {
+          "id": "6759c06d8e24cab48e557189",
+          "service": "twitter",
+          "username": "SashaCoin"
+        }
+      }
+    }
+  }
+}
