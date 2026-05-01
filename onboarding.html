@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MangaOS — Project Setup Interview</title>
+  <style>
+    :root {
+      --navy:   #0A2540;
+      --aqua:   #1FB6FF;
+      --gold:   #FFB800;
+      --text:   #E8EDF2;
+      --muted:  #6B7C93;
+      --surface:#0F2F50;
+      --border: #1A3A5C;
+      --green:  #4ADE80;
+      --red:    #F87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+    }
+    .header { text-align: center; margin-bottom: 36px; }
+    .brand {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+      color: var(--aqua); text-transform: uppercase; margin-bottom: 10px;
+    }
+    h1 {
+      font-family: 'Montserrat', system-ui, sans-serif;
+      font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 6px;
+    }
+    .subtitle { color: var(--muted); font-size: 14px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%; max-width: 700px;
+      padding: 28px; margin-bottom: 16px;
+    }
+    .prereq {
+      background: rgba(255,184,0,0.07);
+      border: 1px solid rgba(255,184,0,0.25);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--gold);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .prereq strong { display: block; margin-bottom: 6px; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; }
+    .prereq code { background: rgba(255,184,0,0.12); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+    .status-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--muted); flex-shrink: 0; transition: background 0.3s;
+    }
+    .dot.connecting { background: var(--gold); animation: blink 1s infinite; }
+    .dot.live       { background: var(--aqua); animation: blink 2s infinite; }
+    .dot.done       { background: var(--green); }
+    .dot.error      { background: var(--red); }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+    .status-text { font-size: 13px; color: var(--muted); }
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .btn {
+      padding: 10px 20px; border-radius: 7px; font-size: 13px;
+      font-weight: 600; cursor: pointer; border: none; transition: all 0.15s;
+    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+    .btn-start  { background: var(--aqua);  color: var(--navy); }
+    .btn-stop   { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-save   { background: var(--gold);  color: var(--navy); }
+    .btn-start:not(:disabled):hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-save:not(:disabled):hover  { opacity: 0.88; transform: translateY(-1px); }
+    .btn-stop:not(:disabled):hover  { border-color: var(--muted); color: var(--text); }
+    .viz-wrap {
+      height: 44px; background: rgba(0,0,0,0.25); border-radius: 7px;
+      margin-bottom: 18px; overflow: hidden;
+    }
+    canvas { display: block; }
+    .topics { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+    .topic-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+    .chip {
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+      background: rgba(31,182,255,0.07); color: var(--muted);
+      border: 1px solid var(--border); transition: all 0.35s;
+    }
+    .chip.done { background: rgba(31,182,255,0.18); color: var(--aqua); border-color: rgba(31,182,255,0.4); }
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+    }
+    .transcript {
+      background: rgba(0,0,0,0.22); border-radius: 7px; padding: 14px;
+      height: 280px; overflow-y: auto; font-size: 13px; line-height: 1.65;
+    }
+    .transcript:empty::before {
+      content: "Transcript will appear here as you speak.";
+      color: var(--muted); font-style: italic;
+    }
+    .msg { margin-bottom: 14px; }
+    .msg-role {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.07em;
+      text-transform: uppercase; opacity: 0.55; margin-bottom: 2px;
+    }
+    .msg-agent .msg-role, .msg-agent .msg-text { color: var(--aqua); }
+    .msg-user  .msg-role, .msg-user  .msg-text { color: var(--text); }
+    #resultsCard { display: none; }
+    #resultsCard.visible { display: block; }
+    .results-ok   { font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 10px; }
+    .results-body {
+      background: rgba(0,0,0,0.22); border-radius: 7px; padding: 14px;
+      font-size: 13px; color: var(--muted); white-space: pre-wrap;
+      max-height: 260px; overflow-y: auto; line-height: 1.6;
+    }
+    .next-steps {
+      margin-top: 16px; font-size: 13px; color: var(--text);
+      border-top: 1px solid var(--border); padding-top: 14px;
+    }
+    .next-steps h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 8px; }
+    .next-steps ol { padding-left: 18px; line-height: 2; }
+    .next-steps code { background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">MangaOS</div>
+  <h1>Project Setup Interview</h1>
+  <p class="subtitle">6 questions. ~5 minutes. Auto-fills your onboarding.md.</p>
+</div>
+
+<div class="card">
+  <div class="prereq">
+    <strong>Before you start</strong>
+    Make sure <code>.env</code> has <code>ELEVENLABS_API_KEY</code> and <code>OPENROUTER_API_KEY</code> set.
+    Optionally pre-fill <code>Project name:</code> and <code>Type:</code> in <code>onboarding.md</code> for a personalized intro — or just let the agent ask.
+  </div>
+
+  <div class="status-bar">
+    <div class="dot" id="dot"></div>
+    <span class="status-text" id="statusText">Click Start Interview to begin</span>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-start" id="startBtn" onclick="startInterview()">Start Interview</button>
+    <button class="btn btn-stop"  id="stopBtn"  onclick="stopInterview()" disabled>End Session</button>
+    <button class="btn btn-save"  id="saveBtn"  onclick="saveInterview()" disabled>Save → Fill onboarding.md</button>
+  </div>
+
+  <div class="viz-wrap">
+    <canvas id="vizCanvas" width="644" height="44"></canvas>
+  </div>
+
+  <div class="topic-label">6 topics</div>
+  <div class="topics" id="topicsRow">
+    <div class="chip" data-t="overview">Project overview</div>
+    <div class="chip" data-t="voice">Brand voice</div>
+    <div class="chip" data-t="audience">Target audience</div>
+    <div class="chip" data-t="content">Content strategy</div>
+    <div class="chip" data-t="offering">Core offering</div>
+    <div class="chip" data-t="campaign">First campaign</div>
+  </div>
+
+  <div class="section-label">Live Transcript</div>
+  <div class="transcript" id="transcript"></div>
+</div>
+
+<div class="card" id="resultsCard">
+  <div class="results-ok">Interview saved. onboarding.md updated.</div>
+  <div class="results-body" id="resultsBody"></div>
+  <div class="next-steps">
+    <h3>What to do next</h3>
+    <ol>
+      <li>Open <code>onboarding.md</code> and review what was filled in</li>
+      <li>Complete <strong>Visual Identity</strong> (colors, fonts, visual style)</li>
+      <li>Complete <strong>Technical Setup</strong> (GA4 property, task server port)</li>
+      <li>Run <code>/init-project</code> in Claude Code to generate all <code>_context/</code> files</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+const AGENT_ID = 'agent_5001kgk3wr13f25s177xwgjzbrsc';
+
+let ws = null, captureCtx = null, playCtx = null;
+let micStream = null, processor = null, analyser = null;
+let animId = null, nextPlay = 0;
+let transcript = [], running = false;
+
+const canvas = document.getElementById('vizCanvas');
+const ctx2d  = canvas.getContext('2d');
+
+function setStatus(state, text) {
+  document.getElementById('dot').className         = `dot ${state}`;
+  document.getElementById('statusText').textContent = text;
+}
+
+async function startInterview() {
+  document.getElementById('startBtn').disabled = true;
+  setStatus('connecting', 'Requesting microphone access...');
+
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch(e) {
+    setStatus('error', 'Microphone denied — allow access and refresh.');
+    document.getElementById('startBtn').disabled = false;
+    return;
+  }
+
+  captureCtx = new AudioContext({ sampleRate: 16000 });
+  const src  = captureCtx.createMediaStreamSource(micStream);
+
+  analyser = captureCtx.createAnalyser();
+  analyser.fftSize = 256;
+  src.connect(analyser);
+
+  processor = captureCtx.createScriptProcessor(4096, 1, 1);
+  src.connect(processor);
+  processor.connect(captureCtx.destination);
+
+  playCtx  = new AudioContext();
+  nextPlay = 0;
+
+  setStatus('connecting', 'Configuring interview agent...');
+  try {
+    const r = await fetch('/api/onboarding/token');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+  } catch(e) {
+    setStatus('error', `Setup failed: ${e.message}`);
+    document.getElementById('startBtn').disabled = false;
+    return;
+  }
+
+  const wsUrl = `wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${AGENT_ID}`;
+  setStatus('connecting', 'Connecting...');
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: 'conversation_initiation_client_data' }));
+    running = true;
+    setStatus('live', 'Live — interview in progress');
+    document.getElementById('stopBtn').disabled = false;
+    startViz();
+
+    processor.onaudioprocess = (e) => {
+      if (!running || !ws || ws.readyState !== WebSocket.OPEN) return;
+      const f32 = e.inputBuffer.getChannelData(0);
+      const i16 = new Int16Array(f32.length);
+      for (let i = 0; i < f32.length; i++) {
+        const s = Math.max(-1, Math.min(1, f32[i]));
+        i16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      const bytes = new Uint8Array(i16.buffer);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      ws.send(JSON.stringify({ user_audio_chunk: btoa(bin) }));
+    };
+  };
+
+  ws.onmessage = (evt) => {
+    let msg;
+    try { msg = JSON.parse(evt.data); } catch { return; }
+
+    switch (msg.type) {
+      case 'user_transcript': {
+        const t = msg.user_transcription_event?.user_transcript;
+        if (t?.trim()) { transcript.push({ role:'user', text:t }); addLine('user', t); }
+        break;
+      }
+      case 'agent_response': {
+        const t = msg.agent_response_event?.agent_response;
+        if (t?.trim()) {
+          transcript.push({ role:'agent', text:t });
+          addLine('agent', t);
+          markTopics(t);
+          if (t.toLowerCase().includes('save')) {
+            document.getElementById('saveBtn').disabled = false;
+          }
+        }
+        break;
+      }
+      case 'audio': {
+        const b64 = msg.audio_event?.audio_base_64;
+        if (b64) playPcm(b64);
+        break;
+      }
+      case 'ping':
+        ws.send(JSON.stringify({ type:'pong', event_id: msg.ping_event?.event_id }));
+        break;
+      case 'interruption':
+        nextPlay = 0;
+        break;
+    }
+  };
+
+  ws.onclose = (evt) => {
+    running = false;
+    stopViz();
+    document.getElementById('stopBtn').disabled  = true;
+    document.getElementById('startBtn').disabled = false;
+    if (evt.code === 1006) {
+      setStatus('error', 'Connection dropped — check console (F12)');
+    } else if (transcript.length > 0) {
+      setStatus('done', 'Session ended');
+    } else {
+      setStatus('error', `Closed early (code ${evt.code})`);
+    }
+    if (transcript.length > 0) document.getElementById('saveBtn').disabled = false;
+  };
+
+  ws.onerror = () => setStatus('error', 'Connection error — see browser console (F12)');
+}
+
+function stopInterview() {
+  running = false;
+  if (ws) ws.close();
+  if (processor)  { processor.disconnect(); processor = null; }
+  if (micStream)  micStream.getTracks().forEach(t => t.stop());
+  if (captureCtx) captureCtx.close();
+  stopViz();
+  document.getElementById('stopBtn').disabled  = true;
+  document.getElementById('startBtn').disabled = false;
+  if (transcript.length > 0) document.getElementById('saveBtn').disabled = false;
+}
+
+function playPcm(b64) {
+  try {
+    const bin   = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const samples = Math.floor(bytes.length / 2);
+    if (samples < 1) return;
+    const buf  = playCtx.createBuffer(1, samples, 16000);
+    const ch   = buf.getChannelData(0);
+    const view = new DataView(bytes.buffer);
+    for (let i = 0; i < samples; i++) ch[i] = view.getInt16(i * 2, true) / 32768;
+    const node = playCtx.createBufferSource();
+    node.buffer = buf;
+    node.connect(playCtx.destination);
+    const startAt = Math.max(playCtx.currentTime + 0.04, nextPlay);
+    node.start(startAt);
+    nextPlay = startAt + buf.duration;
+  } catch(e) { /* ignore */ }
+}
+
+function addLine(role, text) {
+  const div  = document.getElementById('transcript');
+  const wrap = document.createElement('div');
+  wrap.className = `msg msg-${role}`;
+  wrap.innerHTML = `<div class="msg-role">${role === 'agent' ? 'Agent' : 'You'}</div><div class="msg-text">${esc(text)}</div>`;
+  div.appendChild(wrap);
+  div.scrollTop = div.scrollHeight;
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+const TOPIC_KW = {
+  overview: ['project','what is','what does','who is it for','problem','solve','url','platform','purpose','built'],
+  voice:    ['tone','voice','sound','adjective','vocabulary','words','never say','always use','brand sounds'],
+  audience: ['audience','customer','reader','icp','ideal','pain','trigger','who uses','who reads','persona'],
+  content:  ['content','categories','topics','publish','frequency','seo','blog','newsletter','channel','traffic'],
+  offering: ['offer','product','tool','service','cta','call to action','lead magnet','free','paid','what do you give'],
+  campaign: ['campaign','goal','kpi','metric','30 day','first campaign','launch','timeline','channels for']
+};
+
+function markTopics(text) {
+  const lower = text.toLowerCase();
+  Object.entries(TOPIC_KW).forEach(([t, kws]) => {
+    if (kws.some(k => lower.includes(k))) {
+      const chip = document.querySelector(`.chip[data-t="${t}"]`);
+      if (chip) chip.classList.add('done');
+    }
+  });
+}
+
+function startViz() {
+  if (!analyser) return;
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  function draw() {
+    animId = requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(data);
+    ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+    const bw = (canvas.width / data.length) * 2.5;
+    let x = 0;
+    for (let i = 0; i < data.length; i++) {
+      const h = (data[i] / 255) * canvas.height;
+      ctx2d.fillStyle = `hsla(${200 + (i / data.length) * 40}, 80%, 60%, 0.75)`;
+      ctx2d.fillRect(x, canvas.height - h, bw - 1, h);
+      x += bw;
+    }
+  }
+  draw();
+}
+
+function stopViz() {
+  if (animId) cancelAnimationFrame(animId);
+  ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+async function saveInterview() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  setStatus('connecting', 'Extracting answers and updating onboarding.md...');
+
+  try {
+    const res = await fetch('/api/onboarding/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transcript })
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+
+    setStatus('done', `Filled ${data.filledCount || '?'} fields in onboarding.md`);
+    document.getElementById('resultsCard').classList.add('visible');
+    document.getElementById('resultsBody').textContent = data.summary || 'Interview saved.';
+    btn.textContent = 'Saved';
+  } catch(e) {
+    setStatus('error', `Save failed: ${e.message}`);
+    btn.disabled = false;
+    btn.textContent = 'Retry Save';
+  }
+}
+</script>
+</body>
+</html>

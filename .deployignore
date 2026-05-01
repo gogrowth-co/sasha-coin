@@ -1,0 +1,53 @@
+# Files and directories that stay LOCAL ONLY — never sync to VPS.
+# rsync's --exclude-from reads these patterns. One per line.
+
+# git
+.git/
+.gitignore
+
+# local env (real secrets live in VPS .env)
+.env
+.env.local
+
+# Marketing brain layer (Claude Code authoring environment)
+CLAUDE.md
+_context/
+_sop/
+_templates/
+campaigns/
+ads/
+docs/
+pages/
+reports/
+research/
+seo/
+videos/
+social/
+
+# Local task board UI + onboarding
+.claude/
+tasks.html
+task-server.js
+reports.html
+onboarding.html
+onboarding.md
+onboarding-server.js
+
+# Plan / spec scratch
+docs/superpowers/
+
+# Deploy infrastructure itself
+deploy.sh
+.deployignore
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+venv/
+venv_buffer/
+
+# Clawlett private state (must stay VPS-only)
+Clawlett/config/
+Clawlett/clawlett/scripts/config/

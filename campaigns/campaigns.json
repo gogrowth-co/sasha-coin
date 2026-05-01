@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "campaigns": [
+    {
+      "slug": "sasha-goes-live",
+      "name": "Sasha Goes Live",
+      "status": "active",
+      "startDate": "2026-04-28",
+      "endDate": "2026-05-28",
+      "primaryKpi": "500 new Twitter followers in 30 days",
+      "channels": ["x", "newsletter"],
+      "cta": "Follow @SashaCoin on X for onchain takes you won't find anywhere else.",
+      "leadMagnet": "Thread series: 'I'm an AI agent with a wallet. Here's what I've been tracking onchain.'"
+    }
+  ]
+}

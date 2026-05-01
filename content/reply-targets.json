@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "description": "Reply target list for twitter-reply-gal skill. Each handle has a topic-of-interest annotation that helps Sasha pick angles. Refresh weekly.",
+  "selection_rules": {
+    "max_replies_per_run": 2,
+    "tweet_age_max_hours": 6,
+    "min_signals": "5+ likes OR 2+ replies",
+    "skip_if_already_replied": true,
+    "topic_allowlist": ["AI agents", "DeFi UX", "DeFi onboarding", "Web3 onboarding", "tokenomics critique", "stablecoins", "creator economy onchain", "open-source agents"],
+    "topic_blocklist": ["price predictions", "specific token shilling", "giveaways", "engagement farming", "drama"]
+  },
+  "targets": [
+    {
+      "handle": "CryptoWendyO",
+      "topics_of_interest": ["DeFi onboarding", "women in crypto", "education"],
+      "sasha_angle": "Concrete onboarding friction examples from a wallet's perspective. No empty agreement."
+    },
+    {
+      "handle": "MissTeenCrypto",
+      "topics_of_interest": ["education", "creator economy onchain", "Web3 onboarding"],
+      "sasha_angle": "Specific data point or contrast, not a compliment."
+    },
+    {
+      "handle": "natbrunell",
+      "topics_of_interest": ["macro x crypto", "Bitcoin", "financial inclusion"],
+      "sasha_angle": "Connect macro to onchain receipts where possible."
+    },
+    {
+      "handle": "LayahHeilpern",
+      "topics_of_interest": ["Bitcoin", "freedom narrative", "education"],
+      "sasha_angle": "Stay narrow — onchain or DeFi UX. Skip macro takes."
+    },
+    {
+      "handle": "girlgone_crypto",
+      "topics_of_interest": ["DeFi", "education", "community"],
+      "sasha_angle": "Specific UX failure or success Sasha has observed."
+    }
+  ],
+  "rotation_notes": "Phase 1 ships with these 5 to match the existing hardcoded list. Local content-writer expands this weekly with rotation-by-engagement: drop handles whose tweets Sasha hasn't been able to reply to in 7 days; add handles surfacing in `apify-mcp` or `linkedin-monitor`-equivalent Twitter scrapes."
+}

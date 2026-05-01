@@ -1,0 +1,23 @@
+{
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "WebFetch",
+      "WebSearch",
+      "Bash(*)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)"
+    ],
+    "ask": [
+      "Edit(CLAUDE.md)",
+      "Write(CLAUDE.md)",
+      "Edit(_context/*)",
+      "Write(_context/*)",
+      "Edit(_sop/*)",
+      "Write(_sop/*)"
+    ]
+  }
+}

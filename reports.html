@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MangaOS Reports | Analyst in the Arena</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0A2540; --dark-navy: #071829; --mid-navy: #0D3558;
+    --aqua: #1FB6FF; --gold: #FFB800; --white: #FFFFFF;
+    --muted: #8B9BAD; --green: #10B981; --red: #EF4444;
+    --orange: #F59E0B; --purple: #A78BFA;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--dark-navy); color: var(--white); min-height: 100vh; }
+
+  .global-nav {
+    background: #071829; border-bottom: 1px solid rgba(31,182,255,0.12);
+    padding: 0 24px; display: flex; align-items: center; gap: 4px;
+    height: 38px; position: sticky; top: 0; z-index: 200;
+  }
+  .global-nav .nav-brand {
+    font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 800;
+    color: #FFB800; letter-spacing: 1px; text-transform: uppercase; margin-right: 12px;
+  }
+  .global-nav a {
+    font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 700;
+    color: #8B9BAD; text-decoration: none; padding: 6px 12px; border-radius: 5px;
+    letter-spacing: 0.3px; transition: all 0.15s;
+  }
+  .global-nav a:hover { color: #FFFFFF; background: rgba(255,255,255,0.05); }
+  .global-nav a.active { color: #1FB6FF; background: rgba(31,182,255,0.08); }
+
+  .tab-nav {
+    background: var(--navy); padding: 0 24px;
+    display: flex; align-items: center; gap: 2px;
+    border-bottom: 1px solid rgba(31,182,255,0.12);
+    height: 36px; position: sticky; top: 38px; z-index: 150;
+  }
+  .tab-nav .tab {
+    font-family: 'Montserrat'; font-size: 11px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 10px 18px; cursor: pointer; border-bottom: 2px solid transparent;
+    background: transparent; border-left: 0; border-right: 0; border-top: 0;
+  }
+  .tab-nav .tab:hover { color: var(--white); }
+  .tab-nav .tab.active { color: var(--aqua); border-bottom-color: var(--aqua); }
+
+  .pane { display: none; padding: 24px; }
+  .pane.active { display: block; }
+
+  .period-toggle { display: inline-flex; gap: 0; margin-left: auto; }
+  .period-toggle button {
+    background: transparent; border: 1px solid rgba(255,255,255,0.08);
+    color: var(--muted); padding: 4px 10px; cursor: pointer; font-family: 'Montserrat'; font-size: 10px; font-weight: 700;
+  }
+  .period-toggle button.active { background: var(--aqua); color: var(--navy); border-color: var(--aqua); }
+  .period-toggle button:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+  .period-toggle button:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+
+  .empty { color: var(--muted); font-size: 12px; padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+
+<nav class="global-nav" id="global-nav">
+  <span class="nav-brand">MarketingOS</span>
+  <a href="/" data-page="tasks">📋 Tasks</a>
+  <a href="/reports" data-page="reports">📊 Reports</a>
+  <a href="/onboarding" data-page="onboarding">🎙 Setup</a>
+</nav>
+<script>document.querySelectorAll('#global-nav a[data-page="reports"]').forEach(a => a.classList.add('active'));</script>
+
+<nav class="tab-nav" id="tab-nav">
+  <button class="tab active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
+  <button class="tab" data-tab="seo" onclick="switchTab('seo')">SEO</button>
+  <button class="tab" data-tab="traffic" onclick="switchTab('traffic')">Traffic</button>
+  <button class="tab" data-tab="keywords" onclick="switchTab('keywords')">Keywords</button>
+  <button class="tab" data-tab="prompts" onclick="switchTab('prompts')">Prompts</button>
+</nav>
+
+<main>
+  <div id="overviewPane" class="pane active">
+    <div style="display:flex;align-items:center;margin-bottom:18px">
+      <h2 style="font-family:'Montserrat';font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Overview</h2>
+      <div class="period-toggle" data-pane="overview">
+        <button data-period="7d" class="active">7D</button>
+        <button data-period="30d">30D</button>
+        <button data-period="90d">90D</button>
+      </div>
+    </div>
+    <div id="overviewKpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px"></div>
+    <div id="overviewChanged" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px">
+      <span id="overviewRefreshLabel" style="font-size:12px;color:var(--muted)">Loading...</span>
+      <button onclick="refreshAll()" style="background:var(--aqua);color:var(--navy);border:none;padding:6px 14px;border-radius:5px;font-family:'Montserrat';font-size:11px;font-weight:700;cursor:pointer">🔄 Run all refreshes (~$0.81)</button>
+    </div>
+  </div>
+  <div id="seoPane" class="pane">
+    <div style="display:flex;align-items:center;margin-bottom:18px">
+      <h2 style="font-family:'Montserrat';font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px">SEO Performance</h2>
+      <div class="period-toggle" data-pane="seo">
+        <button data-period="7d" class="active">7D</button>
+        <button data-period="30d">30D</button>
+        <button data-period="90d">90D</button>
+      </div>
+    </div>
+
+    <div class="kpi-strip" id="seoKpis" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px"></div>
+
+    <h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Click-to-Engagement Funnel</h3>
+    <div id="seoFunnelTable" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;overflow:hidden;margin-bottom:24px"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Indexing Health</h3>
+        <div id="seoIndexing" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px"></div>
+      </div>
+      <div>
+        <h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Refresh Candidates</h3>
+        <div id="seoRefresh" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;font-size:11px;color:var(--muted);text-align:right" id="seoFooter"></div>
+  </div>
+  <div id="trafficPane" class="pane">
+    <div style="display:flex;align-items:center;margin-bottom:18px">
+      <h2 style="font-family:'Montserrat';font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Web Traffic</h2>
+      <div class="period-toggle" data-pane="traffic">
+        <button data-period="7d" class="active">7D</button>
+        <button data-period="30d">30D</button>
+        <button data-period="90d">90D</button>
+      </div>
+    </div>
+
+    <div id="trafficKpis" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+      <div>
+        <h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Source / Medium</h3>
+        <div id="trafficSources" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px"></div>
+      </div>
+      <div>
+        <h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Top Pages</h3>
+        <div id="trafficPages" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+      <div>
+        <h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Devices</h3>
+        <div id="trafficDevices" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px"></div>
+      </div>
+      <div>
+        <h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Countries</h3>
+        <div id="trafficCountries" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px"></div>
+      </div>
+      <div>
+        <h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Goal Funnel</h3>
+        <div id="trafficFunnel" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:12px"></div>
+      </div>
+    </div>
+  </div>
+  <div id="keywordsPane" class="pane">
+    <div style="display:flex;align-items:center;margin-bottom:18px">
+      <h2 style="font-family:'Montserrat';font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px">Keyword Tracking</h2>
+      <div class="period-toggle" data-pane="keywords">
+        <button data-period="7d" class="active">7D</button>
+        <button data-period="30d">30D</button>
+        <button data-period="90d">90D</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button id="kwViewEarning" onclick="setKwView('earning')" style="background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.08);padding:6px 14px;border-radius:5px;font-family:'Montserrat';font-size:11px;font-weight:700;cursor:pointer">Earning Traffic (GSC)</button>
+      <button id="kwViewTarget" onclick="setKwView('target')" style="background:var(--aqua);color:var(--navy);border:none;padding:6px 14px;border-radius:5px;font-family:'Montserrat';font-size:11px;font-weight:700;cursor:pointer">Target Tracking (YepAPI)</button>
+    </div>
+
+    <div id="kwSummary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px"></div>
+    <div id="kwTable" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;overflow:hidden"></div>
+  </div>
+  <div id="promptsPane" class="pane">
+    <div style="display:flex;align-items:center;margin-bottom:18px">
+      <h2 style="font-family:'Montserrat';font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px">AI Prompt Citations</h2>
+      <div class="period-toggle" data-pane="prompts">
+        <button data-period="7d" class="active">7D</button>
+        <button data-period="30d">30D</button>
+        <button data-period="90d">90D</button>
+      </div>
+    </div>
+
+    <div id="promptsKpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px"></div>
+
+    <div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06)">
+      <button class="active" data-subtab="overview" onclick="setPromptsSub('overview')" style="background:transparent;border:0;color:var(--aqua);padding:8px 14px;font-family:'Montserrat';font-size:11px;font-weight:700;border-bottom:2px solid var(--aqua);cursor:pointer">Overview</button>
+      <button data-subtab="domains" onclick="setPromptsSub('domains')" style="background:transparent;border:0;color:var(--muted);padding:8px 14px;font-family:'Montserrat';font-size:11px;font-weight:700;border-bottom:2px solid transparent;cursor:pointer">Top Domains</button>
+      <button data-subtab="public" onclick="setPromptsSub('public')" style="background:transparent;border:0;color:var(--muted);padding:8px 14px;font-family:'Montserrat';font-size:11px;font-weight:700;border-bottom:2px solid transparent;cursor:pointer">Public Platforms</button>
+      <button data-subtab="icp" onclick="setPromptsSub('icp')" style="background:transparent;border:0;color:var(--muted);padding:8px 14px;font-family:'Montserrat';font-size:11px;font-weight:700;border-bottom:2px solid transparent;cursor:pointer">Per-ICP</button>
+      <button data-subtab="brand" onclick="setPromptsSub('brand')" style="background:transparent;border:0;color:var(--muted);padding:8px 14px;font-family:'Montserrat';font-size:11px;font-weight:700;border-bottom:2px solid transparent;cursor:pointer">Brand Mentions</button>
+    </div>
+
+    <div id="promptsBody" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:18px;min-height:200px"></div>
+
+    <div style="margin-top:18px;font-size:11px;color:var(--muted)" id="promptsFooter"></div>
+  </div>
+</main>
+
+<script>
+let currentTab = localStorage.getItem('reports-tab') || 'overview';
+let currentPeriod = localStorage.getItem('reports-period') || '7d';
+
+function switchTab(tabId) {
+  currentTab = tabId;
+  localStorage.setItem('reports-tab', tabId);
+  document.querySelectorAll('.tab-nav .tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(tabId + 'Pane').classList.add('active');
+  if (tabId === 'overview') loadOverview();
+  if (tabId === 'seo') loadSeo();
+  if (tabId === 'traffic') loadTraffic();
+  if (tabId === 'keywords') loadKeywords();
+  if (tabId === 'prompts') loadPrompts();
+}
+switchTab(currentTab);
+
+async function loadSeo() {
+  const res = await fetch('/api/reports/seo');
+  const { latest, history } = await res.json();
+  const root = document.getElementById('seoPane');
+  if (!latest) { root.querySelector('#seoKpis').innerHTML = '<div class="empty">No snapshots yet — run <code>npm run report:weekly</code></div>'; return; }
+
+  const period = currentPeriod === '7d' ? 'trailing-7d' : currentPeriod === '30d' ? 'trailing-30d' : 'trailing-90d';
+  const data = latest.periods[period];
+  const prior = history.length >= 2 ? history[history.length - 2].periods[period] : null;
+
+  // KPI tiles
+  const kpis = [
+    { label: 'Impressions', value: data.gsc.totals.impressions, prior: prior?.gsc.totals.impressions },
+    { label: 'Clicks', value: data.gsc.totals.clicks, prior: prior?.gsc.totals.clicks },
+    { label: 'CTR', value: (data.gsc.totals.ctr * 100).toFixed(2) + '%', prior: prior?.gsc.totals.ctr },
+    { label: 'Avg Position', value: data.gsc.totals.position.toFixed(1), prior: prior?.gsc.totals.position },
+    { label: 'Indexed Pages', value: data.gsc.indexing_issues.length === 0 ? '—' : data.gsc.indexing_issues.length, prior: null },
+  ];
+  document.getElementById('seoKpis').innerHTML = kpis.map(k => `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:14px">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${k.label}</div>
+      <div style="font-size:24px;font-weight:800;font-family:'Montserrat';margin-top:4px">${k.value}</div>
+    </div>
+  `).join('');
+
+  // Funnel table
+  const rows = data.gsc.by_page.length === 0 ? '<div class="empty">Empty until GSC stub is replaced with real call</div>' : `
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:rgba(255,255,255,0.03)">
+        <th style="text-align:left;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Article</th>
+        <th style="text-align:right;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Impr.</th>
+        <th style="text-align:right;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Clicks</th>
+        <th style="text-align:right;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">CTR</th>
+        <th style="text-align:right;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Pos</th>
+        <th style="text-align:right;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Sessions</th>
+        <th style="text-align:right;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Engmt</th>
+        <th style="text-align:right;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Conv</th>
+        <th style="text-align:center;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Health</th>
+      </tr></thead>
+      <tbody>${data.gsc.by_page.slice(0, 30).map(p => `
+        <tr>
+          <td style="padding:8px 10px">${p.page}</td>
+          <td style="padding:8px 10px;text-align:right">${p.impressions ?? '—'}</td>
+          <td style="padding:8px 10px;text-align:right">${p.clicks ?? '—'}</td>
+          <td style="padding:8px 10px;text-align:right">${p.ctr ? (p.ctr * 100).toFixed(1) + '%' : '—'}</td>
+          <td style="padding:8px 10px;text-align:right">${p.position?.toFixed(1) ?? '—'}</td>
+          <td style="padding:8px 10px;text-align:right">${p.ga4_sessions ?? '—'}</td>
+          <td style="padding:8px 10px;text-align:right">${p.ga4_engagement_rate ? (p.ga4_engagement_rate * 100).toFixed(0) + '%' : '—'}</td>
+          <td style="padding:8px 10px;text-align:right">${p.ga4_conversions ?? '—'}</td>
+          <td style="padding:8px 10px;text-align:center">${p.health || '—'}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+  document.getElementById('seoFunnelTable').innerHTML = rows;
+
+  document.getElementById('seoIndexing').innerHTML = data.gsc.indexing_issues.length === 0
+    ? '<div class="empty">No indexing issues detected</div>'
+    : data.gsc.indexing_issues.map(i => `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px"><strong>${i.url}</strong><br><span style="color:var(--muted)">${i.state}</span></div>`).join('');
+
+  document.getElementById('seoRefresh').innerHTML = '<div class="empty">Computed from snapshot diff once 2+ snapshots exist</div>';
+
+  document.getElementById('seoFooter').textContent = `Last refreshed: ${latest.date} · Status: ${latest.refresh_status || 'live'}`;
+}
+
+async function loadTraffic() {
+  const res = await fetch('/api/reports/traffic');
+  const { latest } = await res.json();
+  if (!latest) { document.getElementById('trafficKpis').innerHTML = '<div class="empty">No snapshots yet</div>'; return; }
+  const period = currentPeriod === '7d' ? 'trailing-7d' : currentPeriod === '30d' ? 'trailing-30d' : 'trailing-90d';
+  const data = latest.periods[period];
+
+  const kpis = [
+    { label: 'Sessions', value: data.totals.sessions },
+    { label: 'Users', value: data.totals.users },
+    { label: 'New Users', value: data.totals.new_users },
+    { label: 'Avg Engmt', value: data.totals.avg_engagement_time_sec.toFixed(0) + 's' },
+    { label: 'Bounce', value: (data.totals.bounce_rate * 100).toFixed(1) + '%' },
+    { label: 'Conversions', value: data.totals.conversions },
+  ];
+  document.getElementById('trafficKpis').innerHTML = kpis.map(k => `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:14px">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${k.label}</div>
+      <div style="font-size:22px;font-weight:800;font-family:'Montserrat';margin-top:4px">${k.value}</div>
+    </div>
+  `).join('');
+
+  const renderList = (id, items, fields) => {
+    const el = document.getElementById(id);
+    if (!items || items.length === 0) { el.innerHTML = '<div class="empty">No data yet</div>'; return; }
+    el.innerHTML = items.slice(0, 10).map(i => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px">${fields.map(f => `<span>${i[f] ?? '—'}</span>`).join('')}</div>`).join('');
+  };
+  renderList('trafficSources', data.by_source, ['source_medium', 'sessions']);
+  renderList('trafficPages', data.top_pages, ['page', 'sessions']);
+  renderList('trafficDevices', data.by_device, ['device', 'sessions']);
+  renderList('trafficCountries', data.by_country, ['country', 'sessions']);
+
+  const f = data.funnel;
+  document.getElementById('trafficFunnel').innerHTML = `
+    <div style="font-size:12px;line-height:1.8">
+      Sessions: <strong>${f.sessions}</strong><br>
+      Engaged: <strong>${f.engaged_sessions}</strong><br>
+      Key event: <strong>${f.key_event}</strong><br>
+      Secondary: <strong>${f.secondary_event}</strong>
+    </div>`;
+}
+
+let kwView = 'target';  // default to YepAPI view since GSC stub is empty
+
+function setKwView(v) {
+  kwView = v;
+  const earningBtn = document.getElementById('kwViewEarning');
+  const targetBtn = document.getElementById('kwViewTarget');
+  earningBtn.style.background = v === 'earning' ? 'var(--aqua)' : 'transparent';
+  earningBtn.style.color = v === 'earning' ? 'var(--navy)' : 'var(--muted)';
+  earningBtn.style.border = v === 'earning' ? 'none' : '1px solid rgba(255,255,255,0.08)';
+  targetBtn.style.background = v === 'target' ? 'var(--aqua)' : 'transparent';
+  targetBtn.style.color = v === 'target' ? 'var(--navy)' : 'var(--muted)';
+  targetBtn.style.border = v === 'target' ? 'none' : '1px solid rgba(255,255,255,0.08)';
+  loadKeywords();
+}
+
+async function loadKeywords() {
+  const res = await fetch('/api/reports/keywords');
+  const { latest } = await res.json();
+  if (!latest) { document.getElementById('kwTable').innerHTML = '<div class="empty">No snapshot yet — run <code>node reports/scripts/refresh-keywords.mjs</code></div>'; return; }
+
+  if (kwView === 'target') {
+    const tracked = latest.target_tracking || [];
+    const inTop3 = tracked.filter(r => r.target_position && r.target_position <= 3).length;
+    const inTop10 = tracked.filter(r => r.target_position && r.target_position <= 10).length;
+    const inTop30 = tracked.filter(r => r.in_top_30).length;
+    const notRanking = tracked.filter(r => !r.in_top_30).length;
+    const aioCount = tracked.filter(r => r.aio_present).length;
+    const summary = [
+      { label: 'Top 3', value: inTop3 },
+      { label: 'Top 10', value: inTop10 },
+      { label: 'Top 30', value: inTop30 },
+      { label: 'Not Ranking', value: notRanking },
+      { label: 'AIO Present', value: aioCount },
+    ];
+    document.getElementById('kwSummary').innerHTML = summary.map(s => `
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:14px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${s.label}</div>
+        <div style="font-size:24px;font-weight:800;font-family:'Montserrat';margin-top:4px">${s.value}</div>
+      </div>
+    `).join('');
+    document.getElementById('kwTable').innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:rgba(255,255,255,0.03)">
+          <th style="text-align:left;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Keyword</th>
+          <th style="text-align:center;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Type</th>
+          <th style="text-align:center;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Position</th>
+          <th style="text-align:center;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">AIO?</th>
+          <th style="text-align:left;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Top 3 Competitors</th>
+        </tr></thead>
+        <tbody>${tracked.map(r => `
+          <tr>
+            <td style="padding:8px 10px"><strong>${r.query}</strong></td>
+            <td style="padding:8px 10px;text-align:center;color:var(--muted)">${r.type || '—'}</td>
+            <td style="padding:8px 10px;text-align:center">${r.target_position ? `<strong style="color:${r.target_position <= 10 ? 'var(--green)' : r.target_position <= 30 ? 'var(--gold)' : 'var(--muted)'}">#${r.target_position}</strong>` : '<span style="color:var(--muted)">not in top 30</span>'}</td>
+            <td style="padding:8px 10px;text-align:center">${r.aio_present ? (r.aio_cites_target ? '<span style="color:var(--green)">✓ cited</span>' : '<span style="color:var(--gold)">present</span>') : '<span style="color:var(--muted)">—</span>'}</td>
+            <td style="padding:8px 10px;color:var(--muted);font-size:11px">${(r.top3 || []).map(t => t.domain).join(', ')}</td>
+          </tr>
+        `).join('')}</tbody>
+      </table>`;
+  } else {
+    // Earning view — GSC queries (stubbed)
+    const queries = latest.gsc_queries || [];
+    document.getElementById('kwSummary').innerHTML = '';
+    document.getElementById('kwTable').innerHTML = queries.length === 0
+      ? '<div class="empty">GSC stub — wire service account to populate earning queries</div>'
+      : `<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:rgba(255,255,255,0.03)"><th style="text-align:left;padding:10px">Query</th><th style="text-align:right;padding:10px">Impr.</th><th style="text-align:right;padding:10px">Clicks</th><th style="text-align:right;padding:10px">CTR</th><th style="text-align:right;padding:10px">Avg Pos</th></tr></thead><tbody>${queries.map(q => `<tr><td style="padding:8px 10px">${q.query}</td><td style="padding:8px 10px;text-align:right">${q.impressions}</td><td style="padding:8px 10px;text-align:right">${q.clicks}</td><td style="padding:8px 10px;text-align:right">${(q.ctr * 100).toFixed(1)}%</td><td style="padding:8px 10px;text-align:right">${q.position.toFixed(1)}</td></tr>`).join('')}</tbody></table>`;
+  }
+}
+
+let promptsSub = 'overview';
+function setPromptsSub(s) {
+  promptsSub = s;
+  document.querySelectorAll('#promptsPane button[data-subtab]').forEach(b => {
+    const active = b.dataset.subtab === s;
+    b.style.color = active ? 'var(--aqua)' : 'var(--muted)';
+    b.style.borderBottomColor = active ? 'var(--aqua)' : 'transparent';
+  });
+  renderPromptsBody();
+}
+
+let promptsLatestWeekly = null;
+let promptsLatestMonthly = null;
+
+async function loadPrompts() {
+  const [weekly, monthly] = await Promise.all([
+    fetch('/api/reports/prompts-weekly').then(r => r.json()),
+    fetch('/api/reports/prompts-monthly').then(r => r.json()),
+  ]);
+  promptsLatestWeekly = weekly.latest;
+  promptsLatestMonthly = monthly.latest;
+
+  const w = promptsLatestWeekly;
+  if (!w) {
+    document.getElementById('promptsKpis').innerHTML = '<div class="empty">No weekly snapshot — run <code>node reports/scripts/refresh-prompts-weekly.mjs</code></div>';
+    document.getElementById('promptsBody').innerHTML = '';
+    return;
+  }
+
+  const totalCitations = Object.values(w.per_engine_summary).reduce((s, v) => s + v.total_citations, 0);
+  const kpis = [
+    { label: 'Brand Cited', value: `${w.brand_cited_count}/${w.total_prompts}` },
+    { label: 'Total Citations', value: totalCitations },
+    { label: 'Engines', value: 'C / P / G' },
+    { label: 'Weekly Cost', value: '$' + (w.total_cost_usd || 0).toFixed(2) },
+  ];
+  document.getElementById('promptsKpis').innerHTML = kpis.map(k => `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:14px">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${k.label}</div>
+      <div style="font-size:24px;font-weight:800;font-family:'Montserrat';margin-top:4px">${k.value}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('promptsFooter').textContent = `Last weekly: ${w.date} · Last monthly: ${promptsLatestMonthly?.date || 'never'}`;
+  renderPromptsBody();
+}
+
+function renderPromptsBody() {
+  const w = promptsLatestWeekly;
+  const body = document.getElementById('promptsBody');
+  if (!w) { body.innerHTML = ''; return; }
+
+  if (promptsSub === 'overview') {
+    body.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:rgba(255,255,255,0.03)"><th style="text-align:left;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Prompt</th><th style="text-align:center;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Funnel</th><th style="text-align:center;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">ChatGPT</th><th style="text-align:center;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Perplexity</th><th style="text-align:center;padding:10px;font-family:'Montserrat';font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Gemini</th></tr></thead>
+        <tbody>${w.prompts.map(p => `
+          <tr>
+            <td style="padding:8px 10px"><strong>${p.prompt}</strong></td>
+            <td style="padding:8px 10px;text-align:center;color:var(--muted)">${p.funnel}</td>
+            ${['chatgpt', 'perplexity', 'gemini'].map(en => {
+              const e = p.engines[en] || {};
+              if (e.error) return `<td style="padding:8px 10px;text-align:center;color:var(--red)">err</td>`;
+              const cited = e.brand_in_text || e.brand_in_citations;
+              return `<td style="padding:8px 10px;text-align:center">${cited ? '<span style="color:var(--green)">✓</span>' : '<span style="color:var(--muted)">—</span>'}</td>`;
+            }).join('')}
+          </tr>`).join('')}</tbody>
+      </table>`;
+    return;
+  }
+
+  if (promptsSub === 'icp') {
+    const m = promptsLatestMonthly;
+    if (!m) { body.innerHTML = '<div class="empty">No monthly sweep yet — run <code>node reports/scripts/refresh-prompts-monthly.mjs</code> (~$8)</div>'; return; }
+    body.innerHTML = m.icps.map(i => `<div style="margin-bottom:10px"><strong>${i.icp}</strong> — ${i.prompt_count} prompts</div>`).join('');
+    return;
+  }
+
+  body.innerHTML = '<div class="empty">Sub-tab populated by monthly sweep data — coming after first monthly run</div>';
+}
+
+async function loadOverview() {
+  const [seo, traffic, kw, prompts] = await Promise.all([
+    fetch('/api/reports/seo').then(r => r.json()),
+    fetch('/api/reports/traffic').then(r => r.json()),
+    fetch('/api/reports/keywords').then(r => r.json()),
+    fetch('/api/reports/prompts-weekly').then(r => r.json()),
+  ]);
+  const period = currentPeriod === '7d' ? 'trailing-7d' : currentPeriod === '30d' ? 'trailing-30d' : 'trailing-90d';
+  const seoTotals = seo.latest?.periods[period]?.gsc.totals;
+  const trafTotals = traffic.latest?.periods[period]?.totals;
+  const kwTracking = kw.latest?.target_tracking || [];
+  const inTop30 = kwTracking.filter(r => r.in_top_30).length;
+  const cited = prompts.latest?.brand_cited_count ?? null;
+  const totalPrompts = prompts.latest?.total_prompts ?? 0;
+  const tiles = [
+    { label: 'Organic Clicks (GSC)', value: seoTotals?.clicks ?? '—' },
+    { label: 'Sessions (GA4)', value: trafTotals?.sessions ?? '—' },
+    { label: 'Keywords in Top 30', value: kwTracking.length ? `${inTop30}/${kwTracking.length}` : '—' },
+    { label: 'Prompts Citing Brand', value: cited !== null ? `${cited}/${totalPrompts}` : '—' },
+  ];
+  document.getElementById('overviewKpis').innerHTML = tiles.map(t => `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;padding:14px">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">${t.label}</div>
+      <div style="font-size:24px;font-weight:800;font-family:'Montserrat';margin-top:4px">${t.value}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('overviewChanged').innerHTML = `
+    <div><h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Keywords Moved</h3><div class="empty">Computed once 2+ keyword snapshots exist</div></div>
+    <div><h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Articles Δ Traffic</h3><div class="empty">Computed once 2+ SEO snapshots exist</div></div>
+    <div><h3 style="font-family:'Montserrat';font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Prompts Δ Citations</h3><div class="empty">Computed once 2+ prompts snapshots exist</div></div>
+  `;
+
+  const lastDate = [seo, traffic, kw, prompts].map(x => x.latest?.date).filter(Boolean).sort().reverse()[0] || 'never';
+  document.getElementById('overviewRefreshLabel').textContent = `Last refreshed: ${lastDate}`;
+}
+
+async function refreshAll() {
+  const ok = confirm('Run all weekly refreshes? Estimated cost: $0.81 (free APIs + 30 YepAPI keywords + 8 cross-ICP prompts × 3 engines).');
+  if (!ok) return;
+  document.getElementById('overviewRefreshLabel').textContent = 'Refreshing...';
+  await Promise.all([
+    fetch('/api/reports/refresh/seo', { method: 'POST' }),
+    fetch('/api/reports/refresh/traffic', { method: 'POST' }),
+    fetch('/api/reports/refresh/keywords', { method: 'POST' }),
+    fetch('/api/reports/refresh/prompts-weekly', { method: 'POST' }),
+  ]);
+  await loadOverview();
+}
+
+// Period toggle wiring
+document.querySelectorAll('.period-toggle').forEach(group => {
+  group.addEventListener('click', e => {
+    if (e.target.tagName !== 'BUTTON') return;
+    currentPeriod = e.target.dataset.period;
+    localStorage.setItem('reports-period', currentPeriod);
+    group.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.period === currentPeriod));
+    if (group.dataset.pane === 'overview') loadOverview();
+    if (group.dataset.pane === 'seo') loadSeo();
+    if (group.dataset.pane === 'traffic') loadTraffic();
+    if (group.dataset.pane === 'keywords') loadKeywords();
+    if (group.dataset.pane === 'prompts') loadPrompts();
+  });
+});
+
+if (currentTab === 'overview') loadOverview();
+if (currentTab === 'seo') loadSeo();
+if (currentTab === 'traffic') loadTraffic();
+if (currentTab === 'keywords') loadKeywords();
+if (currentTab === 'prompts') loadPrompts();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "version": "1.0",
+  "description": "Pre-approved exact tweet text for specific dates. Skill posts the exact text on its scheduled date, then marks status 'posted'. Use sparingly — for campaign launch announcements where exact wording matters. Most posts should come from calendar.json topic generation, not from here.",
+  "posts": []
+}

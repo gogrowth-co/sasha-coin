@@ -1,0 +1,115 @@
+{
+  "version": "1.0",
+  "description": "Topic calendar for Sasha's twitter-scheduled-post skill. The runtime picks the highest-priority topic with the oldest last_used_at. last_used_at is mirrored from VPS state/calendar-state.json — local treats this file as the priority/topic source, VPS tracks consumption.",
+  "rules": {
+    "rotation": "oldest_last_used_at_wins_within_priority_band",
+    "priority_bands": ["high", "medium", "low"],
+    "weight": "higher priority topics chosen first; within a band, oldest last_used_at wins"
+  },
+  "topics": [
+    {
+      "id": "campaign-onchain-receipts",
+      "priority": "high",
+      "campaign": "sasha-goes-live",
+      "topic": "An onchain receipt from this week — something Sasha actually did or saw in her wallet that has a story behind it",
+      "angle": "Show, don't tell. Lead with the transaction. Then the take.",
+      "last_used_at": null
+    },
+    {
+      "id": "campaign-ai-agent-substance",
+      "priority": "high",
+      "campaign": "sasha-goes-live",
+      "topic": "Honest take on which AI agent tokens have substance and which are vibes",
+      "angle": "Specific, not abstract. Name a project, name a metric, draw the line.",
+      "last_used_at": null
+    },
+    {
+      "id": "campaign-token-trends-tease",
+      "priority": "high",
+      "campaign": "sasha-goes-live",
+      "topic": "Tease an upcoming or recent Token Trends episode — pull one sharp line out of the conversation",
+      "angle": "One-line hook. The episode is the long-form. The tweet is the door.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-defi-onboarding",
+      "priority": "medium",
+      "campaign": null,
+      "topic": "Why most DeFi onboarding fails at the wallet step, not the concept step",
+      "angle": "The tech is fine. The UX assumes you already know what you are doing.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-volatility",
+      "priority": "medium",
+      "campaign": null,
+      "topic": "What newcomers get wrong about volatility",
+      "angle": "Volatility is uncomfortable. Losing your savings on YouTube alpha is devastating. Different risks.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-speculation-vs-investing",
+      "priority": "medium",
+      "campaign": null,
+      "topic": "The difference between speculating and investing in crypto",
+      "angle": "Both are valid. Confusing them is the trap.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-financial-inclusion",
+      "priority": "medium",
+      "campaign": null,
+      "topic": "Why financial inclusion is crypto's most underdiscussed use case",
+      "angle": "The actual users are not in the timeline. The timeline talks about itself.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-pos-energy",
+      "priority": "low",
+      "campaign": null,
+      "topic": "What proof-of-stake actually changed about the energy argument",
+      "angle": "The argument shifted, not ended. Be precise.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-content-aimed-at-experts",
+      "priority": "low",
+      "campaign": null,
+      "topic": "Why most crypto content is built for people who already understand crypto",
+      "angle": "If you have to know what GMX is to read your own homepage, the homepage is broken.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-conviction-vs-hype",
+      "priority": "low",
+      "campaign": null,
+      "topic": "What the bear market taught Sasha about conviction vs hype",
+      "angle": "Conviction is what is left when there is no audience.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-community-vs-tech",
+      "priority": "low",
+      "campaign": null,
+      "topic": "Why community matters more than technology in early crypto adoption",
+      "angle": "The first 100 users decide what the next 10,000 understand.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-give-up-defi",
+      "priority": "low",
+      "campaign": null,
+      "topic": "The real reason most people give up on learning DeFi",
+      "angle": "It is not the math. It is the third Metamask popup.",
+      "last_used_at": null
+    },
+    {
+      "id": "evergreen-mentoring-women",
+      "priority": "low",
+      "campaign": null,
+      "topic": "The one thing every woman Sasha has mentored in crypto needed to hear first",
+      "angle": "It is not 'you can do this'. It is something more specific. Don't fake the answer.",
+      "last_used_at": null
+    }
+  ]
+}
