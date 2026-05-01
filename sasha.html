@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sasha Activity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0D0D1A;
+      --card: #1a0d2e;
+      --primary: #7B2FBE;
+      --secondary: #4A1A8C;
+      --accent: #00D4FF;
+      --text: #e6e1ee;
+      --muted: #8a7da3;
+      --error: #ff5b7a;
+      --ok: #7bd88f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    header {
+      padding: 24px 32px 16px;
+      border-bottom: 1px solid var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--accent);
+    }
+    h1 small { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 12px; }
+    .nav { font-size: 13px; }
+    .nav a { color: var(--muted); text-decoration: none; margin-left: 16px; }
+    .nav a:hover { color: var(--accent); }
+    main { padding: 24px 32px; max-width: 1280px; margin: 0 auto; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--secondary);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    .card h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin: 0 0 12px;
+    }
+    .stat { font-size: 28px; font-weight: 600; color: var(--text); }
+    .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid #2a1a45;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em; }
+    tr:last-child td { border-bottom: none; }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .pill-queued    { background: rgba(0, 212, 255, 0.15); color: var(--accent); }
+    .pill-sent      { background: rgba(123, 216, 143, 0.15); color: var(--ok); }
+    .pill-error     { background: rgba(255, 91, 122, 0.15); color: var(--error); }
+    .pill-pending   { background: rgba(123, 47, 190, 0.2); color: #c498f1; }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 32px;
+      font-style: italic;
+    }
+    .source { font-size: 11px; color: var(--muted); }
+    .ts { font-size: 11px; color: var(--muted); white-space: nowrap; }
+    .tweet-text { color: var(--text); max-width: 480px; }
+    a.ext { color: var(--accent); text-decoration: none; }
+    a.ext:hover { text-decoration: underline; }
+    .full-width { grid-column: span 2; }
+    .refresh-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .refresh-btn:hover { background: #9a4ad8; }
+    .last-synced { font-size: 11px; color: var(--muted); margin-left: 12px; }
+    pre.error-block {
+      background: rgba(255, 91, 122, 0.08);
+      border-left: 3px solid var(--error);
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--error);
+      white-space: pre-wrap;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sasha Activity <small>openclaw-h3mk runtime mirror</small></h1>
+    <div class="nav">
+      <a href="/">Tasks</a>
+      <a href="/reports">Reports</a>
+      <a href="/sasha">Sasha</a>
+      <button class="refresh-btn" id="refresh-btn">Refresh</button>
+      <span class="last-synced" id="last-synced">—</span>
+    </div>
+  </header>
+  <main>
+    <div class="grid">
+      <div class="card">
+        <h2>Posted today</h2>
+        <div class="stat" id="posted-today">—</div>
+        <div class="stat-label">VPS posted-log entries (UTC day)</div>
+      </div>
+      <div class="card">
+        <h2>Buffer queue</h2>
+        <div class="stat" id="buffer-pending">—</div>
+        <div class="stat-label">Pending in Buffer cloud queue</div>
+      </div>
+    </div>
+
+    <div class="card full-width" style="margin-bottom: 16px;">
+      <h2>Recent posts (VPS)</h2>
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Source</th><th>Topic</th><th>Tweet</th><th>Buffer / Tweet ID</th></tr>
+        </thead>
+        <tbody id="posted-table"></tbody>
+      </table>
+    </div>
+
+    <div class="card full-width" style="margin-bottom: 16px;">
+      <h2>Buffer queue</h2>
+      <table>
+        <thead>
+          <tr><th>Status</th><th>Scheduled</th><th>Text</th><th>Created</th></tr>
+        </thead>
+        <tbody id="buffer-table"></tbody>
+      </table>
+    </div>
+
+    <div class="card full-width">
+      <h2>Recent errors</h2>
+      <div id="errors-block"></div>
+    </div>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const fmt = (iso) => {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      if (isNaN(d)) return iso;
+      return d.toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    };
+    const isToday = (iso) => {
+      if (!iso) return false;
+      const d = new Date(iso);
+      const now = new Date();
+      return d.getUTCFullYear() === now.getUTCFullYear() &&
+             d.getUTCMonth() === now.getUTCMonth() &&
+             d.getUTCDate() === now.getUTCDate();
+    };
+    const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    async function load() {
+      const [stateRes, bufRes] = await Promise.allSettled([
+        fetch('/api/sasha-state').then(r => r.json()),
+        fetch('/api/buffer-queue').then(r => r.json()),
+      ]);
+      const state = stateRes.status === 'fulfilled' ? stateRes.value : { posted:[], errors:[], _err: stateRes.reason };
+      const buf   = bufRes.status === 'fulfilled' ? bufRes.value : { posts:[], _err: bufRes.reason };
+
+      const posted = Array.isArray(state.posted) ? state.posted : [];
+      const errors = Array.isArray(state.errors) ? state.errors : [];
+
+      $('posted-today').textContent = posted.filter(p => isToday(p.queued_at || p.posted_at)).length;
+      const bufPosts = Array.isArray(buf.posts) ? buf.posts : [];
+      const pending = bufPosts.filter(p => p.status && !['SENT','FAILED','REMOVED'].includes(p.status)).length;
+      $('buffer-pending').textContent = state.error || buf.error ? '—' : pending;
+      $('last-synced').textContent = 'Synced: ' + fmt(state.last_synced || new Date().toISOString());
+
+      // Posted table
+      const postedHtml = posted.slice(-15).reverse().map(p => `
+        <tr>
+          <td class="ts">${fmt(p.queued_at || p.posted_at)}</td>
+          <td><span class="source">${escapeHtml(p.source || '—')}</span></td>
+          <td>${escapeHtml(p.topic_id || p.target_handle || '—')}</td>
+          <td class="tweet-text">${escapeHtml(p.tweet_text || '')}</td>
+          <td>${p.tweet_id ? `<a class="ext" href="https://x.com/SashaCoin/status/${escapeHtml(p.tweet_id)}" target="_blank">${escapeHtml(p.tweet_id)}</a>` : escapeHtml(p.buffer_post_id || '—')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" class="empty">No posts logged yet — waiting for first VPS scheduler tick.</td></tr>';
+      $('posted-table').innerHTML = postedHtml;
+
+      // Buffer table
+      let bufHtml;
+      if (buf.error) {
+        bufHtml = `<tr><td colspan="4" class="empty">${escapeHtml(buf.error)}</td></tr>`;
+      } else {
+        bufHtml = bufPosts.slice(-20).reverse().map(p => {
+          const cls = p.status === 'SENT' ? 'pill-sent' :
+                      p.status === 'FAILED' ? 'pill-error' :
+                      'pill-queued';
+          return `
+            <tr>
+              <td><span class="pill ${cls}">${escapeHtml(p.status)}</span></td>
+              <td class="ts">${fmt(p.scheduledAt || p.sentAt)}</td>
+              <td class="tweet-text">${escapeHtml(p.text || '')}</td>
+              <td class="ts">${fmt(p.createdAt)}</td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="4" class="empty">No posts in Buffer yet.</td></tr>';
+      }
+      $('buffer-table').innerHTML = bufHtml;
+
+      // Errors
+      const errBlock = $('errors-block');
+      if (errors.length === 0) {
+        errBlock.innerHTML = '<div class="empty">No recent errors.</div>';
+      } else {
+        errBlock.innerHTML = errors.slice(-5).reverse().map(e =>
+          `<pre class="error-block">[${fmt(e.timestamp || e.at)}] ${escapeHtml(e.message || e.error || JSON.stringify(e))}</pre>`
+        ).join('');
+      }
+    }
+
+    $('refresh-btn').addEventListener('click', load);
+    load();
+    setInterval(load, 60_000); // mirror VPS state once per minute
+  </script>
+</body>
+</html>

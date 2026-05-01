@@ -11,6 +11,7 @@ const BLOG_REGISTRY_FILE  = path.join(ROOT, 'seo', 'blog-registry.json');
 const HTML_FILE           = path.join(ROOT, 'tasks.html');
 const REPORTS_HTML_FILE   = path.join(ROOT, 'reports.html');
 const ONBOARDING_HTML_FILE = path.join(ROOT, 'onboarding.html');
+const SASHA_HTML_FILE      = path.join(ROOT, 'sasha.html');
 
 function loadEnv() {
   const envFile = path.join(ROOT, '.env');
@@ -253,6 +254,76 @@ const server = http.createServer((req, res) => {
 
   // ── file API (read-only, sandboxed to project root) ────────────────────────
 
+  // ── Sasha activity (VPS state mirror, read-only) ─────────────────────────
+  // Returns: { posted: [...], errors: [...], calendar_state: {...}, last_synced: ISO }
+  // Reads /docker/openclaw-h3mk/data/.openclaw/state/*.json over SSH.
+  if (req.method === 'GET' && req.url === '/api/sasha-state') {
+    const VPS_HOST = process.env.SASHA_VPS_HOST || 'root@187.77.42.134';
+    const VPS_KEY  = process.env.SASHA_VPS_KEY  || (process.env.HOME + '/.ssh/hostinger_vps');
+    const STATE_DIR = '/docker/openclaw-h3mk/data/.openclaw/state';
+    // Concatenate three files into one stdout payload with separators
+    const cmd = `cat ${STATE_DIR}/posted-log.json 2>/dev/null || echo '[]'; echo '###SEP###'; cat ${STATE_DIR}/post-errors.json 2>/dev/null || echo '[]'; echo '###SEP###'; cat ${STATE_DIR}/calendar-state.json 2>/dev/null || echo '{}'`;
+    const ssh = spawn('ssh', ['-i', VPS_KEY, '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=5', VPS_HOST, cmd]);
+    let out = '', err = '';
+    ssh.stdout.on('data', d => { out += d; });
+    ssh.stderr.on('data', d => { err += d; });
+    ssh.on('close', code => {
+      if (code !== 0) {
+        res.writeHead(502, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({ error: 'SSH failed', stderr: err.slice(0, 500), code }));
+        return;
+      }
+      const parts = out.split('###SEP###');
+      const safeParse = (s, fallback) => { try { return JSON.parse(s.trim() || (Array.isArray(fallback) ? '[]' : '{}')); } catch (e) { return fallback; } };
+      const payload = {
+        posted:         safeParse(parts[0] || '', []),
+        errors:         safeParse(parts[1] || '', []),
+        calendar_state: safeParse(parts[2] || '', {}),
+        last_synced:    new Date().toISOString(),
+      };
+      res.writeHead(200, {'Content-Type':'application/json', 'Cache-Control':'no-cache'});
+      res.end(JSON.stringify(payload));
+    });
+    return;
+  }
+
+  // ── Buffer queue mirror (Buffer Cloud API, read-only) ────────────────────
+  // Returns Buffer's pending + recently-sent posts for Sasha's channel.
+  if (req.method === 'GET' && req.url === '/api/buffer-queue') {
+    const TOKEN = process.env.BUFFER_ACCESS_TOKEN;
+    const CHANNEL = process.env.BUFFER_CHANNEL_ID;
+    if (!TOKEN || !CHANNEL) {
+      res.writeHead(503, {'Content-Type':'application/json'});
+      res.end(JSON.stringify({ error: 'BUFFER_ACCESS_TOKEN or BUFFER_CHANNEL_ID not set in .env' }));
+      return;
+    }
+    const QUERY = `query Channel($id: ChannelId!) {
+      channel(id: $id) {
+        id name
+        posts(first: 30, status: ALL) {
+          edges { node { id status text scheduledAt sentAt createdAt } }
+        }
+      }
+    }`;
+    const body = JSON.stringify({ query: QUERY, variables: { id: CHANNEL } });
+    const reqOpts = {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + TOKEN }
+    };
+    fetch('https://api.buffer.com', { ...reqOpts, body })
+      .then(r => r.json())
+      .then(data => {
+        const edges = (data?.data?.channel?.posts?.edges || []).map(e => e.node);
+        res.writeHead(200, {'Content-Type':'application/json', 'Cache-Control':'no-cache'});
+        res.end(JSON.stringify({ channel: data?.data?.channel?.name || null, posts: edges, raw_errors: data?.errors || null }));
+      })
+      .catch(e => {
+        res.writeHead(502, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({ error: 'Buffer API failed', detail: e.message }));
+      });
+    return;
+  }
+
   if (req.method === 'GET' && req.url.startsWith('/api/file')) {
     const qs = req.url.includes('?') ? req.url.split('?').slice(1).join('?') : '';
     const relPath = new URLSearchParams(qs).get('path');
@@ -288,6 +359,14 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && req.url === '/sasha') {
+    fs.readFile(SASHA_HTML_FILE, 'utf8', (err, data) => {
+      if (err) { res.writeHead(500, {'Content-Type':'text/plain'}); res.end('sasha.html not found'); return; }
+      res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'}); res.end(data);
+    });
+    return;
+  }
+
   if (req.method === 'GET' && req.url === '/onboarding') {
     fs.readFile(ONBOARDING_HTML_FILE, 'utf8', (err, data) => {
       if (err) { res.writeHead(500, {'Content-Type':'text/plain'}); res.end('onboarding.html not found'); return; }
@@ -303,6 +382,7 @@ server.listen(PORT, () => {
   console.log(`Task server running → http://localhost:${PORT}`);
   console.log(`  Tasks:    http://localhost:${PORT}/`);
   console.log(`  Reports:  http://localhost:${PORT}/reports`);
+  console.log(`  Sasha:    http://localhost:${PORT}/sasha`);
   console.log(`  Setup:    http://localhost:${PORT}/onboarding`);
   console.log(`  Blog CMS: http://localhost:${PORT}/ → Blog CMS tab`);
 });
