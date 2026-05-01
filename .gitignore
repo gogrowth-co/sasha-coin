@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+venv/
+venv_buffer/
+__pycache__/
+*.pyc
+
+# OpenClaw runtime state (VPS-only)
+.openclaw/
+.clawhub/
+credentials/
+memory/
+sessions/
+agents/main/sessions/
+state/
+cron/runs/
+qmd/
+
+# Clawlett wallet config (PRIVATE KEY LIVES HERE — VPS-only)
+Clawlett/config/
+Clawlett/clawlett/scripts/config/
+Clawlett/.idea/
+
+# Skill build artifacts
+skills/openrouter-toolkit/venv/
+skills/qmd/.clawhub/
+skills/social-media-scheduler/.clawhub/
+**/.clawhub/
+
+# Temp / scratch
+tmp/
+
+# Logs
+*.log
+log/
+logs/
+npm-debug.log*
+
+# Misc
+.DS_Store
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.idea/
+.vscode/
+
+# Build artifacts
+dist/
+build/
+*.bak
+
+# Marketing template local-only (not deployed to VPS but committed locally? No — keep them local-only)
+# These are KEPT in git so the local workspace is reproducible across machines:
+# !CLAUDE.md
+# !_context/
+# !_sop/
+# !campaigns/
+# !social/
+# !.claude/
+# !tasks.html
+# !task-server.js
