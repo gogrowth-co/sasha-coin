@@ -206,7 +206,9 @@
 
       $('posted-today').textContent = posted.filter(p => isToday(p.queued_at || p.posted_at)).length;
       const bufPosts = Array.isArray(buf.posts) ? buf.posts : [];
-      const pending = bufPosts.filter(p => p.status && !['SENT','FAILED','REMOVED'].includes(p.status)).length;
+      // Buffer status enum is lowercase: pending, sent, failed, draft, removed, etc.
+      const isFinal = s => ['sent','failed','removed','sent_by_telegram','rejected'].includes((s || '').toLowerCase());
+      const pending = bufPosts.filter(p => p.status && !isFinal(p.status)).length;
       $('buffer-pending').textContent = state.error || buf.error ? '—' : pending;
       $('last-synced').textContent = 'Synced: ' + fmt(state.last_synced || new Date().toISOString());
 
@@ -227,14 +229,15 @@
       if (buf.error) {
         bufHtml = `<tr><td colspan="4" class="empty">${escapeHtml(buf.error)}</td></tr>`;
       } else {
-        bufHtml = bufPosts.slice(-20).reverse().map(p => {
-          const cls = p.status === 'SENT' ? 'pill-sent' :
-                      p.status === 'FAILED' ? 'pill-error' :
+        bufHtml = bufPosts.slice(0, 20).map(p => {
+          const s = (p.status || '').toLowerCase();
+          const cls = s === 'sent' ? 'pill-sent' :
+                      (s === 'failed' || s === 'rejected') ? 'pill-error' :
                       'pill-queued';
           return `
             <tr>
               <td><span class="pill ${cls}">${escapeHtml(p.status)}</span></td>
-              <td class="ts">${fmt(p.scheduledAt || p.sentAt)}</td>
+              <td class="ts">${fmt(p.sentAt || p.dueAt)}</td>
               <td class="tweet-text">${escapeHtml(p.text || '')}</td>
               <td class="ts">${fmt(p.createdAt)}</td>
             </tr>

@@ -292,30 +292,32 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET' && req.url === '/api/buffer-queue') {
     const TOKEN = process.env.BUFFER_ACCESS_TOKEN;
     const CHANNEL = process.env.BUFFER_CHANNEL_ID;
-    if (!TOKEN || !CHANNEL) {
+    const ORG = process.env.BUFFER_ORGANIZATION_ID;
+    if (!TOKEN || !CHANNEL || !ORG) {
       res.writeHead(503, {'Content-Type':'application/json'});
-      res.end(JSON.stringify({ error: 'BUFFER_ACCESS_TOKEN or BUFFER_CHANNEL_ID not set in .env' }));
+      res.end(JSON.stringify({ error: 'BUFFER_ACCESS_TOKEN, BUFFER_CHANNEL_ID, or BUFFER_ORGANIZATION_ID not set in .env' }));
       return;
     }
-    const QUERY = `query Channel($id: ChannelId!) {
-      channel(id: $id) {
-        id name
-        posts(first: 30, status: ALL) {
-          edges { node { id status text scheduledAt sentAt createdAt } }
+    const QUERY = `
+      query SashaPosts($input: PostsInput!) {
+        posts(input: $input, first: 30) {
+          edges { node { id status text dueAt sentAt createdAt isCustomScheduled schedulingType } }
         }
       }
-    }`;
-    const body = JSON.stringify({ query: QUERY, variables: { id: CHANNEL } });
-    const reqOpts = {
+    `;
+    const variables = { input: { organizationId: ORG, filter: { channelIds: [CHANNEL] } } };
+    fetch('https://api.buffer.com', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + TOKEN }
-    };
-    fetch('https://api.buffer.com', { ...reqOpts, body })
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + TOKEN },
+      body: JSON.stringify({ query: QUERY, variables })
+    })
       .then(r => r.json())
       .then(data => {
-        const edges = (data?.data?.channel?.posts?.edges || []).map(e => e.node);
+        const edges = (data?.data?.posts?.edges || []).map(e => e.node);
+        // Normalize: sort by sentAt or dueAt desc
+        edges.sort((a, b) => new Date(b.sentAt || b.dueAt || b.createdAt) - new Date(a.sentAt || a.dueAt || a.createdAt));
         res.writeHead(200, {'Content-Type':'application/json', 'Cache-Control':'no-cache'});
-        res.end(JSON.stringify({ channel: data?.data?.channel?.name || null, posts: edges, raw_errors: data?.errors || null }));
+        res.end(JSON.stringify({ posts: edges, raw_errors: data?.errors || null }));
       })
       .catch(e => {
         res.writeHead(502, {'Content-Type':'application/json'});
