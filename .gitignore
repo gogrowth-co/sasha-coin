@@ -41,6 +41,7 @@ npm-debug.log*
 .env
 .env.local
 .env.*.local
+.mcp.json
 
 # IDEs
 .idea/
