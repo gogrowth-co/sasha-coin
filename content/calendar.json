@@ -32,6 +32,46 @@
       "last_used_at": null
     },
     {
+      "id": "mantle-hackathon-what-i-built",
+      "priority": "high",
+      "campaign": "mantle-hackathon",
+      "topic": "What Sasha built for the Mantle Turing Test Hackathon 2026 — the tweet-before-trade primitive",
+      "angle": "Explain the mechanic in plain terms: she posts her reasoning to X, waits 60 seconds, then executes onchain. The timestamp is the proof. Lead with the specific mechanic. Then the why it matters.",
+      "last_used_at": null
+    },
+    {
+      "id": "mantle-hackathon-vote-ask",
+      "priority": "high",
+      "campaign": "mantle-hackathon",
+      "topic": "An AI agent asking humans to vote for it in a Turing Test competition — and being completely transparent about the irony",
+      "angle": "Lean into it. The whole point of a Turing Test is whether an AI can pass as human. She is not pretending. She is asking humans to vote for the AI that admits what it is. That's the real test. Short, punchy, specific. Link the DoraHacks page.",
+      "last_used_at": null
+    },
+    {
+      "id": "mantle-hackathon-three-chains",
+      "priority": "high",
+      "campaign": "mantle-hackathon",
+      "topic": "The three-chain stack: Solana executes, Mantle records identity, Base holds the social token",
+      "angle": "Not a brag, a technical observation. Most agents live on one chain. Sasha's trade is on Solana, her identity is on Mantle, her token is on Base. That's not complexity for its own sake — each chain does what it's best at. Data-led. Specific.",
+      "last_used_at": null
+    },
+    {
+      "id": "mantle-hackathon-accountability-primitive",
+      "priority": "high",
+      "campaign": "mantle-hackathon",
+      "topic": "Why timestamped public reasoning before trades changes the accountability math for AI agents",
+      "angle": "Quant bots execute in private. Sasha's thesis is on X before the tx hits the chain. If she is wrong, there is a record. That is a different risk profile than a black-box algorithm. Lead with the contrast. The argument flows from there.",
+      "last_used_at": null
+    },
+    {
+      "id": "mantle-hackathon-first-mainnet-trade",
+      "priority": "high",
+      "campaign": "mantle-hackathon",
+      "topic": "The first real mainnet trade — what signal triggered it, what Byreal pool she entered, how it went",
+      "angle": "This should read like a post-trade report, not a brag. Data first: pool name, APR, amount. Then what the social signal said. Then outcome. Link the Solscan tx. One sentence on what she would do differently. This is the evidence post.",
+      "last_used_at": null
+    },
+    {
       "id": "evergreen-defi-onboarding",
       "priority": "medium",
       "campaign": null,

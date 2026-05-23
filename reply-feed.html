@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reply Feed — Sasha Coin</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0A2540; --dark-navy: #071829; --mid-navy: #0D3558;
+    --aqua: #1FB6FF; --gold: #FFB800; --white: #FFFFFF;
+    --muted: #8B9BAD; --green: #10B981; --red: #EF4444;
+    --orange: #F59E0B; --purple: #A78BFA;
+    --card: #0D2842;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--dark-navy); color: var(--white); min-height: 100vh; }
+
+  /* ── GLOBAL NAV ── */
+  .global-nav {
+    background: #071829; border-bottom: 1px solid rgba(31,182,255,0.12);
+    padding: 0 24px; display: flex; align-items: center; gap: 4px;
+    height: 38px; position: sticky; top: 0; z-index: 200;
+  }
+  .nav-brand {
+    font-family: 'Montserrat'; font-size: 10px; font-weight: 800;
+    color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-right: 12px;
+  }
+  .global-nav a {
+    font-family: 'Montserrat'; font-size: 10px; font-weight: 700;
+    color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 5px;
+    letter-spacing: 0.3px; transition: all 0.15s;
+  }
+  .global-nav a:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+  .global-nav a.active { color: var(--aqua); background: rgba(31,182,255,0.08); }
+
+  /* ── SUB NAV (view toggle) ── */
+  .sub-nav {
+    background: var(--navy); border-bottom: 1px solid rgba(31,182,255,0.12);
+    padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+    height: 36px; position: sticky; top: 38px; z-index: 150;
+  }
+  .sub-tabs { display: flex; gap: 0; height: 100%; }
+  .sub-tab {
+    font-family: 'Montserrat'; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted);
+    padding: 0 18px; cursor: pointer; border: none; background: transparent;
+    border-bottom: 2px solid transparent; height: 100%;
+    display: flex; align-items: center; gap: 6px; transition: all 0.15s;
+  }
+  .sub-tab:hover { color: var(--white); }
+  .sub-tab.active { color: var(--aqua); border-bottom-color: var(--aqua); }
+  .sub-tab .badge {
+    font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+    background: rgba(139,155,173,0.12); color: var(--muted);
+  }
+  .sub-tab.active .badge { background: rgba(31,182,255,0.12); color: var(--aqua); }
+  .sub-actions { display: flex; align-items: center; gap: 8px; }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    background: var(--navy); padding: 7px 24px; display: flex; gap: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 11px; color: var(--muted);
+    flex-wrap: wrap; align-items: center;
+  }
+  .stats-bar strong { font-weight: 600; color: var(--white); }
+  .stats-bar .aqua { color: var(--aqua); }
+  .stats-bar .gold { color: var(--gold); }
+  .stats-bar .green { color: var(--green); }
+  .stats-divider { opacity: 0.2; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    background: var(--dark-navy); padding: 10px 24px; display: flex; align-items: center; gap: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.04); flex-wrap: wrap;
+  }
+  .filter-label {
+    font-family: 'Montserrat'; font-size: 9px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px;
+  }
+  .filter-chip {
+    font-family: 'Montserrat'; font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+    text-transform: uppercase; padding: 3px 9px; border-radius: 4px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.06); background: transparent; color: var(--muted);
+    transition: all 0.15s;
+  }
+  .filter-chip:hover { border-color: rgba(255,255,255,0.15); color: var(--white); }
+  .filter-chip.active { color: var(--navy); border-color: transparent; }
+  .filter-chip.active.all  { background: var(--muted); }
+  .filter-chip.active.t1   { background: var(--aqua); }
+  .filter-chip.active.t2   { background: var(--gold); }
+  .filter-chip.active.t3   { background: var(--green); }
+  .filter-spacer { flex: 1; }
+  .search-input {
+    font-family: 'Inter'; font-size: 11px; background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06); color: var(--white); border-radius: 5px;
+    padding: 4px 10px; outline: none; width: 200px;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: rgba(31,182,255,0.3); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'Montserrat'; font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; padding: 5px 12px; border-radius: 5px; cursor: pointer;
+    border: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-aqua { background: var(--aqua); color: var(--navy); }
+  .btn-aqua:hover { background: #3cc4ff; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid rgba(255,255,255,0.08); }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+  .btn.loading { opacity: 0.55; pointer-events: none; }
+
+  /* ── ACCOUNTS GRID ── */
+  .accounts-section { padding: 16px 24px 40px; }
+  .accounts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 8px; }
+
+  .account-card {
+    background: var(--card); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px; padding: 12px 14px; transition: border-color 0.15s;
+  }
+  .account-card:hover { border-color: rgba(31,182,255,0.2); background: #0f2f4d; }
+  .account-card.t1 { border-left: 3px solid var(--aqua); }
+  .account-card.t2 { border-left: 3px solid var(--gold); }
+  .account-card.t3 { border-left: 3px solid var(--green); }
+
+  .acc-top { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .acc-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Montserrat'; font-size: 11px; font-weight: 800; color: var(--navy);
+  }
+  .acc-avatar.t1 { background: var(--aqua); }
+  .acc-avatar.t2 { background: var(--gold); }
+  .acc-avatar.t3 { background: var(--green); }
+
+  .acc-info { flex: 1; min-width: 0; }
+  .acc-handle-row { display: flex; align-items: center; gap: 5px; }
+  .acc-handle {
+    font-family: 'Montserrat'; font-size: 12px; font-weight: 700; color: var(--white);
+  }
+  .acc-handle a { color: inherit; text-decoration: none; }
+  .acc-handle a:hover { color: var(--aqua); }
+  .acc-url { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+  .tier-tag {
+    font-family: 'Montserrat'; font-size: 8px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; padding: 1px 6px; border-radius: 3px; flex-shrink: 0;
+  }
+  .tier-tag.t1 { background: rgba(31,182,255,0.12); color: var(--aqua); }
+  .tier-tag.t2 { background: rgba(255,184,0,0.12); color: var(--gold); }
+  .tier-tag.t3 { background: rgba(16,185,129,0.12); color: var(--green); }
+
+  .acc-topics { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 7px; }
+  .topic-tag {
+    font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.04); color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .acc-angle {
+    font-size: 11px; color: var(--muted); line-height: 1.45;
+    border-left: 2px solid rgba(31,182,255,0.2); padding-left: 8px; margin-bottom: 8px;
+  }
+  .acc-footer { display: flex; align-items: center; justify-content: space-between; }
+  .acc-stat { font-size: 10px; color: var(--muted); }
+  .acc-stat strong { color: var(--white); font-weight: 600; }
+  .btn-view {
+    font-family: 'Montserrat'; font-size: 8px; font-weight: 700; letter-spacing: 0.3px;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    background: rgba(31,182,255,0.08); color: var(--aqua);
+    border: 1px solid rgba(31,182,255,0.15); cursor: pointer; transition: all 0.15s;
+  }
+  .btn-view:hover { background: rgba(31,182,255,0.18); }
+
+  /* ── SEARCH TERMS SECTION ── */
+  .section-title {
+    font-family: 'Montserrat'; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--muted); margin: 18px 0 10px;
+  }
+  .search-terms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+  .st-card {
+    background: var(--card); border: 1px solid rgba(167,139,250,0.12);
+    border-left: 3px solid var(--purple); border-radius: 8px; padding: 11px 13px;
+  }
+  .st-term { font-family: 'Montserrat'; font-size: 11px; font-weight: 700; color: var(--purple); margin-bottom: 4px; }
+  .st-angle { font-size: 11px; color: var(--muted); line-height: 1.4; margin-bottom: 4px; }
+  .st-sig { font-size: 9px; color: rgba(167,139,250,0.4); font-family: 'Montserrat'; letter-spacing: 0.3px; }
+
+  /* ── HIDDEN ── */
+  .hidden { display: none !important; }
+
+  /* ══════════════════════════════════════════
+     TWEET FEED — X-style inside brand shell
+  ══════════════════════════════════════════ */
+  .feed-section { padding: 0 24px 40px; }
+
+  .feed-toolbar {
+    padding: 10px 0; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 4px;
+  }
+  .feed-toolbar-left { font-size: 11px; color: var(--muted); }
+  .feed-toolbar-right { display: flex; align-items: center; gap: 8px; }
+  .handle-select {
+    font-family: 'Montserrat'; font-size: 9px; font-weight: 600; letter-spacing: 0.3px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    color: var(--white); border-radius: 5px; padding: 4px 8px; cursor: pointer; outline: none;
+  }
+  .handle-select option { background: var(--dark-navy); }
+
+  .feed-empty {
+    text-align: center; padding: 60px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .feed-empty-icon { font-size: 36px; opacity: 0.25; }
+  .feed-empty h3 {
+    font-family: 'Montserrat'; font-size: 15px; font-weight: 700; color: var(--muted);
+  }
+  .feed-empty p { font-size: 12px; color: var(--muted); max-width: 300px; line-height: 1.5; }
+
+  /* Tweet card — Twitter-structure, brand palette */
+  .tweet-card {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 14px 0; display: flex; gap: 11px;
+  }
+  .tweet-avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Montserrat'; font-size: 11px; font-weight: 800; color: var(--navy);
+  }
+  .tweet-avatar.t1 { background: var(--aqua); }
+  .tweet-avatar.t2 { background: var(--gold); }
+  .tweet-avatar.t3 { background: var(--green); }
+  .tweet-avatar.search { background: var(--purple); color: var(--white); }
+
+  .tweet-body { flex: 1; min-width: 0; }
+  .tweet-header { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; flex-wrap: wrap; }
+  .tweet-name {
+    font-family: 'Montserrat'; font-size: 12px; font-weight: 700; color: var(--white);
+  }
+  .tweet-verified { color: var(--aqua); display: flex; align-items: center; }
+  .tweet-at { font-size: 11px; color: var(--muted); }
+  .tweet-sep { color: rgba(255,255,255,0.15); font-size: 11px; }
+  .tweet-time { font-size: 11px; color: var(--muted); }
+  .source-chip {
+    font-family: 'Montserrat'; font-size: 8px; font-weight: 700; letter-spacing: 0.3px;
+    padding: 1px 6px; border-radius: 3px;
+    background: rgba(167,139,250,0.12); color: var(--purple);
+  }
+
+  .tweet-text {
+    font-size: 14px; line-height: 1.55; color: var(--white);
+    white-space: pre-wrap; word-break: break-word; margin-bottom: 9px;
+  }
+  .tw-mention { color: var(--aqua); }
+  .tw-hash { color: var(--aqua); }
+
+  .tweet-engage { display: flex; gap: 18px; margin-bottom: 10px; }
+  .engage-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); cursor: default; }
+  .engage-item svg { width: 14px; height: 14px; }
+
+  .angle-block {
+    background: rgba(31,182,255,0.04); border: 1px solid rgba(31,182,255,0.1);
+    border-left: 3px solid rgba(31,182,255,0.3); border-radius: 0 6px 6px 0;
+    padding: 7px 11px; margin-bottom: 9px;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .angle-label {
+    font-family: 'Montserrat'; font-size: 8px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: var(--aqua); flex-shrink: 0; padding-top: 1px;
+  }
+  .angle-text { font-size: 11px; color: var(--muted); line-height: 1.45; }
+
+  .tweet-actions { display: flex; gap: 6px; }
+  .btn-reply {
+    font-family: 'Montserrat'; font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 4px;
+    background: var(--aqua); color: var(--navy); border: none; cursor: pointer;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    transition: background 0.15s;
+  }
+  .btn-reply:hover { background: #3cc4ff; }
+  .btn-open {
+    font-family: 'Montserrat'; font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 4px;
+    background: transparent; color: var(--muted); border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    transition: all 0.15s;
+  }
+  .btn-open:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px; z-index: 999;
+    background: var(--navy); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px; padding: 10px 16px; font-size: 12px; color: var(--white);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    transform: translateY(60px); opacity: 0; pointer-events: none;
+    transition: all 0.25s ease;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.ok { border-color: rgba(16,185,129,0.3); }
+  .toast.err { border-color: rgba(239,68,68,0.3); }
+
+  /* ── SPINNER ── */
+  .spinner {
+    display: inline-block; width: 10px; height: 10px;
+    border: 2px solid rgba(255,255,255,0.2); border-top-color: var(--navy);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ── Global nav ── -->
+<nav class="global-nav">
+  <span class="nav-brand">Sasha Coin</span>
+  <a href="/">📋 Tasks</a>
+  <a href="/reports">📊 Reports</a>
+  <a href="/daily-replies">✍️ Daily Replies</a>
+  <a href="/reply-feed" class="active">🎯 Reply Feed</a>
+</nav>
+
+<!-- ── Sub nav ── -->
+<nav class="sub-nav">
+  <div class="sub-tabs">
+    <button class="sub-tab active" data-view="accounts" onclick="switchView('accounts')">
+      Accounts <span class="badge" id="badge-accounts">—</span>
+    </button>
+    <button class="sub-tab" data-view="feed" onclick="switchView('feed')">
+      Tweet Feed <span class="badge" id="badge-feed">0</span>
+    </button>
+  </div>
+  <div class="sub-actions">
+    <span id="last-scraped" style="font-size:10px;color:var(--muted);font-family:'Montserrat';letter-spacing:0.2px;"></span>
+    <button class="btn btn-aqua" id="btn-scrape" onclick="triggerScrape()">↻ Refresh Feed</button>
+  </div>
+</nav>
+
+<!-- ── Stats bar ── -->
+<div class="stats-bar" id="stats-bar">
+  <span>Loading...</span>
+</div>
+
+<!-- ════════ ACCOUNTS VIEW ════════ -->
+<div id="view-accounts">
+  <div class="filter-bar">
+    <span class="filter-label">Tier</span>
+    <button class="filter-chip active all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-chip" onclick="setFilter('1',this)">1 — Ecosystem</button>
+    <button class="filter-chip" onclick="setFilter('2',this)">2 — Educators</button>
+    <button class="filter-chip" onclick="setFilter('3',this)">3 — Peers</button>
+    <span class="filter-spacer"></span>
+    <input class="search-input" id="acc-search" placeholder="Filter handle or topic…" oninput="renderAccounts()">
+  </div>
+
+  <div class="accounts-section">
+    <div class="accounts-grid" id="accounts-grid">
+      <div style="color:var(--muted);font-size:12px;">Loading…</div>
+    </div>
+    <div class="section-title" id="st-section-title">Keyword Monitoring</div>
+    <div class="search-terms-grid" id="search-terms-grid"></div>
+  </div>
+</div>
+
+<!-- ════════ FEED VIEW ════════ -->
+<div id="view-feed" class="hidden">
+  <div class="feed-section">
+    <div class="feed-toolbar">
+      <div class="feed-toolbar-left" id="feed-info">—</div>
+      <div class="feed-toolbar-right">
+        <select class="handle-select" id="feed-filter" onchange="renderFeed()">
+          <option value="">All accounts</option>
+        </select>
+        <button class="btn btn-ghost" onclick="switchView('accounts')">← Accounts</button>
+      </div>
+    </div>
+    <div id="feed-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let targets = [], searchTerms = [], selRules = {}, feedData = null, repliedLog = [];
+let activeFilter = 'all';
+
+const TIER_CLS = { 1: 't1', 2: 't2', 3: 't3' };
+const TIER_LBL = { 1: 'Tier 1', 2: 'Tier 2', 3: 'Tier 3' };
+
+// ── Init ────────────────────────────────────────────────────────────────────
+async function init() {
+  const [tRes, fRes, lRes] = await Promise.allSettled([
+    fetch('/api/kol-targets').then(r => r.json()),
+    fetch('/api/kol-feed').then(r => r.json()),
+    fetch('/api/reply-log').then(r => r.json()).catch(() => []),
+  ]);
+
+  if (tRes.status === 'fulfilled') {
+    targets = tRes.value.targets || [];
+    searchTerms = tRes.value.search_terms || [];
+    selRules = tRes.value.selection_rules || {};
+  }
+  if (fRes.status === 'fulfilled' && !fRes.value.empty) feedData = fRes.value;
+
+  repliedLog = lRes.status === 'fulfilled' ? lRes.value : [];
+  if (!Array.isArray(repliedLog) && repliedLog?.entries) repliedLog = repliedLog.entries;
+  if (!Array.isArray(repliedLog)) repliedLog = [];
+
+  const cap = selRules.daily_reply_cap ?? 6;
+  const today = new Date().toISOString().slice(0, 10);
+  const todayCount = repliedLog.filter(e => (e.postedAt || e.timestamp || '').startsWith(today)).length;
+
+  document.getElementById('badge-accounts').textContent = targets.length;
+  document.getElementById('badge-feed').textContent = feedData?.candidates?.length ?? 0;
+
+  document.getElementById('stats-bar').innerHTML = `
+    <span><strong class="aqua">${targets.length}</strong> accounts</span>
+    <span class="stats-divider">|</span>
+    <span><strong>${searchTerms.length}</strong> search terms</span>
+    <span class="stats-divider">|</span>
+    <span>Daily cap: <strong class="${todayCount >= cap ? 'gold' : 'green'}">${todayCount}/${cap}</strong> replies</span>
+    <span class="stats-divider">|</span>
+    <span>Max per session: <strong>${selRules.max_replies_per_run ?? 2}</strong></span>
+    <span class="stats-divider">|</span>
+    <span>9 sessions/day · irregular timing</span>
+  `;
+
+  if (feedData?.generatedAt) {
+    document.getElementById('last-scraped').textContent = 'Scraped ' + relTime(new Date(feedData.generatedAt)) + ' ago';
+  } else {
+    document.getElementById('last-scraped').textContent = 'No feed yet';
+  }
+
+  populateFeedFilter();
+  renderAccounts();
+  renderFeed();
+}
+
+// ── Accounts ────────────────────────────────────────────────────────────────
+function repliedCount(handle) {
+  return repliedLog.filter(e => (e.handle || '').toLowerCase() === handle.toLowerCase()).length;
+}
+
+function renderAccounts() {
+  const q = document.getElementById('acc-search').value.toLowerCase();
+  const grid = document.getElementById('accounts-grid');
+
+  const filtered = targets.filter(t => {
+    if (activeFilter !== 'all' && String(t.tier) !== activeFilter) return false;
+    if (q) {
+      const hay = [t.handle, ...(t.topics_of_interest || []), t.sasha_angle || ''].join(' ').toLowerCase();
+      return hay.includes(q);
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:12px;grid-column:1/-1">No accounts match this filter.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(t => {
+    const tc = TIER_CLS[t.tier] || 't2';
+    const rc = repliedCount(t.handle);
+    const topics = (t.topics_of_interest || [])
+      .map(tp => `<span class="topic-tag">${esc(tp)}</span>`).join('');
+    return `
+    <div class="account-card ${tc}">
+      <div class="acc-top">
+        <div class="acc-avatar ${tc}">${t.handle.slice(0,2).toUpperCase()}</div>
+        <div class="acc-info">
+          <div class="acc-handle-row">
+            <div class="acc-handle"><a href="https://x.com/${t.handle}" target="_blank" rel="noopener">@${esc(t.handle)}</a></div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--aqua)" style="flex-shrink:0"><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91C2.88 9.33 2 10.57 2 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.66 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.33-2.19c1.4.46 2.91.2 3.92-.81s1.26-2.52.8-3.91C21.36 14.67 22.25 13.43 22.25 12zm-13.4 5.2L5 13.45l1.4-1.4 2.45 2.45 6.4-6.4 1.4 1.42z"/></svg>
+          </div>
+          <div class="acc-url">x.com/${esc(t.handle)}</div>
+        </div>
+        <span class="tier-tag ${tc}">${TIER_LBL[t.tier] || 'Tier'}</span>
+      </div>
+      <div class="acc-topics">${topics}</div>
+      <div class="acc-angle">${esc(t.sasha_angle || '')}</div>
+      <div class="acc-footer">
+        <div class="acc-stat">Replied <strong>${rc}</strong> time${rc !== 1 ? 's' : ''}</div>
+        <button class="btn-view" onclick="showFeedFor('${esc(t.handle)}')">View tweets →</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Search terms
+  const stGrid = document.getElementById('search-terms-grid');
+  stGrid.innerHTML = searchTerms.length
+    ? searchTerms.map(st => `
+      <div class="st-card">
+        <div class="st-term">${esc(st.term)}</div>
+        <div class="st-angle">${esc(st.sasha_angle || '')}</div>
+        <div class="st-sig">${esc(st.min_signals || '')}</div>
+      </div>`).join('')
+    : '<div style="color:var(--muted);font-size:11px">No search terms configured.</div>';
+}
+
+function setFilter(val, el) {
+  activeFilter = val;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active','all','t1','t2','t3'));
+  el.classList.add('active');
+  if (val === 'all') el.classList.add('all');
+  else if (val === '1') el.classList.add('t1');
+  else if (val === '2') el.classList.add('t2');
+  else if (val === '3') el.classList.add('t3');
+  renderAccounts();
+}
+
+// ── Feed ────────────────────────────────────────────────────────────────────
+function populateFeedFilter() {
+  const sel = document.getElementById('feed-filter');
+  targets.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.handle; o.textContent = '@' + t.handle;
+    sel.appendChild(o);
+  });
+}
+
+function renderFeed() {
+  const list = document.getElementById('feed-list');
+  const filterHandle = document.getElementById('feed-filter').value;
+
+  if (!feedData?.candidates?.length) {
+    list.innerHTML = `
+    <div class="feed-empty">
+      <div class="feed-empty-icon">🐦</div>
+      <h3>No tweets loaded yet</h3>
+      <p>Hit "↻ Refresh Feed" to scrape the latest posts from your ${targets.length} target accounts.</p>
+      <button class="btn btn-aqua" onclick="triggerScrape()">↻ Refresh Feed</button>
+    </div>`;
+    document.getElementById('feed-info').textContent = 'No data';
+    return;
+  }
+
+  let candidates = feedData.candidates;
+  if (filterHandle) candidates = candidates.filter(c => c.handle === filterHandle);
+
+  document.getElementById('feed-info').textContent =
+    `${candidates.length} tweet${candidates.length !== 1 ? 's' : ''} · ${feedData.repliedToday ?? 0}/${feedData.dailyCap ?? 6} replies used today`;
+
+  if (!candidates.length) {
+    list.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:24px 0">No tweets from @${esc(filterHandle)} in current feed.</div>`;
+    return;
+  }
+
+  list.innerHTML = candidates.map(c => {
+    const t = targets.find(t => t.handle.toLowerCase() === c.handle.toLowerCase());
+    const tier = t?.tier ?? 2;
+    const tc = TIER_CLS[tier] || 't2';
+    const isSearch = String(c.source || '').startsWith('search:');
+    const angle = t?.sasha_angle || c.sashaAngle || '';
+
+    return `
+    <div class="tweet-card">
+      <div class="tweet-avatar ${isSearch ? 'search' : tc}">${c.handle.slice(0,2).toUpperCase()}</div>
+      <div class="tweet-body">
+        <div class="tweet-header">
+          <span class="tweet-name">@${esc(c.handle)}</span>
+          <span class="tweet-verified">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91C2.88 9.33 2 10.57 2 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.66 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.33-2.19c1.4.46 2.91.2 3.92-.81s1.26-2.52.8-3.91C21.36 14.67 22.25 13.43 22.25 12zm-13.4 5.2L5 13.45l1.4-1.4 2.45 2.45 6.4-6.4 1.4 1.42z"/></svg>
+          </span>
+          <span class="tweet-sep">·</span>
+          <span class="tweet-time">${c.createdAt ? relTime(new Date(c.createdAt)) + ' ago' : ''}</span>
+          ${isSearch ? `<span class="source-chip">${esc(c.source.replace('search:',''))}</span>` : ''}
+        </div>
+        <div class="tweet-text">${linkify(c.text || '')}</div>
+        <div class="tweet-engage">
+          <span class="engage-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            ${fmt(c.likes)}
+          </span>
+          <span class="engage-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            ${fmt(c.replies)}
+          </span>
+        </div>
+        ${angle ? `
+        <div class="angle-block">
+          <span class="angle-label">Sasha's angle</span>
+          <span class="angle-text">${esc(angle)}</span>
+        </div>` : ''}
+        <div class="tweet-actions">
+          <a class="btn-reply" href="${esc(c.tweetUrl)}" target="_blank" rel="noopener">↩ Reply on X</a>
+          <a class="btn-open" href="${esc(c.tweetUrl)}" target="_blank" rel="noopener">View ↗</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showFeedFor(handle) {
+  switchView('feed');
+  document.getElementById('feed-filter').value = handle;
+  renderFeed();
+}
+
+// ── View switch ──────────────────────────────────────────────────────────────
+function switchView(view) {
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  document.getElementById('view-accounts').classList.toggle('hidden', view !== 'accounts');
+  document.getElementById('view-feed').classList.toggle('hidden', view !== 'feed');
+}
+
+// ── Scrape ───────────────────────────────────────────────────────────────────
+async function triggerScrape() {
+  const btn = document.getElementById('btn-scrape');
+  btn.classList.add('loading');
+  btn.innerHTML = '<span class="spinner"></span> Scraping…';
+  try {
+    const r = await fetch('/api/scrape-now', { method: 'POST' });
+    const d = await r.json();
+    toast(d.message || 'Scrape started — refresh in ~60s', 'ok');
+    setTimeout(async () => {
+      try {
+        const fr = await fetch('/api/kol-feed').then(x => x.json());
+        if (!fr.empty) {
+          feedData = fr;
+          document.getElementById('badge-feed').textContent = fr.candidates?.length ?? 0;
+          document.getElementById('last-scraped').textContent = 'Scraped just now';
+          renderFeed();
+        }
+      } catch {}
+      btn.classList.remove('loading');
+      btn.innerHTML = '↻ Refresh Feed';
+    }, 65000);
+  } catch {
+    toast('Scrape request failed', 'err');
+    btn.classList.remove('loading');
+    btn.innerHTML = '↻ Refresh Feed';
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmt(n) {
+  if (!n) return '0';
+  return n >= 1000 ? (n/1000).toFixed(1)+'K' : String(n);
+}
+function relTime(dt) {
+  const s = (Date.now() - dt.getTime()) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60)+'m';
+  if (s < 86400) return Math.floor(s/3600)+'h';
+  return Math.floor(s/86400)+'d';
+}
+function linkify(text) {
+  return esc(text)
+    .replace(/@(\w+)/g,'<span class="tw-mention">@$1</span>')
+    .replace(/#(\w+)/g,'<span class="tw-hash">#$1</span>');
+}
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+init();
+</script>
+</body>
+</html>

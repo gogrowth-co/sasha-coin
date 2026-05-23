@@ -1,0 +1,15 @@
+{
+  "_comment": "Typefully account registry for Sasha Coin. API key lives in .env as TYPEFULLY_API_KEY_SASHA_COIN.",
+  "default_account": "SASHA_COIN",
+  "accounts": {
+    "SASHA_COIN": {
+      "social_set_id": 255726,
+      "username": "SashaCoin95",
+      "display_name": "Sasha Coin 🌿 | Crypto Educator",
+      "email": "sashacoin95@gmail.com",
+      "plan": "free",
+      "monthly_post_cap": 15,
+      "platforms_enabled": ["x"]
+    }
+  }
+}

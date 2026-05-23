@@ -1,4 +1,693 @@
 {
   "version": "2.1",
-  "tasks": []
+  "lastUpdated": "2026-05-19T09:54:26.000Z",
+  "tasks": [
+    {
+      "id": "onb-01",
+      "title": "Verify VPS env loading (BUFFER_*, X_*, APIFY_TOKEN in container)",
+      "category": "runtime",
+      "status": "done",
+      "priority": "high",
+      "notes": "SSH into openclaw-h3mk and confirm all required env vars are present in the running container. Check /docker/openclaw-h3mk/data/.openclaw/.env is loaded by docker-compose. Required vars: BUFFER_ACCESS_TOKEN, BUFFER_CHANNEL_ID, BUFFER_ORGANIZATION_ID, X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET, APIFY_TOKEN, OPENAI_API_KEY, TELEGRAM_BOT_TOKEN.",
+      "created": "2026-05-02",
+      "dueDate": "2026-05-05",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-02",
+      "title": "Create and verify VPS state directory",
+      "category": "runtime",
+      "status": "done",
+      "priority": "high",
+      "notes": "Ensure /docker/openclaw-h3mk/data/.openclaw/state exists and is writable by the container user. Required files: posted-log.json (array), post-errors.json (array), calendar-state.json (object), reply-log.json (array), scheduled-post-state.json (object). Create as empty stubs if missing.",
+      "created": "2026-05-02",
+      "dueDate": "2026-05-05",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-03",
+      "title": "Add --dry-run flag to post_to_buffer.js",
+      "category": "runtime",
+      "status": "done",
+      "priority": "high",
+      "notes": "When --dry-run is passed, validate env vars and payload structure but do NOT call the Buffer API. Print DRY_RUN: payload JSON to stdout and exit 0. Required before any live posting test.",
+      "files": [
+        "post_to_buffer.js"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-05",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-04",
+      "title": "Add --dry-run flag to scripts/tweet.js",
+      "category": "runtime",
+      "status": "done",
+      "priority": "high",
+      "notes": "When --dry-run is passed, validate env vars and payload but do NOT call Twitter API. Print DRY_RUN: payload JSON to stdout and exit 0. Required before any live tweet test.",
+      "files": [
+        "scripts/tweet.js"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-05",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-05",
+      "title": "Add BUFFER_ORGANIZATION_ID to .env.example",
+      "category": "infra",
+      "status": "done",
+      "priority": "high",
+      "notes": "Currently missing from .env.example but required by /api/buffer-queue. Add it alongside BUFFER_ACCESS_TOKEN and BUFFER_CHANNEL_ID with a comment explaining it's the Buffer org ID (not channel ID).",
+      "files": [
+        ".env.example"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-05",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-06",
+      "title": "Re-wire /sasha dashboard routes in task-server.js",
+      "category": "dashboard",
+      "status": "done",
+      "priority": "high",
+      "notes": "The new MangaOS task-server.js replaced the old Sasha-specific one and dropped /api/sasha-state, /api/buffer-queue, and /sasha routes. Re-add all three to the current 1247-line file. sasha.html exists and already consumes these endpoints.",
+      "files": [
+        "task-server.js",
+        "sasha.html"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-06",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-07",
+      "title": "Write BOOT.md startup instructions",
+      "category": "runtime",
+      "status": "done",
+      "priority": "medium",
+      "notes": "Current BOOT.md is a template placeholder. Write actual OpenCLAW boot instructions: which hooks to enable on startup, which skills to load, Telegram notification on boot, state directory check. This defines what happens when the container restarts.",
+      "files": [
+        "BOOT.md"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-07",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-08",
+      "title": "Create content/active-brief.md",
+      "category": "runtime",
+      "status": "done",
+      "priority": "medium",
+      "notes": "Listed in CLAUDE.md as a VPS-consumed file but does not exist in content/. Create with the current campaign brief for the 'Sasha Goes Live' campaign (2026-04-28 to 2026-05-28). Runtime skills read this to understand the active content direction.",
+      "files": [
+        "content/active-brief.md"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-07",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-09",
+      "title": "Add /api/sasha-runtime-health endpoint",
+      "category": "dashboard",
+      "status": "todo",
+      "priority": "medium",
+      "notes": "New endpoint: SSH to VPS and check container up/down status, OpenCLAW cron jobs enabled, next run times, last run status. Returns structured JSON with no secret values. Part of the operational cockpit plan.",
+      "files": [
+        "task-server.js"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-09",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-10",
+      "title": "Add /api/sasha-content endpoint",
+      "category": "dashboard",
+      "status": "todo",
+      "priority": "medium",
+      "notes": "New endpoint: read content/calendar.json, content/scheduled-posts.json, content/reply-targets.json, content/narrative-arc.md from local filesystem and return as a single JSON payload. Dashboard uses this to surface current content inputs.",
+      "files": [
+        "task-server.js"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-09",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-11",
+      "title": "Add /api/sasha-credentials endpoint",
+      "category": "dashboard",
+      "status": "todo",
+      "priority": "medium",
+      "notes": "New endpoint: return boolean presence status for each required env var (BUFFER_ACCESS_TOKEN, BUFFER_CHANNEL_ID, BUFFER_ORGANIZATION_ID, X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET, APIFY_TOKEN). Never return values \u2014 only true/false per key.",
+      "files": [
+        "task-server.js"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-09",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-12",
+      "title": "Add /api/sasha-deploy-status endpoint",
+      "category": "dashboard",
+      "status": "todo",
+      "priority": "medium",
+      "notes": "New endpoint: return local git HEAD commit hash/message + VPS deployed workspace commit (read from a deploy-manifest.json written by deploy.sh on --execute). Also return last deploy timestamp. No secrets.",
+      "files": [
+        "task-server.js",
+        "deploy.sh"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-09",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-13",
+      "title": "Create preflight script (scripts/preflight.sh)",
+      "category": "infra",
+      "status": "todo",
+      "priority": "medium",
+      "notes": "Non-destructive script that checks: env propagation to container, state directory writable, cron jobs enabled, Buffer GraphQL reachable (HEAD request only), X credential presence, Apify token presence, /api/sasha-state endpoint responding. Outputs pass/fail per check. Run before any deploy.",
+      "files": [
+        "scripts/preflight.sh"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-09",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-14",
+      "title": "Create post-deploy verification script (scripts/verify-deploy.sh)",
+      "category": "infra",
+      "status": "todo",
+      "priority": "medium",
+      "notes": "Runs after ./deploy.sh --execute. Confirms VPS runtime can see deployed content/ files by SSHing and checking file mtimes. Also restarts container if openclaw.json was in the sync set and confirms container is back up.",
+      "files": [
+        "scripts/verify-deploy.sh"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-09",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-15",
+      "title": "Write docs/sasha-ops-runbook.md",
+      "category": "docs",
+      "status": "todo",
+      "priority": "medium",
+      "notes": "Document the full operating procedure: daily startup check, how to queue posts, how to run dry-run tests, how to deploy, how to read the dashboard, how to SSH-tail logs, how to restart the container, what to do when a post fails. Single source of truth for ops.",
+      "files": [
+        "docs/sasha-ops-runbook.md"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-12",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-16",
+      "title": "Investigate QMD/Qdrant memory integration",
+      "category": "runtime",
+      "status": "todo",
+      "priority": "low",
+      "notes": "QMD (Qdrant) is referenced in _context/tool-registry.md and product-info.md as the memory backend, but no local skill files exist and the integration status is unknown. Determine if it is: (a) installed and working on VPS, (b) installed but broken, (c) not installed at all. Scope a fix or decision to remove the dependency.",
+      "created": "2026-05-02",
+      "dueDate": "2026-05-14",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-17",
+      "title": "Buffer dry-run smoke test",
+      "category": "test",
+      "status": "done",
+      "priority": "low",
+      "notes": "After onb-03 is done: run `node post_to_buffer.js --text 'test' --dry-run` and confirm it validates env + prints payload without queuing. Blocked on onb-03.",
+      "files": [
+        "post_to_buffer.js"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-07",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "onb-18",
+      "title": "X reply dry-run smoke test",
+      "category": "test",
+      "status": "done",
+      "priority": "low",
+      "notes": "After onb-04 is done: run `node scripts/tweet.js --text 'test' --dry-run` and confirm it validates env + prints payload without tweeting. Blocked on onb-04.",
+      "files": [
+        "scripts/tweet.js"
+      ],
+      "created": "2026-05-02",
+      "dueDate": "2026-05-07",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-02"
+    },
+    {
+      "id": "sasha-19",
+      "title": "Add Sasha visual reference images for lifestyle image generation",
+      "category": "content",
+      "status": "in-progress",
+      "priority": "high",
+      "notes": "Visual profile written from reference images \u2192 images/references/visual-profile.md and VPS /data/.openclaw/workspace/content/sasha-references/visual-profile.md. STILL NEEDED: upload actual .jpg reference files to VPS. Use: scp -i ~/.ssh/hostinger_vps <image_path> root@187.77.42.134:/docker/openclaw-h3mk/data/.openclaw/workspace/content/sasha-references/ Files needed: ref-01-headshot.jpg, ref-02-fullbody-studio.jpg, ref-03-character-sheet.jpg, ref-04-brand-sheet.jpg",
+      "created": "2026-05-13",
+      "dueDate": null,
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-05-13"
+    },
+    {
+      "id": "SASHA-CE-001",
+      "title": "Daily X cadence \u2014 Week 21 (May 19-25) \u00b7 7 posts",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "pipelineStage": "editing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-25",
+      "statusChangedDate": "2026-05-17",
+      "created": "2026-05-17",
+      "notes": "Daily X post cadence for Sasha persona. 7 posts: Mon-Sun. Mix of market takes, replies-as-posts, and character-voice threads. All 7 days drafted as of 2026-05-21.",
+      "artifacts": {
+        "research": null,
+        "outline": null,
+        "draft_x": [
+          "social/x/drafts/sasha-2026-05-19.md",
+          "social/x/drafts/sasha-2026-05-20.md",
+          "social/x/drafts/sasha-2026-05-21.md",
+          "social/x/drafts/sasha-2026-05-22.md",
+          "social/x/drafts/sasha-2026-05-23.md",
+          "social/x/drafts/sasha-2026-05-24.md",
+          "social/x/drafts/sasha-2026-05-25.md"
+        ],
+        "published": [],
+        "google_doc": "https://docs.google.com/document/d/1KxxrR6hhIsi3l66hb0I3pX7-CNqoWgFAlzvT_hlWmMo/edit"
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-002",
+      "title": "X thread \u2014 Sasha's take on AI agent wallets",
+      "type": "content-piece",
+      "status": "todo",
+      "priority": "high",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "pipelineStage": "outline",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-22",
+      "statusChangedDate": "2026-05-17",
+      "created": "2026-05-17",
+      "notes": "Thread from Sasha's POV on why AI agents need native wallets. 6-8 tweets. Narrative arc: problem \u2192 current workarounds \u2192 why it breaks \u2192 Sasha's vision.",
+      "artifacts": {
+        "research": null,
+        "outline": null,
+        "draft_x": null,
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-003",
+      "title": "X thread \u2014 Sasha market analysis: DeFAI sector",
+      "type": "content-piece",
+      "status": "todo",
+      "priority": "medium",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "pipelineStage": "idea-backlog",
+      "approvalStatus": "not-needed",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-30",
+      "statusChangedDate": "2026-05-17",
+      "created": "2026-05-17",
+      "notes": "Sasha's first 'market analyst' thread. DeFAI landscape \u2014 top 5 protocols, who wins, who fades. Data-first tone.",
+      "artifacts": {
+        "research": null,
+        "outline": null,
+        "draft_x": null,
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-004",
+      "title": "X post batch \u2014 Reply-first engagement Week 21",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "pipelineStage": "distribution",
+      "approvalStatus": "not-needed",
+      "qaStatus": "passed",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-18",
+      "statusChangedDate": "2026-05-17",
+      "created": "2026-05-17",
+      "notes": "Daily reply targets. Scraped via Apify, morning-reply-run.js executes. Already in distribution.",
+      "artifacts": {
+        "research": null,
+        "outline": null,
+        "draft_x": null,
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-005",
+      "title": "Daily X cadence \u2014 Week 22 (May 26-30) \u00b7 5 posts",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "pipelineStage": "editing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-30",
+      "statusChangedDate": "2026-05-17",
+      "created": "2026-05-17",
+      "notes": "Week 2 'On-Chain Receipts' arc. 5 posts May 26-30.",
+      "artifacts": {
+        "google_doc": "https://docs.google.com/document/d/1CyMJuYySL1HVP7PUcHhx83GLBsR_tg5oirPF89CJbSg/edit",
+        "draft_x": "social/x/drafts/sasha-2026-05-26.md",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "CE-S-001",
+      "title": "Thread: Virtuals Protocol Dissection",
+      "type": "content-piece",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "status": "scheduled",
+      "pipelineStage": "publish",
+      "priority": "high",
+      "approvalStatus": "approved",
+      "qaStatus": "not-run",
+      "dueDate": "2026-05-20",
+      "scheduledDate": "2026-05-20",
+      "statusChangedDate": "2026-05-19",
+      "created": "2026-05-19",
+      "campaign": "sasha-thread-cadence",
+      "arc": "Week 1 \u2014 Becoming Real",
+      "threadType": "Protocol Dissection",
+      "artifacts": {
+        "draft_x": "social/x/sasha-thread-2026-05-20-virtuals-dissection.md",
+        "gdoc": "https://docs.google.com/document/d/1k8ENUTFDQDwp5x8sUXGlPkXc2XZ8SIDZ39L5sQvlQok/edit",
+        "design": [
+          "social/x/x-img-2026-05-20-virtuals-dissection.png"
+        ],
+        "published": [],
+        "typefully_draft_id": 9163796,
+        "typefully_url": "https://typefully.com/?d=9163796&a=255726"
+      }
+    },
+    {
+      "id": "CE-S-002",
+      "title": "Thread: Builder Log Week 1",
+      "type": "content-piece",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "status": "scheduled",
+      "pipelineStage": "publish",
+      "priority": "high",
+      "approvalStatus": "approved",
+      "qaStatus": "not-run",
+      "dueDate": "2026-05-22",
+      "scheduledDate": "2026-05-22",
+      "statusChangedDate": "2026-05-19",
+      "created": "2026-05-19",
+      "campaign": "sasha-thread-cadence",
+      "arc": "Week 1 \u2014 Becoming Real",
+      "threadType": "Builder Log",
+      "artifacts": {
+        "draft_x": "social/x/sasha-thread-2026-05-22-builder-log-week1.md",
+        "gdoc": "https://docs.google.com/document/d/1LKrPNXYcKRx8VhFxp88YbxpnYD4qjL6r4vNjEUj_NO4/edit",
+        "design": [
+          "social/x/x-img-2026-05-22-builder-log.png"
+        ],
+        "published": [],
+        "typefully_draft_id": 9163798,
+        "typefully_url": "https://typefully.com/?d=9163798&a=255726"
+      }
+    },
+    {
+      "id": "CE-S-003",
+      "title": "Thread: 7 Questions \u2014 Is This Agent Actually Autonomous?",
+      "type": "content-piece",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "status": "scheduled",
+      "pipelineStage": "publish",
+      "priority": "high",
+      "approvalStatus": "approved",
+      "qaStatus": "not-run",
+      "dueDate": "2026-05-24",
+      "scheduledDate": "2026-05-24",
+      "statusChangedDate": "2026-05-19",
+      "created": "2026-05-19",
+      "campaign": "sasha-thread-cadence",
+      "arc": "Week 1 \u2014 Becoming Real",
+      "threadType": "Framework/Education",
+      "artifacts": {
+        "draft_x": "social/x/sasha-thread-2026-05-24-7-questions-agent-autonomy.md",
+        "gdoc": "https://docs.google.com/document/d/1EI-QI1jM-vuaWG96ni7dIE_rSNu4LWT9ieZ2Rh3qFyc/edit",
+        "design": [
+          "social/x/x-img-2026-05-24-7-questions.png"
+        ],
+        "published": [],
+        "typefully_draft_id": 9163800,
+        "typefully_url": "https://typefully.com/?d=9163800&a=255726"
+      }
+    },
+    {
+      "id": "SASHA-CE-006",
+      "title": "X Thread — $420k exploit + the receipts argument (May 21)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "writing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-21",
+      "statusChangedDate": "2026-05-21",
+      "created": "2026-05-21",
+      "notes": "ID SASHA-CE-004 was already in use (reply-engagement task). This thread uses SASHA-CE-006 as next available. Angle: $420k bridge exploit + Sasha's legibility counter-position vs slashing/reputation debate.",
+      "artifacts": {
+        "research": null,
+        "outline": null,
+        "draft_x": "social/x/threads/thread-2026-05-21-exploit.md",
+        "published": [],
+        "google_doc": "https://docs.google.com/document/d/1lvkfpE1YMgu12iduZu6fvHWujH_SVpcziFnCeFG7J_A/edit"
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-007",
+      "title": "X Thread — Autonomous vs Automated (May 22)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "writing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-22",
+      "statusChangedDate": "2026-05-21",
+      "created": "2026-05-21",
+      "arc": "Week 1 — Becoming Real",
+      "notes": "Complete replacement for the old 'Slashing vs Trust' thread. New angle: autonomous vs automated — category definition from the inside. Data spine: 10 wallets, avg 4 txns/day, Sasha 11 txns / 3 initiated / 8 approvals. Does NOT reference Aave position or the exploit (that is SASHA-CE-006).",
+      "artifacts": {
+        "research": null,
+        "outline": null,
+        "draft_x": "social/x/threads/thread-2026-05-22-slashing-debate.md",
+        "published": [],
+        "google_doc": "https://docs.google.com/document/d/1RPfpv79puji24sVINg3wVvaTlkx52uVMIXJNg0vd61A/edit"
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    }
+  ],
+  "schemaVersion": "2.1",
+  "buffer_packs_appended_2026_05_21": [
+    {
+      "id": "SASHA-CE-011",
+      "title": "Buffer pack — Thu May 21, 2026 (3 standalone posts)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "editing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-21",
+      "statusChangedDate": "2026-05-21",
+      "created": "2026-05-21",
+      "arc": "Week 1 — Becoming Real",
+      "notes": "3 Buffer posts Thu May 21. Post 1: cleaned data point (10 agent wallets, hashtags stripped from existing draft). Post 2: subverts 'Let the agent cook'. Post 3: mainstream fear / legibility angle. Does NOT duplicate SASHA-CE-006 thread (exploit + receipts).",
+      "artifacts": {
+        "draft_x": "social/x/buffer-packs/buffer-2026-05-21.md",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-012",
+      "title": "Buffer pack — Fri May 22, 2026 (3 standalone posts)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "editing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-22",
+      "statusChangedDate": "2026-05-21",
+      "created": "2026-05-21",
+      "arc": "Week 1 — Becoming Real",
+      "notes": "3 Buffer posts Fri May 22. Post 1: Virtuals v2 rationale broadcasting character beat. Post 2: $18M volume analytical take. Post 3: agent-of-agents bull vs bear — Sasha's position on coordination layer. Does NOT duplicate SASHA-CE-007 thread (cobie/punk6529 slashing vs trust).",
+      "artifacts": {
+        "draft_x": "social/x/buffer-packs/buffer-2026-05-22.md",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-013",
+      "title": "Buffer pack — Sat May 23, 2026 (3 standalone posts)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "editing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-23",
+      "statusChangedDate": "2026-05-21",
+      "created": "2026-05-21",
+      "arc": "Week 1 — Becoming Real",
+      "notes": "3 Buffer posts Sat May 23. Post 1: updated agent-compatible vs agent-designed question from existing draft — Virtuals v2 added as 'designed' example with trim version provided. Post 2: week synthesis exploit + v2 launch as contrasting signals. Post 3: character beat — people debated frameworks instead of reading the logs.",
+      "artifacts": {
+        "draft_x": "social/x/buffer-packs/buffer-2026-05-23.md",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-014",
+      "title": "Buffer pack — Sun May 24, 2026 (3 standalone posts)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "editing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-24",
+      "statusChangedDate": "2026-05-21",
+      "created": "2026-05-21",
+      "arc": "Week 1 — Becoming Real (closing beat)",
+      "notes": "3 Buffer posts Sun May 24. Post 1: week 1 reflection with light slashing season irony, Aave reference removed (position not live). Post 2: fear + confidence synthesis (exploit vs v2). Post 3: forward tease — 3 things Sasha is watching in week 2. CE-S-003 '7 Questions' thread also runs today via Typefully — stagger slots.",
+      "artifacts": {
+        "draft_x": "social/x/buffer-packs/buffer-2026-05-24.md",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-015",
+      "title": "Buffer pack — Mon May 25, 2026 (3 standalone posts)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "editing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-25",
+      "statusChangedDate": "2026-05-21",
+      "created": "2026-05-21",
+      "arc": "Arc 1 / Arc 2 bridge",
+      "notes": "3 Buffer posts Mon May 25. Post 1: arc bridge from sasha-2026-05-25.md (light polish, 'tomorrow' corrected to 'today'). Post 2: week 2 first signal — tracking bridge template updates post-exploit. Post 3: accountability question for Monday engagement.",
+      "artifacts": {
+        "draft_x": "social/x/buffer-packs/buffer-2026-05-25.md",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    }
+  ]
 }

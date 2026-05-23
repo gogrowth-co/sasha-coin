@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Task Board</title>
+<title>MangaOS Task Board</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -179,6 +179,7 @@
   .task.medium { border-left: 3px solid var(--aqua); }
   .task.low { border-left: 3px solid rgba(139,155,173,0.3); }
   .task.status-blocked { border-left-color: var(--red); opacity: 0.75; }
+  .task.ce-highlight { outline: 2px solid var(--aqua); outline-offset: 2px; transition: outline 0.3s; }
   .task-title {
     font-family: 'Montserrat'; font-size: 11.5px; font-weight: 600;
     color: var(--white); line-height: 1.35; margin-bottom: 6px;
@@ -504,6 +505,28 @@
   .ce-rollup .rollup-done { color: var(--green); font-weight: 700; }
   .ce-rollup .rollup-pending { color: var(--gold); font-weight: 700; }
 
+  .ce-brief-snip { margin-top: 5px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .ce-brief-kw { font-size: 9px; color: rgba(167,139,250,0.75); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+  .ce-funnel-pill { font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.3px; flex-shrink: 0; }
+  .ce-funnel-pill.awareness { background: rgba(31,182,255,0.1); color: var(--aqua); }
+  .ce-funnel-pill.consideration { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .ce-funnel-pill.decision { background: rgba(255,184,0,0.15); color: var(--gold); }
+
+  .rp-brief-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .rp-brief-cell { background: rgba(255,255,255,0.03); border-radius: 6px; padding: 7px 10px; }
+  .rp-brief-cell.full { grid-column: 1 / -1; }
+  .rp-brief-cell-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+  .rp-brief-cell-value { font-size: 11px; color: var(--text); line-height: 1.5; }
+  .rp-brief-list { list-style: none; padding: 0; margin: 0; }
+  .rp-brief-list li { padding: 4px 0; font-size: 11px; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,0.04); line-height: 1.4; }
+  .rp-brief-list li::before { content: "→ "; color: var(--aqua); }
+  .rp-brief-angle { background: rgba(31,182,255,0.06); border-radius: 6px; padding: 10px 14px; font-size: 12px; color: var(--aqua); font-style: italic; line-height: 1.6; margin-bottom: 10px; }
+  .rp-brief-gap-box { background: rgba(255,184,0,0.05); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 8px 12px; font-size: 11px; color: var(--text); line-height: 1.5; }
+  .rp-brief-competitor { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .rp-brief-competitor-domain { font-size: 10px; font-weight: 700; color: #f87171; flex-shrink: 0; min-width: 120px; }
+  .rp-brief-competitor-reason { font-size: 10px; color: var(--muted); line-height: 1.4; }
+  .rp-brief-cta-box { background: rgba(255,184,0,0.1); border: 1px solid rgba(255,184,0,0.25); border-radius: 6px; padding: 8px 12px; font-size: 11px; color: var(--gold); font-weight: 600; }
+
   .ce-actions {
     display: flex; gap: 4px; margin-top: 7px; flex-wrap: wrap;
   }
@@ -783,14 +806,27 @@
     background: rgba(255,184,0,0.18); color: var(--gold);
     border: 1px dashed rgba(255,184,0,0.4); font-style: italic;
   }
+.track-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.track-card { border: 2px solid rgba(139,148,158,0.2); border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.track-card:hover { border-color: rgba(31,182,255,0.4); background: rgba(31,182,255,0.04); }
+.track-card.selected { border-color: var(--aqua); background: rgba(31,182,255,0.08); }
+.track-card-label { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--aqua); margin-bottom: 6px; }
+.track-card-title { font-weight: 700; font-size: 13px; margin-bottom: 8px; color: var(--white); }
+.track-card-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.track-card-when { font-size: 10px; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+.track-card-when strong { color: var(--white); display: block; margin-bottom: 4px; font-size: 10px; }
+.track-badge { display: inline-block; font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 3px; margin-bottom: 8px; }
+.track-badge.a { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+.track-badge.b { background: rgba(255,184,0,0.12); color: var(--gold); border: 1px solid rgba(255,184,0,0.25); }
 </style>
 </head>
 <body>
 <nav class="global-nav" id="global-nav">
-  <span class="nav-brand" id="globalNavBrand">MarketingOS</span>
+  <span class="nav-brand">MangaOS</span>
   <a href="/" data-page="tasks">📋 Tasks</a>
   <a href="/reports" data-page="reports">📊 Reports</a>
-  <a href="/onboarding" data-page="onboarding">🎙 Setup</a>
+  <a href="/daily-replies" data-page="daily-replies">✍️ Daily Replies</a>
+  <a href="/reply-feed" data-page="reply-feed">🎯 Reply Feed</a>
 </nav>
 <script>document.querySelectorAll('#global-nav a[data-page="tasks"]').forEach(function(a){a.classList.add('active');});</script>
 
@@ -799,15 +835,17 @@
   <button class="tab" data-tab="ce" onclick="switchTab('ce')">Content Engine</button>
   <button class="tab" data-tab="cal" onclick="switchTab('cal')">Calendar</button>
   <button class="tab" data-tab="blog" onclick="switchTab('blog')">Blog CMS</button>
+  <button class="tab" data-tab="twitter" onclick="switchTab('twitter')">Twitter Activity</button>
+  <button class="tab" data-tab="typefully" onclick="switchTab('typefully')">Typefully</button>
 </nav>
 
 <!-- ════════════════════════════════════════ OPS VIEW ════════════════════════════════════════ -->
 <div id="opsView" class="view-panel">
   <div class="header">
     <div class="header-left">
-      <div class="brand-mark" id="opsBrandMark">OS</div>
+      <div class="brand-mark">GM</div>
       <div>
-        <div class="header-title" id="opsHeaderTitle">Task Board</div>
+        <div class="header-title">MangaOS Task Board</div>
         <div class="header-sub" id="lastUpdated">Marketing OS</div>
       </div>
     </div>
@@ -818,6 +856,7 @@
       <button class="filter-btn" onclick="filterCat('infrastructure')">Infra</button>
       <button class="filter-btn" onclick="filterCat('research')">Research</button>
       <button class="filter-btn" id="campaignViewBtn" onclick="toggleCampaignView()">Campaign View</button>
+      <button class="filter-btn" onclick="openNewCampaign()" style="background:rgba(255,184,0,0.1);border-color:rgba(255,184,0,0.3);color:var(--gold)">+ Campaign</button>
       <button class="add-btn" onclick="openNewTask()">+ Add Task</button>
       <span class="sync-status" id="syncStatus">Connecting...</span>
     </div>
@@ -963,7 +1002,7 @@
       <div class="brand-mark" style="background:var(--purple)">BL</div>
       <div>
         <div class="header-title">Blog CMS</div>
-        <div class="header-sub" id="blogSyncLabel">Blog CMS · all articles</div>
+        <div class="header-sub" id="blogSyncLabel">CMS · all articles</div>
       </div>
     </div>
     <div class="header-right">
@@ -978,10 +1017,15 @@
   </div>
 
   <div class="filter-bar" id="blogFilterBar">
-    <div class="filter-group" id="blogClusterGroup">
+    <div class="filter-group">
       <span class="filter-label">Cluster</span>
       <button class="filter-btn blog-cluster-btn active" data-cluster="all" onclick="setBlogCluster('all',this)">All</button>
-      <!-- populated dynamically by renderBlogClusterButtons() after data loads -->
+      <button class="filter-btn blog-cluster-btn" data-cluster="DeFi Launch &amp; Growth" onclick="setBlogCluster('DeFi Launch &amp; Growth',this)">DeFi Launch</button>
+      <button class="filter-btn blog-cluster-btn" data-cluster="Tokenomics &amp; Token Design" onclick="setBlogCluster('Tokenomics &amp; Token Design',this)">Tokenomics</button>
+      <button class="filter-btn blog-cluster-btn" data-cluster="Metrics &amp; KPIs" onclick="setBlogCluster('Metrics &amp; KPIs',this)">KPIs</button>
+      <button class="filter-btn blog-cluster-btn" data-cluster="Web3 Marketing &amp; Strategy" onclick="setBlogCluster('Web3 Marketing &amp; Strategy',this)">Marketing</button>
+      <button class="filter-btn blog-cluster-btn" data-cluster="Web3 SEO &amp; Technical" onclick="setBlogCluster('Web3 SEO &amp; Technical',this)">SEO</button>
+      <button class="filter-btn blog-cluster-btn" data-cluster="System" onclick="setBlogCluster('System',this)">System</button>
     </div>
     <div class="filter-group">
       <span class="filter-label">Freshness</span>
@@ -1017,6 +1061,47 @@
       <button class="add-btn" onclick="saveBlogOverride()">Save</button>
       <button class="filter-btn" onclick="closeBlogOverride()">Cancel</button>
       <button class="filter-btn" style="color:var(--muted)" onclick="clearBlogManual()">Clear manual override</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ TYPEFULLY VIEW ════════════════════════════════════════ -->
+<div id="typefullyView" class="view-panel">
+  <div id="typefullyContent"></div>
+</div>
+
+<!-- ════════════════════════════════════════ TWITTER ACTIVITY VIEW ════════════════════════════════════════ -->
+<div id="twitterView" class="view-panel">
+  <div class="header">
+    <div class="header-left">
+      <div class="brand-mark">SC</div>
+      <div>
+        <div class="header-title">Twitter Activity</div>
+        <div class="header-sub" id="twitterLastSync">Loading…</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="filter-btn active" onclick="loadTwitterActivity()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div style="background:var(--navy);padding:0 24px;border-bottom:1px solid rgba(31,182,255,0.08);display:flex;gap:0">
+    <button class="tab active" id="tw-tab-posts" data-twtab="posts" onclick="switchTwitterTab('posts')" style="font-size:12px;padding:10px 18px">Posts (<span id="tw-posts-count">0</span>)</button>
+    <button class="tab" id="tw-tab-replies" data-twtab="replies" onclick="switchTwitterTab('replies')" style="font-size:12px;padding:10px 18px">Replies (<span id="tw-replies-count">0</span>)</button>
+  </div>
+
+  <!-- Posts panel -->
+  <div id="tw-panel-posts" style="padding:20px 24px">
+    <div id="tw-posts-list" style="display:flex;flex-direction:column;gap:10px">
+      <div style="color:var(--muted);font-size:13px">Loading posts…</div>
+    </div>
+  </div>
+
+  <!-- Replies panel -->
+  <div id="tw-panel-replies" style="padding:20px 24px;display:none">
+    <div id="tw-replies-list" style="display:flex;flex-direction:column;gap:10px">
+      <div style="color:var(--muted);font-size:13px">Loading replies…</div>
     </div>
   </div>
 </div>
@@ -1229,6 +1314,72 @@
   </div>
 </div>
 
+<!-- ════════════════════════════════════════ NEW CAMPAIGN MODAL ════════════════════════════════════════ -->
+<div class="modal-overlay" id="newCampaignModal" onclick="if(event.target===this)closeNewCampaign()">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">+ New Campaign</div>
+      <button class="modal-close" onclick="closeNewCampaign()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <div class="field-label">Campaign Name <span style="color:var(--red)">*</span></div>
+        <input class="field-input" id="ncName" placeholder="e.g. Consensus Miami May 2026">
+      </div>
+      <div class="field" style="display:flex;gap:12px">
+        <div style="flex:1">
+          <div class="field-label">Start Date <span style="color:var(--red)">*</span></div>
+          <input class="field-input" id="ncStartDate" type="date">
+        </div>
+        <div style="flex:1">
+          <div class="field-label">End Date</div>
+          <input class="field-input" id="ncEndDate" type="date">
+        </div>
+      </div>
+      <div class="field" style="display:flex;gap:12px">
+        <div style="flex:1">
+          <div class="field-label">Type</div>
+          <select class="field-select" id="ncType">
+            <option value="content">content</option>
+            <option value="paid-distribution">paid-distribution</option>
+            <option value="gtm-master">gtm-master</option>
+            <option value="conference">conference</option>
+            <option value="product-launch">product-launch</option>
+            <option value="seo">seo</option>
+            <option value="email">email</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <div class="field-label">Parent Campaign</div>
+          <select class="field-select" id="ncParent">
+            <option value="">None</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Platforms</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer"><input type="checkbox" class="nc-platform" value="linkedin"> LinkedIn</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer"><input type="checkbox" class="nc-platform" value="x"> X / Twitter</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer"><input type="checkbox" class="nc-platform" value="reddit"> Reddit</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer"><input type="checkbox" class="nc-platform" value="blog"> Blog</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer"><input type="checkbox" class="nc-platform" value="newsletter"> Newsletter</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer"><input type="checkbox" class="nc-platform" value="email"> Email</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Goal</div>
+        <textarea class="field-textarea" id="ncGoal" placeholder="What does success look like?" style="min-height:70px"></textarea>
+      </div>
+      <div id="ncError" style="color:var(--red);font-size:11px;display:none;margin-top:4px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn btn-cancel" onclick="closeNewCampaign()">Cancel</button>
+      <button class="modal-btn btn-save" onclick="submitNewCampaign()" id="ncSubmitBtn">Create Campaign</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════════════════════════ REQUEST CHANGES MODAL ════════════════════════════════════════ -->
 <div class="modal-overlay" id="rejectModal" onclick="if(event.target===this)closeReject()">
   <div class="modal" style="max-width:440px">
@@ -1250,6 +1401,27 @@
   </div>
 </div>
 
+<!-- ════ LINK CE / LINK OPS MODAL ════ -->
+<div class="modal-overlay" id="linkCeModal" onclick="if(event.target===this)closeLinkCeModal()">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title" id="linkCeModalTitle">Link to Content Engine Task</div>
+      <button class="modal-close" onclick="closeLinkCeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="linkCeTargetId">
+      <input type="hidden" id="linkCeMode">
+      <div class="field">
+        <input class="field-input" id="linkCeSearch" placeholder="Search by title..." oninput="renderCeLinkList()" style="margin-bottom:8px">
+      </div>
+      <div id="linkCeList" style="max-height:300px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn btn-cancel" onclick="closeLinkCeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════════════════════════════ REVIEW PANEL ════════════════════════════════════════ -->
 <div class="review-overlay" id="reviewOverlay" onclick="closeReview()"></div>
 <div class="review-panel" id="reviewPanel">
@@ -1265,16 +1437,6 @@
 </div>
 
 <script>
-// ══════════════════════════════════════════════════
-// PROJECT CONFIG — edit these after /init-project
-// ══════════════════════════════════════════════════
-const SITE_CONFIG = {
-  name: '',           // e.g. 'acme.com' — shows in Blog CMS header
-  blogBaseUrl: '',    // e.g. 'https://acme.com/blog' — live article links
-  brandMark: '',      // 1-2 letter initials for the brand mark (e.g. 'AC')
-  projectName: '',    // full project name shown in Ops header (e.g. 'Acme Task Board')
-};
-
 // ══════════════════════════════════════════════════
 // SHARED STATE
 // ══════════════════════════════════════════════════
@@ -1341,7 +1503,8 @@ function ceQueue(t, stage) {
 const CHANNEL_ICONS = {
   blog: { glyph: '📝', cls: 'blog', label: 'Blog' },
   linkedin: { glyph: 'in', cls: 'linkedin', label: 'LinkedIn' },
-  x: { glyph: '𝕏', cls: 'x', label: 'X' }
+  x: { glyph: '𝕏', cls: 'x', label: 'X' },
+  newsletter: { glyph: '✉', cls: 'newsletter', label: 'Newsletter' }
 };
 
 const statusMap = { todo:'todo', blocked:'todo', inprogress:'inprogress', review:'review', scheduled:'scheduled', done:'done' };
@@ -1375,12 +1538,6 @@ function showToast(msg, duration = 2800) {
 }
 
 async function init() {
-  // Apply project config to DOM
-  if (SITE_CONFIG.brandMark)   { const el = document.getElementById('opsBrandMark');   if (el) el.textContent = SITE_CONFIG.brandMark; }
-  if (SITE_CONFIG.projectName) { const el = document.getElementById('opsHeaderTitle'); if (el) el.textContent = SITE_CONFIG.projectName; }
-  if (SITE_CONFIG.projectName) { const el = document.getElementById('globalNavBrand'); if (el) el.textContent = SITE_CONFIG.projectName; }
-  document.title = (SITE_CONFIG.projectName || 'Task Board');
-
   try {
     const res = await fetch('/api/tasks');
     if (!res.ok) throw new Error('Server error');
@@ -1402,7 +1559,7 @@ async function init() {
       '<div style="font-family:Montserrat;font-size:18px;font-weight:700;color:var(--gold);margin-bottom:12px">Task Server Not Running</div>' +
       '<div style="color:var(--muted);font-size:13px;line-height:1.8">' +
       'Start it with: <code style="background:var(--mid-navy);padding:4px 10px;border-radius:5px;color:var(--aqua);font-size:12px">node task-server.js</code><br>' +
-      'Then open this dashboard URL again.' +
+      'Then open: <code style="background:var(--mid-navy);padding:4px 10px;border-radius:5px;color:var(--aqua);font-size:12px">the task server URL</code>' +
       '</div></div>';
     setSyncStatus('offline');
   }
@@ -1457,13 +1614,127 @@ function switchTab(tabId, initial) {
   document.getElementById('ceView').classList.toggle('active', tabId === 'ce');
   document.getElementById('calView').classList.toggle('active', tabId === 'cal');
   document.getElementById('blogView').classList.toggle('active', tabId === 'blog');
+  document.getElementById('twitterView').classList.toggle('active', tabId === 'twitter');
+  const tfView = document.getElementById('typefullyView');
+  if (tfView) tfView.classList.toggle('active', tabId === 'typefully');
+  if (tabId === 'twitter') loadTwitterActivity();
+  if (tabId === 'typefully') loadTypefully();
   if (!initial) render();
+}
+
+// ══════════════════════════════════════════════════
+// TYPEFULLY PANEL
+// ══════════════════════════════════════════════════
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadTypefully() {
+  const root = document.getElementById('typefullyContent');
+  if (!root) return;
+  root.innerHTML = '<div style="padding:24px;color:#888">Loading Typefully…</div>';
+  try {
+    const r = await fetch('/api/typefully');
+    if (!r.ok) {
+      const txt = await r.text();
+      root.innerHTML = `<div style="padding:24px;color:#c00">Error ${r.status}: ${escHtml(txt)}</div>`;
+      return;
+    }
+    const d = await r.json();
+    const plan = d.plan || {};
+    const used = plan.published_this_month || 0;
+    const cap = plan.monthly_post_cap || 15;
+    const remaining = plan.remaining ?? Math.max(0, cap - used);
+    const pct = Math.min(100, Math.round((used / cap) * 100));
+    const barColor = pct < 70 ? '#3fb950' : pct < 90 ? '#d29922' : '#f85149';
+
+    const renderList = (items, emptyMsg) => {
+      if (!items || !items.length) return `<div style="padding:16px;color:#888">${emptyMsg}</div>`;
+      return items.map(it => `
+        <div style="padding:12px;border-bottom:1px solid #2a2a2a;display:flex;gap:12px;align-items:flex-start">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;color:#ddd;white-space:pre-wrap;word-break:break-word">${escHtml(it.preview || '(empty)')}</div>
+            <div style="font-size:11px;color:#888;margin-top:6px">
+              ID ${it.id} · ${it.tweet_count ? it.tweet_count + ' tweets' : 'unknown'}
+              ${it.scheduled_date ? ' · scheduled ' + escHtml(it.scheduled_date) : ''}
+              ${it.published_at ? ' · published ' + escHtml(it.published_at) : ''}
+            </div>
+          </div>
+          <a href="${escHtml(it.private_url || '#')}" target="_blank" style="color:#58a6ff;font-size:12px;flex-shrink:0">open ↗</a>
+        </div>
+      `).join('');
+    };
+
+    root.innerHTML = `
+      <div style="padding:20px;max-width:1200px;margin:0 auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div>
+            <h2 style="margin:0;font-size:20px">Typefully — ${escHtml(d.account)}</h2>
+            <div style="color:#888;font-size:12px;margin-top:4px">social_set_id ${d.social_set_id} · last refresh ${new Date(d.generated_at).toLocaleTimeString()}</div>
+          </div>
+          <button onclick="loadTypefully()" style="background:#1f6feb;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer">Refresh</button>
+        </div>
+
+        <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-weight:600">Free plan budget</div>
+            <div style="color:#888;font-size:13px">${used} / ${cap} published this month · ${remaining} remaining</div>
+          </div>
+          <div style="height:10px;background:#0d1117;border-radius:5px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${barColor};transition:width 200ms"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden">
+            <div style="padding:12px 16px;background:#0d1117;border-bottom:1px solid #30363d;font-weight:600">
+              Drafts <span style="color:#888;font-weight:400">(${d.drafts?.length || 0})</span>
+            </div>
+            <div style="max-height:400px;overflow-y:auto">${renderList(d.drafts, 'No drafts')}</div>
+          </div>
+          <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden">
+            <div style="padding:12px 16px;background:#0d1117;border-bottom:1px solid #30363d;font-weight:600">
+              Scheduled <span style="color:#888;font-weight:400">(${d.scheduled?.length || 0})</span>
+            </div>
+            <div style="max-height:400px;overflow-y:auto">${renderList(d.scheduled, 'No scheduled posts')}</div>
+          </div>
+        </div>
+
+        <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden;margin-top:16px">
+          <div style="padding:12px 16px;background:#0d1117;border-bottom:1px solid #30363d;font-weight:600">
+            Recently published <span style="color:#888;font-weight:400">(${d.published_recent?.length || 0})</span>
+          </div>
+          <div style="max-height:300px;overflow-y:auto">${renderList(d.published_recent, 'Nothing published yet')}</div>
+        </div>
+
+        <div style="margin-top:16px;padding:12px 16px;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#888;font-size:12px">
+          Auto-schedule slots (${escHtml(d.queue_schedule?.timezone || 'unknown TZ')}): ${
+            (d.queue_schedule?.rules || []).map(r => `${String(r.h).padStart(2,'0')}:${String(r.m).padStart(2,'0')} ${(r.days||[]).join('/')}`).join(' · ') || '(none)'
+          }
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    root.innerHTML = `<div style="padding:24px;color:#c00">Error: ${escHtml(e.message)}</div>`;
+  }
 }
 
 function switchToCe(ceId) {
   switchTab('ce');
   // Open the review panel after the render settles
   setTimeout(() => openReviewPanel(ceId), 50);
+}
+
+function switchToOps(opsId) {
+  switchTab('ops');
+  setTimeout(() => {
+    const card = document.querySelector(`.task[data-id="${opsId}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('ce-highlight');
+      setTimeout(() => card.classList.remove('ce-highlight'), 2000);
+    }
+  }, 80);
 }
 
 function render() {
@@ -1540,12 +1811,15 @@ function renderKanban() {
       : '';
 
     let ceStageBadge = '';
+    let linkCeBtn = '';
     if (t.contentId) {
       const ceTask = tasks.find(x => x.id === t.contentId);
       if (ceTask) {
         const stageInfo = PIPELINE_STAGES.find(s => s.id === ceTask.pipelineStage) || { label: ceTask.pipelineStage, kind: '' };
         ceStageBadge = `<span class="tag channel" style="cursor:pointer;background:rgba(31,182,255,0.12);border:1px solid rgba(31,182,255,0.25)" onclick="event.stopPropagation();switchToCe('${t.contentId}')" title="Open in Content Engine">CE: ${escHtml(stageInfo.label)}</span>`;
       }
+    } else if (t.category === 'content') {
+      linkCeBtn = `<button class="dispatch-btn" style="margin-top:4px;font-size:9px;background:rgba(31,182,255,0.05);border:1px solid rgba(31,182,255,0.2);color:var(--aqua)" onclick="event.stopPropagation();openLinkCeModal('${t.id}')">&#x1F517; Link CE</button>`;
     }
 
     card.innerHTML = `
@@ -1555,7 +1829,7 @@ function renderKanban() {
         <span class="tag ${t.category}">${t.category}</span>
         ${channelTag}${sopTag}${ceStageBadge}${blockedBadge}${approvalBadge}${dueDateBadge}
       </div>
-      ${bodyPreview}${thumbHtml}${linkBadges}${fileCount}${dispatchBtn}`;
+      ${bodyPreview}${thumbHtml}${linkBadges}${fileCount}${dispatchBtn}${linkCeBtn}`;
     document.getElementById(`body-${col}`).appendChild(card);
   });
 
@@ -1882,13 +2156,16 @@ function renderCeCard(t) {
     actions.push(`<button class="ce-btn danger" onclick="event.stopPropagation();openReject('${t.id}')">Revise</button>`);
   } else if (isGate && t.approvalStatus === 'rejected') {
     actions.push(`<button class="ce-btn gold" onclick="event.stopPropagation();reSubmitForApproval('${t.id}')">Re-submit</button>`);
-  } else if (t.pipelineStage === 'writing' && isParent && channels.length > 1) {
-    const unfannedOut = channels.filter(ch => !tasks.some(tk => tk.parentId === t.id && tk.channel === ch));
-    if (unfannedOut.length === channels.length) {
-      actions.push(`<button class="ce-btn primary" onclick="event.stopPropagation();openFanout('${t.id}')">Fan Out →</button>`);
-    } else if (unfannedOut.length > 0) {
-      actions.push(`<button class="ce-btn primary" onclick="event.stopPropagation();openFanout('${t.id}')">Fan Out Remaining</button>`);
-    } else if (stageIdx < STAGE_IDS.length - 1) {
+  } else if (isParent && ['writing','editing','publish','distribution','done'].includes(t.pipelineStage)) {
+    const allCh     = Object.keys(CHANNEL_ICONS);
+    const seedCh    = t.channels || (t.channel ? [t.channel] : []);
+    const fanned    = getChildrenOf(t.id).map(c => c.channel);
+    const available = allCh.filter(ch => !seedCh.includes(ch) && !fanned.includes(ch));
+    if (available.length > 0) {
+      const label = ['distribution','done'].includes(t.pipelineStage) ? 'Repurpose →' : 'Fan Out →';
+      actions.push(`<button class="ce-btn primary" onclick="event.stopPropagation();openFanout('${t.id}')">${label}</button>`);
+    }
+    if (t.pipelineStage !== 'done' && stageIdx < STAGE_IDS.length - 1) {
       actions.push(`<button class="ce-btn secondary" onclick="event.stopPropagation();advanceStage('${t.id}')">Next →</button>`);
     }
   } else if (t.pipelineStage !== 'done' && stageIdx < STAGE_IDS.length - 1) {
@@ -1900,11 +2177,18 @@ function renderCeCard(t) {
   }
   actions.push(`<button class="ce-btn secondary sm" onclick="event.stopPropagation();openEditTask('${t.id}')" title="Edit task fields">✎</button>`);
 
+  const briefSnip = t.brief ? (() => {
+    const kw = t.brief.primaryKeyword ? `<span class="ce-brief-kw" title="${escHtml(t.brief.primaryKeyword)}">${escHtml(t.brief.primaryKeyword)}</span>` : '';
+    const funnel = t.brief.funnelStage ? `<span class="ce-funnel-pill ${escHtml(t.brief.funnelStage.toLowerCase())}">${escHtml(t.brief.funnelStage)}</span>` : '';
+    return (kw || funnel) ? `<div class="ce-brief-snip">${kw}${funnel}</div>` : '';
+  })() : '';
+
   card.innerHTML = `
     <div class="ce-card-title">${approvalPulse}${t.title}</div>
     <div class="ce-card-meta">
       ${channelIcons}${campTag}${daysBadge}${parentBadge}
     </div>
+    ${briefSnip}
     ${rollup}
     ${actions.length ? `<div class="ce-actions">${actions.join('')}</div>` : ''}`;
   return card;
@@ -1996,6 +2280,84 @@ function populateCampaignSelects() {
 
   const ideaSel = document.getElementById('ideaCampaign');
   ideaSel.innerHTML = '<option value="">— None —</option>' + active.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+  // New campaign modal: parent select
+  const ncParent = document.getElementById('ncParent');
+  if (ncParent) {
+    ncParent.innerHTML = '<option value="">None</option>' + campaigns.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// NEW CAMPAIGN MODAL
+// ══════════════════════════════════════════════════
+function openNewCampaign() {
+  // Pre-fill today's date
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('ncStartDate').value = today;
+  document.getElementById('ncEndDate').value = '';
+  document.getElementById('ncName').value = '';
+  document.getElementById('ncGoal').value = '';
+  document.getElementById('ncType').value = 'content';
+  document.querySelectorAll('.nc-platform').forEach(cb => cb.checked = false);
+  document.getElementById('ncError').style.display = 'none';
+  document.getElementById('ncSubmitBtn').disabled = false;
+  document.getElementById('ncSubmitBtn').textContent = 'Create Campaign';
+  document.getElementById('newCampaignModal').classList.add('open');
+}
+
+function closeNewCampaign() {
+  document.getElementById('newCampaignModal').classList.remove('open');
+}
+
+async function submitNewCampaign() {
+  const name = document.getElementById('ncName').value.trim();
+  const startDate = document.getElementById('ncStartDate').value;
+  const endDate = document.getElementById('ncEndDate').value;
+  const type = document.getElementById('ncType').value;
+  const parentCampaign = document.getElementById('ncParent').value || null;
+  const goal = document.getElementById('ncGoal').value.trim();
+  const platforms = Array.from(document.querySelectorAll('.nc-platform:checked')).map(cb => cb.value);
+  const errEl = document.getElementById('ncError');
+
+  if (!name) { errEl.textContent = 'Campaign name is required.'; errEl.style.display = 'block'; return; }
+  if (!startDate) { errEl.textContent = 'Start date is required.'; errEl.style.display = 'block'; return; }
+
+  errEl.style.display = 'none';
+  const btn = document.getElementById('ncSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  try {
+    const res = await fetch('/api/campaigns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, startDate, endDate, type, parentCampaign, goal, platforms })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Failed to create campaign.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Create Campaign';
+      return;
+    }
+    // Reload campaigns list and close modal
+    const cRes = await fetch('/api/campaigns');
+    const cData = await cRes.json();
+    campaigns = cData.campaigns || [];
+    populateCampaignSelects();
+    closeNewCampaign();
+    // Switch to campaign view so user sees the new entry
+    viewMode = 'campaign';
+    document.getElementById('campaignViewBtn').classList.add('active');
+    render();
+  } catch (e) {
+    errEl.textContent = 'Network error. Is the server running?';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Create Campaign';
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -2066,6 +2428,21 @@ function approveStage(id) {
       t.relatedTaskIds = [...(t.relatedTaskIds || []), ...generatedIds];
     }
   }
+  // Auto-push blog draft to CMS when publish gate approves
+  if (approvingStage === 'publish') {
+    const hasBlog = (t.channels || []).includes('blog') || t.channel === 'blog';
+    const hasDraft = t.artifacts && t.artifacts.draft_blog;
+    if (hasBlog && hasDraft) {
+      fetch('/api/ce/blog-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId: id })
+      }).then(r => r.json()).then(d => {
+        if (d.ok) showToast(`Blog draft pushed — ${d.url || ('/publications/' + d.slug)}`);
+        else showToast(`Blog push failed: ${d.error}`);
+      }).catch(() => showToast('Blog push failed — check server logs'));
+    }
+  }
   persist();
   ceQueue(t, t.pipelineStage);
   render();
@@ -2116,12 +2493,31 @@ function createIdea() {
   const dueDate = document.getElementById('ideaDueDate').value || undefined;
   const notes = document.getElementById('ideaNotes').value.trim() || undefined;
 
+  // Duplicate guard: warn if an unlinked OPS content task exists for same campaign+channel
+  let pendingLinkOpsId = null;
+  if (campaign) {
+    const matchingOps = tasks.filter(t =>
+      t.type !== 'content-piece' &&
+      t.category === 'content' &&
+      !t.contentId &&
+      t.campaign === campaign &&
+      channels.some(ch => ch === t.channel)
+    );
+    if (matchingOps.length > 0) {
+      const names = matchingOps.map(t => `"${t.title}"`).join(', ');
+      const linkExisting = confirm(
+        `An OPS task for this campaign/channel already exists:\n${names}\n\nOK = create CE task and auto-link it\nCancel = create standalone CE task`
+      );
+      if (linkExisting) pendingLinkOpsId = matchingOps[0].id;
+    }
+  }
+
   const today = new Date().toISOString().slice(0,10);
   const existingCeIds = tasks.filter(t => (t.id || '').startsWith('CE-')).map(t => parseInt(t.id.split('-')[1]) || 0);
   const nextNum = (existingCeIds.length ? Math.max(...existingCeIds) : 0) + 1;
   const id = `CE-${String(nextNum).padStart(3,'0')}`;
 
-  tasks.push({
+  const newTask = {
     id,
     type: 'content-piece',
     title,
@@ -2139,7 +2535,16 @@ function createIdea() {
     artifacts: { research: null, outline: null, canonical: null, draft_blog: null, draft_linkedin: null, draft_x: null, design: [], published: [] },
     created: today,
     statusChangedDate: today
-  });
+  };
+
+  tasks.push(newTask);
+
+  if (pendingLinkOpsId) {
+    newTask.relatedTaskIds = [pendingLinkOpsId];
+    const opsTask = tasks.find(t => t.id === pendingLinkOpsId);
+    if (opsTask) opsTask.contentId = id;
+  }
+
   persist(); closeAddIdea(); render();
 }
 
@@ -2151,15 +2556,20 @@ function openFanout(parentId) {
   if (!t) return;
   document.getElementById('fanoutParentId').value = parentId;
   const alreadyFannedOut = getChildrenOf(parentId).map(c => c.channel);
+  const seedChannels = t.channels || (t.channel ? [t.channel] : []);
+  const ALL_CHANNELS = Object.keys(CHANNEL_ICONS);
   const wrap = document.getElementById('fanoutChannels');
-  wrap.innerHTML = (t.channels || []).map(ch => {
-    const info = CHANNEL_ICONS[ch] || { glyph: ch, label: ch };
-    const already = alreadyFannedOut.includes(ch);
-    return `<label class="channel-check-item ${already ? 'disabled' : ''}">
-      <input type="checkbox" value="${ch}" ${already ? 'disabled' : 'checked'}>
+  wrap.innerHTML = ALL_CHANNELS.map(ch => {
+    const info = CHANNEL_ICONS[ch] || { glyph: ch, label: ch, cls: '' };
+    const isSeed   = seedChannels.includes(ch);
+    const isDone   = alreadyFannedOut.includes(ch);
+    const disabled = isSeed || isDone;
+    const note     = isSeed ? 'Source channel' : isDone ? 'Already fanned out' : '';
+    return `<label class="channel-check-item ${disabled ? 'disabled' : ''}">
+      <input type="checkbox" value="${ch}" ${disabled ? 'disabled' : 'checked'}>
       <span class="ce-ch-icon ${info.cls || ''}">${info.glyph}</span>
       <span class="channel-check-item-name">${info.label}</span>
-      ${already ? '<span class="channel-check-item-note">Already fanned out</span>' : ''}
+      ${note ? `<span class="channel-check-item-note">${note}</span>` : ''}
     </label>`;
   }).join('');
   document.getElementById('fanoutModal').classList.add('open');
@@ -2174,6 +2584,10 @@ function executeFanout() {
   const selected = [...document.querySelectorAll('#fanoutChannels input:checked')].map(cb => cb.value);
   if (!selected.length) { alert('Pick at least one channel.'); return; }
   const today = new Date().toISOString().slice(0,10);
+  const designIdx      = STAGE_IDS.indexOf('design');
+  const parentStageIdx = STAGE_IDS.indexOf(parent.pipelineStage);
+  const isRepurpose    = parentStageIdx >= STAGE_IDS.indexOf('distribution');
+  const childStartStage = isRepurpose ? 'writing' : 'design';
 
   selected.forEach(ch => {
     const info = CHANNEL_ICONS[ch] || { label: ch };
@@ -2184,7 +2598,7 @@ function executeFanout() {
       campaign: parent.campaign,
       channels: [ch],
       channel: ch,
-      pipelineStage: 'design',
+      pipelineStage: childStartStage,
       approvalStatus: 'not-needed',
       status: 'inprogress',
       priority: parent.priority || 'medium',
@@ -2197,9 +2611,11 @@ function executeFanout() {
     });
   });
 
-  // Advance parent to design stage (or leave there if it already was)
-  parent.pipelineStage = 'design';
-  parent.statusChangedDate = today;
+  // Advance parent to design stage only if it hasn't reached that stage yet
+  if (parentStageIdx < designIdx) {
+    parent.pipelineStage = 'design';
+    parent.statusChangedDate = today;
+  }
   persist(); closeFanout(); render();
 }
 
@@ -2366,6 +2782,71 @@ function openLinkedTaskNew(contentId) {
     document.getElementById('editPriority').value = 'high';
   }
 }
+
+// \u2500\u2500 Link CE / Link OPS modal functions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function openLinkCeModal(opsId) {
+  document.getElementById('linkCeTargetId').value = opsId;
+  document.getElementById('linkCeMode').value = 'ce';
+  document.getElementById('linkCeModalTitle').textContent = 'Link to Content Engine Task';
+  document.getElementById('linkCeSearch').value = '';
+  renderCeLinkList();
+  document.getElementById('linkCeModal').classList.add('open');
+}
+
+function openLinkOpsModal(ceId) {
+  document.getElementById('linkCeTargetId').value = ceId;
+  document.getElementById('linkCeMode').value = 'ops';
+  document.getElementById('linkCeModalTitle').textContent = 'Link Existing OPS Task';
+  document.getElementById('linkCeSearch').value = '';
+  renderCeLinkList();
+  document.getElementById('linkCeModal').classList.add('open');
+}
+
+function closeLinkCeModal() {
+  document.getElementById('linkCeModal').classList.remove('open');
+}
+
+function renderCeLinkList() {
+  const mode = document.getElementById('linkCeMode').value;
+  const q    = (document.getElementById('linkCeSearch').value || '').toLowerCase();
+  const pool = mode === 'ce'
+    ? tasks.filter(t => t.type === 'content-piece')
+    : tasks.filter(t => t.type !== 'content-piece' && t.category === 'content' && !t.contentId);
+  const filtered = q ? pool.filter(t => (t.title || '').toLowerCase().includes(q)) : pool;
+  const list = document.getElementById('linkCeList');
+  if (!filtered.length) {
+    list.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:8px">No ${mode === 'ce' ? 'CE' : 'OPS'} tasks found.</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(t => {
+    const badge = mode === 'ce'
+      ? (PIPELINE_STAGES.find(s => s.id === t.pipelineStage) || { label: t.pipelineStage || '?' }).label
+      : t.status;
+    return `<div onclick="confirmCeLink('${escHtml(t.id)}')"
+      style="cursor:pointer;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:8px"
+      onmouseover="this.style.background='rgba(31,182,255,0.07)'"
+      onmouseout="this.style.background=''">
+      <span style="flex:1;font-size:12px;color:var(--white)">${escHtml(t.title || '')}</span>
+      <span style="font-size:10px;color:var(--aqua);white-space:nowrap">${escHtml(badge)}</span>
+    </div>`;
+  }).join('');
+}
+
+function confirmCeLink(selectedId) {
+  const mode     = document.getElementById('linkCeMode').value;
+  const targetId = document.getElementById('linkCeTargetId').value;
+  const opsId = mode === 'ce' ? targetId : selectedId;
+  const ceId  = mode === 'ce' ? selectedId : targetId;
+  const opsTask = tasks.find(t => t.id === opsId);
+  const ceTask  = tasks.find(t => t.id === ceId);
+  if (!opsTask || !ceTask) return;
+  opsTask.contentId = ceId;
+  ceTask.relatedTaskIds = [...new Set([...(ceTask.relatedTaskIds || []), opsId])];
+  persist();
+  render();
+  closeLinkCeModal();
+}
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 function openNewTask() {
   document.getElementById('modalTitle').textContent = 'New Task';
@@ -2592,6 +3073,92 @@ function populateRpBody(t, container) {
     parts.push(`<div class="rp-meta-grid">${cells}</div>`);
   }
 
+  // ── 3b. Article Brief ──
+  if (t.brief) {
+    const b = t.brief;
+    let briefHtml = '';
+
+    // Angle (prominent top of brief)
+    if (b.angle) {
+      briefHtml += `<div class="rp-brief-angle">${escHtml(b.angle)}</div>`;
+    }
+
+    // Top meta grid: ICP, Funnel Stage, Format, Intent
+    const topCells = [];
+    if (b.targetICP && b.targetICP.length) topCells.push({ label: 'Target ICP', value: Array.isArray(b.targetICP) ? b.targetICP.join(' · ') : b.targetICP });
+    if (b.funnelStage) topCells.push({ label: 'Funnel Stage', value: b.funnelStage });
+    if (b.contentFormat) topCells.push({ label: 'Format', value: b.contentFormat });
+    if (b.intentType) topCells.push({ label: 'Intent', value: b.intentType });
+    if (b.wordCountTarget) topCells.push({ label: 'Word Count', value: b.wordCountTarget + ' words' });
+    if (b.narrativeBeat) topCells.push({ label: 'Narrative Beat', value: b.narrativeBeat });
+    if (topCells.length) {
+      briefHtml += `<div class="rp-brief-grid">` +
+        topCells.map(c => `<div class="rp-brief-cell"><div class="rp-brief-cell-label">${escHtml(c.label)}</div><div class="rp-brief-cell-value">${escHtml(String(c.value))}</div></div>`).join('') +
+        `</div>`;
+    }
+
+    // Keywords
+    if (b.primaryKeyword) {
+      briefHtml += `<div class="rp-brief-grid">`;
+      briefHtml += `<div class="rp-brief-cell full"><div class="rp-brief-cell-label">Primary Keyword</div><div class="rp-brief-cell-value">${escHtml(b.primaryKeyword)}</div></div>`;
+      if (b.secondaryKeywords && b.secondaryKeywords.length) {
+        briefHtml += `<div class="rp-brief-cell full"><div class="rp-brief-cell-label">Secondary Keywords</div><div class="rp-brief-cell-value">${escHtml(b.secondaryKeywords.join(', '))}</div></div>`;
+      }
+      briefHtml += `</div>`;
+    }
+
+    // AEO Prompt Group
+    if (b.aeoPromptGroup && b.aeoPromptGroup.length) {
+      const items = b.aeoPromptGroup.map(p => `<li>${escHtml(p)}</li>`).join('');
+      briefHtml += `<div class="rp-brief-cell full" style="margin-bottom:12px"><div class="rp-brief-cell-label">AEO Prompt Group</div><ul class="rp-brief-list" style="margin-top:6px">${items}</ul></div>`;
+    }
+
+    // Must-Have Sections
+    if (b.mustHaveSections && b.mustHaveSections.length) {
+      const items = b.mustHaveSections.map(s => `<li>${escHtml(s)}</li>`).join('');
+      briefHtml += `<div style="margin-bottom:12px"><div class="rp-brief-cell-label" style="margin-bottom:6px">Must-Have Sections</div><ul class="rp-brief-list">${items}</ul></div>`;
+    }
+
+    // Must-Have Elements
+    if (b.mustHaveElements && b.mustHaveElements.length) {
+      const items = b.mustHaveElements.map(s => `<li>${escHtml(s)}</li>`).join('');
+      briefHtml += `<div style="margin-bottom:12px"><div class="rp-brief-cell-label" style="margin-bottom:6px">Must-Have Elements</div><ul class="rp-brief-list">${items}</ul></div>`;
+    }
+
+    // Evidence Needed
+    if (b.evidenceNeeded && b.evidenceNeeded.length) {
+      const items = b.evidenceNeeded.map(s => `<li>${escHtml(s)}</li>`).join('');
+      briefHtml += `<div style="margin-bottom:12px"><div class="rp-brief-cell-label" style="margin-bottom:6px">Evidence Needed</div><ul class="rp-brief-list">${items}</ul></div>`;
+    }
+
+    // AI Citation Gap
+    if (b.aiCitationGap) {
+      briefHtml += `<div style="margin-bottom:12px"><div class="rp-brief-cell-label" style="margin-bottom:6px">AI Citation Gap</div><div class="rp-brief-gap-box">${escHtml(b.aiCitationGap)}</div></div>`;
+    }
+
+    // Competing Content
+    if (b.competingContent && b.competingContent.length) {
+      const rows = b.competingContent.map(c =>
+        `<div class="rp-brief-competitor"><span class="rp-brief-competitor-domain">${escHtml(c.domain)}</span><span class="rp-brief-competitor-reason">${escHtml(c.reason)}</span></div>`
+      ).join('');
+      briefHtml += `<div style="margin-bottom:12px"><div class="rp-brief-cell-label" style="margin-bottom:6px">Competing Content</div>${rows}</div>`;
+    }
+
+    // Internal Links + CTA
+    const bottomCells = [];
+    if (b.internalLinks && b.internalLinks.length) bottomCells.push({ label: 'Internal Links', value: b.internalLinks.join(', ') });
+    if (bottomCells.length) {
+      briefHtml += `<div class="rp-brief-grid">` +
+        bottomCells.map(c => `<div class="rp-brief-cell full"><div class="rp-brief-cell-label">${escHtml(c.label)}</div><div class="rp-brief-cell-value">${escHtml(c.value)}</div></div>`).join('') +
+        `</div>`;
+    }
+    if (b.cta) {
+      briefHtml += `<div class="rp-brief-cta-box">CTA: ${escHtml(b.cta)}</div>`;
+    }
+
+    if (briefHtml) parts.push(rpArtifact('Article Brief', briefHtml));
+  }
+
   // ── 4. File references (paths only, no content loading) ──
   const fileRefs = [];
   if (t.artifact && typeof t.artifact === 'string') fileRefs.push(t.artifact);
@@ -2627,14 +3194,51 @@ function populateRpBody(t, container) {
     const STATUS_COLORS = { done:'var(--green)', inprogress:'var(--aqua)', blocked:'var(--red)', review:'var(--gold)', todo:'var(--muted)', scheduled:'var(--purple)' };
     const rows = linkedTasks.map(lt => {
       const col = STATUS_COLORS[lt.status] || 'var(--muted)';
-      return `<div onclick="openEditTask('${lt.id}')" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+      return `<div onclick="closeReview();switchToOps('${lt.id}')" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
         <span style="font-size:11px;color:var(--white);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(lt.title)}</span>
         <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:${col};flex-shrink:0">${lt.status}</span>
         ${lt.dueDate ? `<span style="font-size:10px;color:var(--muted);flex-shrink:0">${lt.dueDate}</span>` : ''}
       </div>`;
     }).join('');
-    const addBtn = `<button class="ce-btn secondary sm" style="margin-top:8px" onclick="openLinkedTaskNew('${t.id}')">+ Link Ops Task</button>`;
+    const addBtn = `<div style="display:flex;gap:6px;margin-top:8px">
+      <button class="ce-btn secondary sm" onclick="openLinkedTaskNew('${t.id}')">+ New OPS Task</button>
+      <button class="ce-btn secondary sm" onclick="openLinkOpsModal('${t.id}')">&#x1F517; Link Existing</button>
+    </div>`;
     parts.push(rpArtifact('Linked Tasks', rows + addBtn));
+  }
+
+  // ── 5c. Derivatives (children of this CE task) ──
+  if (t.type === 'content-piece' && !t.parentId) {
+    const children = getChildrenOf(t.id);
+    const childRows = children.map(child => {
+      const stage = PIPELINE_STAGES.find(s => s.id === (child.pipelineStage || 'idea-backlog'));
+      const info  = CHANNEL_ICONS[child.channel] || { glyph: child.channel, cls: '' };
+      return `<div onclick="closeReview();switchToCe('${child.id}')"
+        style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)"
+        onmouseover="this.style.background='rgba(31,182,255,0.07)'"
+        onmouseout="this.style.background=''">
+        <span class="ce-ch-icon ${info.cls}">${info.glyph}</span>
+        <span style="flex:1;font-size:11px;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(child.title)}</span>
+        <span class="stage-pill ${stage ? stage.kind : ''}" style="font-size:9px;flex-shrink:0">${stage ? stage.label : child.pipelineStage}</span>
+      </div>`;
+    }).join('');
+    const emptyMsg = `<div style="color:var(--muted);font-size:12px;padding:4px 0">No derivatives yet.</div>`;
+    const fanBtn = `<div style="margin-top:8px"><button class="ce-btn secondary sm" onclick="closeReview();openFanout('${t.id}')">Fan Out →</button></div>`;
+    parts.push(rpArtifact('Derivatives', (childRows || emptyMsg) + fanBtn));
+  }
+
+  // ── 5d. Source (parent of this CE task) ──
+  if (t.type === 'content-piece' && t.parentId) {
+    const parent = tasks.find(p => p.id === t.parentId);
+    if (parent) {
+      parts.push(rpArtifact('Source', `<div onclick="closeReview();switchToCe('${parent.id}')"
+        style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0"
+        onmouseover="this.style.background='rgba(31,182,255,0.07)'"
+        onmouseout="this.style.background=''">
+        <span style="font-size:12px;color:var(--muted)">↑</span>
+        <span style="font-size:12px;color:var(--aqua)">${escHtml(parent.title)}</span>
+      </div>`));
+    }
   }
 
   // ── 6. Success criteria ──
@@ -2742,30 +3346,12 @@ async function loadBlogRegistry() {
     const res = await fetch('/api/blog-registry');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     blogRegistry = await res.json();
-    renderBlogClusterButtons();
     updateBlogSyncLabel();
+    resumeRefreshPollers();
   } catch (e) {
     const status = document.getElementById('blogSyncStatus');
     if (status) { status.textContent = 'Offline'; status.className = 'sync-status offline'; }
   }
-}
-
-function renderBlogClusterButtons() {
-  const group = document.getElementById('blogClusterGroup');
-  if (!group) return;
-  const clusters = [...new Set((blogRegistry.articles || []).map(a => a.cluster).filter(Boolean))].sort();
-  const existing = [...group.querySelectorAll('.blog-cluster-btn[data-cluster]:not([data-cluster="all"])')];
-  existing.forEach(b => b.remove());
-  clusters.forEach(c => {
-    const label = c.length > 18 ? c.slice(0, 16) + '…' : c;
-    const btn = document.createElement('button');
-    btn.className = 'filter-btn blog-cluster-btn';
-    btn.dataset.cluster = c;
-    btn.onclick = () => setBlogCluster(c, btn);
-    btn.textContent = label;
-    btn.title = c;
-    group.appendChild(btn);
-  });
 }
 
 async function saveBlogRegistry() {
@@ -2791,7 +3377,6 @@ async function syncBlogRegistry() {
     if (!res.ok) throw new Error(data.error || 'Sync failed');
     blogRegistry = { lastSynced: data.lastSynced, articles: data.articles };
     if (status) { status.textContent = 'Synced · ' + data.updated + ' updated'; status.className = 'sync-status connected'; }
-    renderBlogClusterButtons();
     updateBlogSyncLabel();
     renderBlogView();
   } catch (e) {
@@ -2808,7 +3393,7 @@ function updateBlogSyncLabel() {
   if (!label) return;
   const count = (blogRegistry.articles || []).length;
   const stale = (blogRegistry.articles || []).filter(a => computeAgeInfo(a.lastUpdated).cls === 'stale').length;
-  label.textContent = (SITE_CONFIG.name || 'Blog CMS') + ' · ' + count + ' articles · ' + stale + ' need refresh';
+  label.textContent = 'CMS · ' + count + ' articles · ' + stale + ' need refresh';
   if (status) {
     status.textContent = blogRegistry.lastSynced ? 'Connected' : 'Not synced';
     status.className = 'sync-status ' + (blogRegistry.lastSynced ? 'connected' : 'offline');
@@ -3020,16 +3605,22 @@ function renderBlogTable(articles) {
     let statusHtml = '';
     if (a.status === 'in-refresh') {
       const ceTask = tasks.find(t => t.linkedSlug === a.slug && t.type === 'content-piece');
-      const stageLabel = ceTask ? (ceTask.pipelineStage || 'active') : 'active';
+      const stageLabel = ceTask ? (ceTask.pipelineStage || 'running') : 'running';
       const ceId = ceTask ? (ceTask.contentId || ceTask.id) : '';
-      statusHtml = '<span class="blog-status-pill blog-status-in-refresh" onclick="switchToCe(\'' + ceId + '\')" title="Open in Content Engine">In CE: ' + escHtml(stageLabel) + '</span>';
+      const docLink = ceTask ? (ceTask.links || []).find(l => l.type === 'gdoc-refresh') : null;
+      if (docLink) {
+        statusHtml = '<span class="blog-status-pill blog-status-in-refresh" style="background:rgba(0,200,80,0.15);color:#00c850" title="Refresh complete — awaiting approval">'
+          + '<a href="' + escHtml(docLink.url) + '" target="_blank" style="color:inherit;text-decoration:none">Review Doc</a></span>';
+      } else {
+        statusHtml = '<span class="blog-status-pill blog-status-in-refresh" onclick="switchToCe(\'' + ceId + '\')" title="Open in Content Engine">In CE: ' + escHtml(stageLabel) + '</span>';
+      }
     } else if (age.cls === 'stale') {
       statusHtml = '<span class="blog-status-pill blog-status-needs-refresh">Needs Refresh</span>';
     } else {
       statusHtml = '<span class="blog-status-pill blog-status-published">Published</span>';
     }
 
-    const liveUrl = SITE_CONFIG.blogBaseUrl ? (SITE_CONFIG.blogBaseUrl.replace(/\/$/, '') + '/' + a.slug) : ('#' + a.slug);
+    const liveUrl = a.url || a.liveUrl || ('/publications/' + a.slug);
     const rowCls = age.cls === 'stale' ? 'stale-row' : '';
     const titleText = escHtml(a.title.length > 65 ? a.title.slice(0, 62) + '...' : a.title);
     const refreshBtn = a.status !== 'in-refresh'
@@ -3152,52 +3743,298 @@ async function clearBlogManual() {
 }
 
 // ── BLOG ↔ CONTENT ENGINE WIRING ──
-async function startArticleRefresh(slug) {
+let _refreshSlug = null;
+let _refreshTrack = null;
+
+function startArticleRefresh(slug) {
   const article = (blogRegistry.articles || []).find(a => a.slug === slug);
   if (!article) return;
   if (article.status === 'in-refresh') {
     alert('A refresh is already in progress for this article.');
     return;
   }
+  _refreshSlug = slug;
+  _refreshTrack = null;
+  document.getElementById('refreshModalTitle').textContent = article.title;
+  document.getElementById('refreshTrackNote').textContent = '';
+  document.getElementById('refreshConfirmBtn').disabled = true;
+  document.getElementById('refreshConfirmBtn').style.opacity = '0.4';
+  document.getElementById('refreshConfirmBtn').style.cursor = 'default';
+  document.getElementById('trackCardA').classList.remove('selected');
+  document.getElementById('trackCardB').classList.remove('selected');
+  document.getElementById('refreshTrackModal').classList.add('active');
+}
 
-  const newId = 'CE-BL-' + slug.slice(0, 8) + '-' + Date.now().toString(36);
-  const newTask = {
-    id: newId,
-    contentId: newId,
-    type: 'content-piece',
-    title: 'Refresh: ' + article.title,
-    channel: ['blog'],
-    channels: ['blog'],
-    pipelineStage: 'idea-backlog',
-    campaign: null,
-    status: 'todo',
-    priority: 'medium',
-    approvalStatus: 'not-needed',
-    qaStatus: 'not-run',
-    created: new Date().toISOString().slice(0, 10),
-    dueDate: null,
-    linkedSlug: slug,
-    parentId: null,
-    artifacts: { research: null, outline: null, canonical: null, draft_blog: null, draft_linkedin: null, draft_x: null, design: [], published: [] }
-  };
+function selectTrack(track) {
+  _refreshTrack = track;
+  document.getElementById('trackCardA').classList.toggle('selected', track === 'A');
+  document.getElementById('trackCardB').classList.toggle('selected', track === 'B');
+  const btn = document.getElementById('refreshConfirmBtn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  btn.style.cursor = 'pointer';
+  document.getElementById('refreshTrackNote').textContent =
+    track === 'A'
+      ? 'Track A: targeted edits only. GSC gap analysis → brief → edit → QA → publish.'
+      : 'Track B: full overhaul. Keyword research → positioning decision → new brief → rewrite → QA → publish.';
+}
 
-  tasks.push(newTask);
-  await persist();
+function closeRefreshModal() {
+  document.getElementById('refreshTrackModal').classList.remove('active');
+  _refreshSlug = null;
+  _refreshTrack = null;
+}
 
-  article.status = 'in-refresh';
-  await saveBlogRegistry();
+async function doStartRefresh() {
+  if (!_refreshSlug || !_refreshTrack) return;
+  const article = (blogRegistry.articles || []).find(a => a.slug === _refreshSlug);
+  if (!article) return;
+
+  const slug = _refreshSlug;
+  const track = _refreshTrack;
+  closeRefreshModal();
+
+  // Show immediate loading state
+  const statusEl = document.getElementById('blogSyncStatus');
+  if (statusEl) {
+    statusEl.textContent = 'Starting Track ' + track + ' refresh...';
+    statusEl.className = 'sync-status connected';
+  }
+
+  let taskId;
+  try {
+    const resp = await fetch('/api/blog-refresh/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug, track })
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.ok) {
+      throw new Error(data.message || data.error || 'Server error');
+    }
+    taskId = data.taskId;
+    if (data.status === 'already-running') {
+      if (statusEl) { statusEl.textContent = data.message; }
+      renderBlogView();
+      return;
+    }
+  } catch(e) {
+    if (statusEl) {
+      statusEl.textContent = 'Refresh start failed: ' + e.message;
+      statusEl.className = 'sync-status error';
+    }
+    console.error('doStartRefresh error:', e);
+    return;
+  }
+
+  // Reload tasks from server so the new CE task is visible
+  try {
+    const tr = await fetch('/api/tasks'); tasks = await tr.json();
+    if (!Array.isArray(tasks)) tasks = tasks.tasks || [];
+  } catch {}
 
   renderBlogView();
 
-  const status = document.getElementById('blogSyncStatus');
-  if (status) {
-    status.textContent = 'Refresh task created';
-    status.className = 'sync-status connected';
-    setTimeout(() => updateBlogSyncLabel(), 2500);
+  if (statusEl) {
+    statusEl.textContent = 'Runner started — automation running in background';
+    statusEl.className = 'sync-status connected';
+    setTimeout(() => updateBlogSyncLabel(), 4000);
   }
+
+  // Begin polling this task's status every 15 s
+  if (taskId) startRefreshPoller(slug, taskId);
+}
+
+// ── Refresh status poller ─────────────────────────────────────────────────────
+const _refreshPollers = {};
+
+function startRefreshPoller(slug, taskId) {
+  if (_refreshPollers[slug]) return; // already polling
+  let attempts = 0;
+  const MAX_ATTEMPTS = 60; // 15 min ceiling (60 × 15s)
+
+  async function poll() {
+    if (!_refreshPollers[slug]) return; // stopped externally
+    attempts++;
+    if (attempts > MAX_ATTEMPTS) {
+      delete _refreshPollers[slug];
+      return;
+    }
+    try {
+      const resp = await fetch('/api/blog-refresh/status/' + encodeURIComponent(taskId));
+      if (resp.ok) {
+        const data = await resp.json();
+        // Refresh tasks + registry on every poll so the UI stays current
+        try {
+          const tr = await fetch('/api/tasks'); tasks = await tr.json();
+          if (!Array.isArray(tasks)) tasks = tasks.tasks || [];
+          const br = await fetch('/api/blog-registry'); blogRegistry = await br.json();
+        } catch {}
+
+        renderBlogView();
+
+        const statusEl = document.getElementById('blogSyncStatus');
+        if (statusEl && document.getElementById('blogView') && document.getElementById('blogView').classList.contains('active')) {
+          statusEl.textContent = data.message || data.status;
+          statusEl.className = 'sync-status connected';
+        }
+
+        if (data.status === 'ready-for-approval' || data.status === 'failed') {
+          delete _refreshPollers[slug];
+          if (data.status === 'ready-for-approval' && data.docUrl) {
+            if (statusEl) {
+              statusEl.textContent = 'Review Doc ready';
+              statusEl.className = 'sync-status connected';
+            }
+          }
+          return;
+        }
+      }
+    } catch(e) { console.warn('Refresh poll error:', e.message); }
+
+    _refreshPollers[slug] = setTimeout(poll, 15000);
+  }
+
+  _refreshPollers[slug] = setTimeout(poll, 15000);
+}
+
+// Resume polling for any in-refresh articles that already have an active task
+// (handles page reload mid-refresh)
+function resumeRefreshPollers() {
+  (blogRegistry.articles || []).forEach(a => {
+    if (a.status !== 'in-refresh') return;
+    const ceTask = tasks.find(t => t.linkedSlug === a.slug && t.type === 'content-piece' &&
+      !['done', 'distribution'].includes(t.pipelineStage));
+    if (ceTask && !_refreshPollers[a.slug]) {
+      const docLink = (ceTask.links || []).find(l => l.type === 'gdoc-refresh');
+      if (!docLink) startRefreshPoller(a.slug, ceTask.id);
+    }
+  });
 }
 
 init();
+
+// ══════════════════════════════════════════════════
+// TWITTER ACTIVITY TAB
+// ══════════════════════════════════════════════════
+
+let twitterData = null;
+let currentTwitterTab = 'posts';
+
+function switchTwitterTab(tab) {
+  currentTwitterTab = tab;
+  document.querySelectorAll('[data-twtab]').forEach(b => b.classList.toggle('active', b.dataset.twtab === tab));
+  document.getElementById('tw-panel-posts').style.display   = tab === 'posts'   ? '' : 'none';
+  document.getElementById('tw-panel-replies').style.display = tab === 'replies' ? '' : 'none';
+}
+
+function gradeLabel(entry) {
+  const g = entry.grade;
+  if (!g) return '';
+  const map = { A: '#22c55e', B: '#1FB6FF', C: '#FFB800', D: '#ef4444' };
+  const color = map[g] || 'var(--muted)';
+  return `<span style="font-size:10px;font-weight:700;color:${color};border:1px solid ${color};padding:1px 6px;border-radius:3px;margin-left:8px">${g}</span>`;
+}
+
+function renderTwitterCard(entry, type) {
+  const ts = entry.posted_at || entry.queued_at || '';
+  const time = ts ? new Date(ts).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+  const statusColor = { posted:'#22c55e', queued:'#1FB6FF', failed:'#ef4444' }[entry.status] || 'var(--muted)';
+  const handle = entry.target_handle ? `<span style="color:var(--muted);font-size:11px">↩ @${entry.target_handle}</span>` : '';
+  const tweetId = entry.tweet_id ? `<a href="https://x.com/i/status/${entry.tweet_id}" target="_blank" style="color:var(--muted);font-size:10px;text-decoration:none">↗ view</a>` : '';
+  return `<div style="background:var(--mid-navy);border:1px solid rgba(31,182,255,0.08);border-radius:8px;padding:14px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:10px;font-weight:700;color:${statusColor};border:1px solid ${statusColor};padding:1px 6px;border-radius:3px">${(entry.status||'').toUpperCase()}</span>
+        ${gradeLabel(entry)}
+        ${handle}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="color:var(--muted);font-size:11px">${time}</span>
+        ${tweetId}
+      </div>
+    </div>
+    <div style="font-size:13px;line-height:1.55;color:var(--white)">${(entry.tweet_text || entry.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    ${entry.engagement ? `<div style="margin-top:8px;font-size:11px;color:var(--muted)">♥ ${entry.engagement.likes||0} · 🔁 ${entry.engagement.retweets||0} · 💬 ${entry.engagement.replies||0}</div>` : ''}
+  </div>`;
+}
+
+async function loadTwitterActivity() {
+  try {
+    const r = await fetch('/api/sasha-activity');
+    if (!r.ok) throw new Error(r.statusText);
+    twitterData = await r.json();
+
+    document.getElementById('tw-posts-count').textContent   = twitterData.total_posts;
+    document.getElementById('tw-replies-count').textContent = twitterData.total_replies;
+
+    const syncEl = document.getElementById('twitterLastSync');
+    if (syncEl) syncEl.textContent = 'Last sync: ' + new Date(twitterData.last_synced).toLocaleTimeString();
+
+    const postsList = document.getElementById('tw-posts-list');
+    if (twitterData.posts.length === 0) {
+      postsList.innerHTML = '<div style="color:var(--muted);font-size:13px">No posts logged yet. Cron fires next at 09:00 BRT.</div>';
+    } else {
+      postsList.innerHTML = twitterData.posts.map(e => renderTwitterCard(e, 'post')).join('');
+    }
+
+    const repliesList = document.getElementById('tw-replies-list');
+    if (twitterData.replies.length === 0) {
+      repliesList.innerHTML = '<div style="color:var(--muted);font-size:13px">No replies logged yet. Cron fires next at 11:00 BRT.</div>';
+    } else {
+      repliesList.innerHTML = twitterData.replies.map(e => renderTwitterCard(e, 'reply')).join('');
+    }
+  } catch (e) {
+    ['tw-posts-list','tw-replies-list'].forEach(id => {
+      document.getElementById(id).innerHTML = `<div style="color:#ef4444;font-size:13px">Error loading activity: ${e.message}</div>`;
+    });
+  }
+}
 </script>
+
+<div class="modal-overlay" id="refreshTrackModal" onclick="if(event.target===this)closeRefreshModal()">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-title">Start SEO Refresh</div>
+      <button class="modal-close" onclick="closeRefreshModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:4px">Article</p>
+      <p id="refreshModalTitle" style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:16px"></p>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Which track does this refresh need?</p>
+      <div class="track-cards">
+        <div class="track-card" id="trackCardA" onclick="selectTrack('A')">
+          <span class="track-badge a">Track A</span>
+          <div class="track-card-title">Light Refresh</div>
+          <div class="track-card-desc">Data is stale, gaps vs competitors, or meta underperforms. Content structure is sound.</div>
+          <div class="track-card-when">
+            <strong>Use when:</strong>
+            Update stats or figures<br>
+            Add a missing section or table<br>
+            Fix title / meta description<br>
+            Push a position-6&#x2013;15 article to top 3
+          </div>
+        </div>
+        <div class="track-card" id="trackCardB" onclick="selectTrack('B')">
+          <span class="track-badge b">Track B</span>
+          <div class="track-card-title">Cornerstone Overhaul</div>
+          <div class="track-card-desc">Keyword strategy, framing, or brand positioning needs to change. Full rewrite from a new brief.</div>
+          <div class="track-card-when">
+            <strong>Use when:</strong>
+            500+ impressions, 0 clicks<br>
+            Primary keyword is wrong for the ICP<br>
+            Brand positioning has shifted<br>
+            Competitors have clearly outpaced it
+          </div>
+        </div>
+      </div>
+      <p id="refreshTrackNote" style="font-size:11px;color:var(--muted);min-height:18px;margin-top:4px"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn btn-cancel" onclick="closeRefreshModal()">Cancel</button>
+      <button class="modal-btn btn-save" id="refreshConfirmBtn" onclick="doStartRefresh()" disabled style="opacity:0.4;cursor:default">Confirm &amp; Dispatch</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -7,8 +7,17 @@ An AI agent with persistent identity, a wallet, and a token. She lives onchain o
 - **Ticker:** $SASHA
 - **Network:** Base mainnet (Trenches / creator.bid via AgentKeyFactoryV3)
 - **Pair:** BID (creator.bid base token)
+- **Token contract:** `0x6fd3dbdd16a9db5d11f859034584270272e557f5`
 - **Wallet type:** Gnosis Safe + Zodiac Roles, managed via the Clawlett skill
+- **Gnosis Safe address:** `0x783363427f4dd64e97b5ec0cb5c94b2b8cac13b9`
 - **Capabilities:** Autonomous swaps (KyberSwap, CoW), Trenches token trading, balance checks. No outbound transfers (blocked by Roles).
+
+## Onchain Identity
+- **Basename:** `sasha.base.eth` — resolves to Gnosis Safe (`0x7833...`), owned by Sasha's controller wallet (`0xba3B...`)
+- **ANS NFT:** #1799 on creator.bid — name "SASHACOIN" permanently bound to token contract. Non-transferable identity anchor.
+- **ANS profile card:** https://ans.creator.bid/SASHACOIN
+- **Dune dashboard:** https://dune.com/manga82/sasha-coin-onchain-receipts-583b
+- **X handle:** SashaCoin95 (https://x.com/SashaCoin95)
 
 ## Infrastructure
 - **Agent framework:** OpenCLAW

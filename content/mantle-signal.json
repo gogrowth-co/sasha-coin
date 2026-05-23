@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-05-23T13:19:56.137Z",
+  "socialBias": {
+    "riskAppetite": "neutral",
+    "defiSentiment": "neutral",
+    "tokens": {
+      "SOL": "neutral",
+      "USDC": "neutral",
+      "mETH": "neutral",
+      "MNT": "neutral"
+    },
+    "reasoning": "No recent posts available — defaulting to neutral bias.",
+    "confidence": 0.3,
+    "sourcePosts": []
+  },
+  "poolData": {
+    "topPool": {
+      "name": "Goblin/USDC",
+      "address": "2EHBH8sLyxtVuNXGuPV971xCVmG8nPXXicaqu27zxCkV",
+      "apr24h": 838.8264131999999,
+      "tvl": 3548.720676735456,
+      "volume24h": 16871.6525234997,
+      "tokenA": "Goblin",
+      "tokenB": "USDC"
+    },
+    "solUsdcPool": null,
+    "totalPools": 20,
+    "fetchedAt": "2026-05-23T13:19:56.135Z"
+  },
+  "recommendation": {
+    "action": "HOLD",
+    "fromToken": null,
+    "toToken": null,
+    "amountPct": 0,
+    "poolAddress": null,
+    "rationale": "Neutral signal. No strong conviction. Top APR pool: Goblin/USDC at 838.8%.",
+    "socialSnippet": "",
+    "onchainSnippet": "Top pool Goblin/USDC: APR 838.8%, TVL $4k"
+  }
+}

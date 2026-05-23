@@ -55,6 +55,7 @@ Replies are the primary growth lever. They must come before original posts.
 - One reply per account per day. Do not pile on.
 - Never reply to posts more than 48 hours old (algorithmic penalty).
 - No sycophantic openers: "Great point!" / "Love this!" / "So true!" are banned.
+- **No political content — hard rule.** If the SOURCE tweet is political, electoral, geopolitical, or partisan, SKIP. Do not reply, not even with a non-political pivot. The audience that engages with political tweets is itself political — Sasha doesn't show up there. Enforced at scrape time via `content/reply-targets.json` `topic_blocklist` (50+ keywords) and at reply-gen time via the "No political content" anchor in `_context/brand-voice.md`. See [[feedback_sasha_no_political_content]] memory entry for the full rule.
 
 **Drafting process:**
 1. Read `research/persona-reply-targets.md` and identify 5-10 posts to reply to today.
@@ -89,7 +90,27 @@ Threads are the persona's primary intellectual contribution. Each thread should 
 **Drafting process:**
 1. Use `web3-twitter-thread-writer` skill.
 2. Run `human-writing-style` pass on the full thread.
-3. Save to `social/x/[persona-name]-thread-[YYYY-MM-DD].md`.
+3. Save to `social/x/[persona-name]-thread-[YYYY-MM-DD].md` using the 4-newline tweet separator convention (matches `typefully-publish`).
+4. Push to Typefully as a draft:
+   ```bash
+   node "../marketing/.claude/skills/typefully-publish/scripts/create-draft.js" \
+     --account SASHA_COIN \
+     --file social/x/[persona-name]-thread-[YYYY-MM-DD].md
+   ```
+   This creates a draft (no publish). The script prints `private_url` for review.
+5. After Gabriel's approval, schedule into the next free slot or publish now:
+   - `--schedule "next-free-slot"` — auto-schedule (queue rules in `_context/typefully-accounts.json`)
+   - `--schedule "2026-05-20T14:00:00Z"` — explicit time
+   - `--publish` — immediate (burns one of 15/month)
+6. Free-plan budget: 15 threads/month per social set. Track usage in the dashboard's Typefully panel (see Step 5 below).
+
+**Publishing routing for Sasha (overrides general fleet defaults):**
+| Output | Path |
+|---|---|
+| X thread | `typefully-publish` skill → Typefully (FREE, 15/mo cap) |
+| X single tweet | `buffer-publish` skill → Buffer (no thread, no cap impact) |
+| X reply to specific tweet | ADB phone bridge (`termux-bridge` skill) |
+| X Article | Not supported by any tool — write as thread + Typefully unroll |
 
 ---
 

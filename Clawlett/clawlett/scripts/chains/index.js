@@ -6,10 +6,14 @@ import fs from 'fs'
 import path from 'path'
 import baseChain from './base.js'
 import bnbChain from './bnb.js'
+import mantleChain from './mantle.js'
+import mantleTestnetChain from './mantle-testnet.js'
 
 const chains = {
     base: baseChain,
     bnb: bnbChain,
+    mantle: mantleChain,
+    'mantle-testnet': mantleTestnetChain,
 }
 
 export function getChain(name) {

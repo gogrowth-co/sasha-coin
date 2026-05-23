@@ -2,14 +2,22 @@
   "name": "workspace",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "post_to_buffer.js",
   "scripts": {
+    "server": "node task-server.cjs",
+    "dashboard": "node dashboard/server.js",
+    "reply:scrape": "node scripts/kol-scraper.js",
+    "reply:run": "node scripts/morning-reply-run.js",
+    "reply:dry": "node scripts/morning-reply-run.js --dry-run --skip-scrape",
+    "reply:check": "node scripts/check-engagement.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ethers": "^6.16.0",
     "twitter-api-v2": "^1.29.0"
   }
 }

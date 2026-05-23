@@ -550,6 +550,25 @@ Create `research/cycle-brief-current.md` as a seed file:
 
 ---
 
+### STEP 10b — Configure `dashboard/dashboard.config.json`
+
+Read `onboarding.md` to extract the project name, slug, primary color, and task server port. Then write `dashboard/dashboard.config.json`:
+
+```json
+{
+  "projectName": "[Project name from onboarding]",
+  "projectSlug": "[Project slug from onboarding]",
+  "port": [dashboard port — use task server port + 1 if no dedicated dashboard port is set, or use 3006+ for new projects],
+  "primaryColor": "[Primary color hex from onboarding]",
+  "logoEmoji": "[Pick a single emoji that fits the project type: 💎 for SaaS, 🤖 for agent-persona, 📡 for media-brand, 🔵 for personal-brand, 📰 for publisher]",
+  "description": "[Brief description — derive from project type: e.g., 'SaaS Marketing Ops', 'Agent Persona Ops', 'Media Brand Ops', 'Growth Ops', 'Publisher Ops']"
+}
+```
+
+After writing the file, verify it is valid JSON by attempting to parse it. If parsing fails, fix the file before continuing.
+
+---
+
 ### STEP 11 — Update `CLAUDE.md`
 
 Read `CLAUDE.md` from the project root. Find the WHO YOU ARE section. Replace the placeholder text (if any) with:
