@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# ============================================================
+# sasha-coin — HIGH SECURITY repo (token/onchain operations)
+# ============================================================
+
+language: "en-US"
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        This is a token/onchain project. Apply HIGH security scrutiny to every change.
+        Look for any code that could lead to loss of funds, unauthorized transactions,
+        or exposure of private keys/mnemonics.
+
+    - path: "**/*.js"
+      instructions: |
+        ONCHAIN SECURITY — ethers.js transaction code:
+        - Private key or mnemonic in code, comments, or logs → CRITICAL
+        - Missing tx receipt.status check after send → funds may be lost silently
+        - Missing gas limit or gasPrice cap → unbounded cost risk
+        - Signer/wallet not validated before signing → unauthorized transactions
+        - Missing error handling around wallet.sendTransaction() calls
+        - State mutated before tx confirmation (optimistic update without rollback)
+        - Uncaught rejection on provider calls
+        - Missing slippage/deadline on DEX operations
+
+    - path: "**/.env*"
+      instructions: |
+        CRITICAL: Any real .env file in a PR is an immediate security incident.
+        Flag and block merge.
+
+    - path: "**/deploy*"
+      instructions: |
+        Deployment to token contract or liquidity — extra scrutiny:
+        - Confirm target network (mainnet vs testnet) is explicit
+        - No hardcoded wallet private keys
+        - Confirm rollback procedure exists
+
+  tools:
+    semgrep:
+      enabled: true
+    opengrep:
+      enabled: true
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    checkov:
+      enabled: true
+
+  # Block merge on any critical finding
+  pre_merge_checks:
+    custom_checks:
+      - name: "No hardcoded secrets"
+        mode: error
+        instructions: |
+          Confirm no private keys, mnemonics, API keys, or secrets are hardcoded
+          in the code or comments. TruffleHog and Gitleaks must show zero findings.
+
+chat:
+  auto_reply: true
