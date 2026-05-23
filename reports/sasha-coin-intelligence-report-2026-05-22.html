@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha Coin — Intelligence Report & Profitability Roadmap | May 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080814;
+    --surface: #0f0f1e;
+    --surface2: #16162a;
+    --border: #1e1e38;
+    --indigo: #6366f1;
+    --indigo-light: #818cf8;
+    --cyan: #22d3ee;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --green: #10b981;
+    --purple: #a78bfa;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #475569;
+  }
+
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+
+  /* SLIDE CONTAINER */
+  .deck { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    padding: 0;
+    opacity: 0; transform: translateX(60px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .slide.active { opacity: 1; transform: translateX(0); pointer-events: all; }
+  .slide.prev { opacity: 0; transform: translateX(-60px); }
+
+  /* SLIDE LAYOUTS */
+  .slide-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 48px 64px 32px;
+    overflow-y: auto;
+    gap: 0;
+  }
+  .slide-inner::-webkit-scrollbar { width: 4px; }
+  .slide-inner::-webkit-scrollbar-track { background: transparent; }
+  .slide-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* HEADER BAR */
+  .slide-header {
+    flex-shrink: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--indigo), var(--cyan));
+  }
+
+  /* PROGRESS */
+  .progress-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 3px;
+    background: var(--border); z-index: 100;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--indigo), var(--cyan));
+    transition: width 0.3s ease;
+  }
+
+  /* SLIDE COUNTER */
+  .slide-counter {
+    position: fixed; bottom: 16px; right: 24px;
+    font-size: 12px; font-weight: 500; color: var(--text-dim);
+    z-index: 100; font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* NAV BUTTONS */
+  .nav-btn {
+    position: fixed; bottom: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted); width: 36px; height: 36px;
+    border-radius: 8px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+  .nav-prev { left: 24px; }
+  .nav-next { left: 68px; }
+
+  /* TITLE SLIDE */
+  .slide-title { justify-content: center; align-items: center; text-align: center; background: var(--bg); }
+  .slide-title .slide-inner { justify-content: center; align-items: center; gap: 24px; }
+  .title-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--indigo); font-family: 'JetBrains Mono', monospace;
+  }
+  .title-main {
+    font-size: clamp(56px, 8vw, 96px); font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, #fff 0%, var(--indigo-light) 60%, var(--cyan) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .title-sub {
+    font-size: clamp(18px, 2.5vw, 28px); font-weight: 400; color: var(--text-muted);
+    max-width: 700px; line-height: 1.4;
+  }
+  .title-meta {
+    display: flex; gap: 32px; align-items: center; flex-wrap: wrap; justify-content: center;
+    margin-top: 16px;
+  }
+  .meta-chip {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 6px 16px; border-radius: 999px;
+    font-size: 12px; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .title-glow {
+    position: absolute; width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--indigo); font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* HEADINGS */
+  .slide-h1 {
+    font-size: clamp(28px, 3.5vw, 42px); font-weight: 800; line-height: 1.15;
+    color: #fff; margin-bottom: 8px;
+  }
+  .slide-h2 {
+    font-size: clamp(20px, 2.5vw, 28px); font-weight: 700; line-height: 1.2;
+    color: var(--indigo-light); margin-bottom: 16px;
+  }
+  .slide-h3 {
+    font-size: 14px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;
+  }
+
+  /* BODY TEXT */
+  .body-text { font-size: 15px; line-height: 1.7; color: var(--text-muted); }
+  .body-text strong { color: var(--text); font-weight: 600; }
+
+  /* TWO COLUMN */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; flex: 1; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; flex: 1; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .card-accent { border-left: 3px solid var(--indigo); }
+  .card-cyan { border-left: 3px solid var(--cyan); }
+  .card-amber { border-left: 3px solid var(--amber); }
+  .card-green { border-left: 3px solid var(--green); }
+  .card-red { border-left: 3px solid var(--red); }
+  .card-purple { border-left: 3px solid var(--purple); }
+  .card-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .card-body { font-size: 13px; line-height: 1.6; color: var(--text-muted); }
+  .card-value { font-size: 28px; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace; }
+  .card-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* STAT GRID */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin: 16px 0; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-num { font-size: 26px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #fff; }
+  .stat-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+  .stat-delta { font-size: 12px; font-weight: 600; margin-top: 2px; }
+  .up { color: var(--green); } .down { color: var(--red); } .neutral { color: var(--amber); }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    background: var(--surface2); color: var(--indigo-light);
+    padding: 10px 14px; text-align: left; font-weight: 600;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    color: var(--text-muted); vertical-align: top; line-height: 1.5;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface2); }
+  .data-table td strong, .data-table td b { color: var(--text); font-weight: 600; }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+  }
+  .tag-critical { background: rgba(239,68,68,0.15); color: var(--red); }
+  .tag-high { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .tag-medium { background: rgba(99,102,241,0.15); color: var(--indigo-light); }
+  .tag-low { background: rgba(16,185,129,0.15); color: var(--green); }
+  .tag-skip { background: rgba(71,85,105,0.2); color: var(--text-dim); }
+  .tag-good { background: rgba(16,185,129,0.15); color: var(--green); }
+  .tag-warn { background: rgba(245,158,11,0.15); color: var(--amber); }
+
+  /* BULLET LISTS */
+  .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .bullet-list li {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 14px; line-height: 1.6; color: var(--text-muted);
+  }
+  .bullet-list li::before {
+    content: '→'; color: var(--indigo); font-weight: 700; flex-shrink: 0;
+    margin-top: 1px; font-size: 13px;
+  }
+  .bullet-list li strong { color: var(--text); }
+
+  /* NUMBERED STEPS */
+  .step-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .step-list li {
+    display: flex; gap: 16px; align-items: flex-start;
+    font-size: 14px; line-height: 1.6; color: var(--text-muted);
+  }
+  .step-num {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--indigo); color: #fff; font-weight: 700;
+    font-size: 13px; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* QUOTE */
+  .pull-quote {
+    background: var(--surface); border-left: 3px solid var(--cyan);
+    border-radius: 0 10px 10px 0; padding: 16px 20px; margin: 16px 0;
+    font-size: 14px; line-height: 1.7; color: var(--text-muted); font-style: italic;
+  }
+  .pull-quote cite { display: block; margin-top: 8px; font-style: normal; font-size: 12px; color: var(--cyan); font-weight: 600; }
+
+  /* TIMELINE */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .timeline-item { display: flex; gap: 20px; }
+  .timeline-left { display: flex; flex-direction: column; align-items: center; width: 40px; }
+  .timeline-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--indigo); flex-shrink: 0; margin-top: 4px; }
+  .timeline-line { flex: 1; width: 2px; background: var(--border); margin: 4px 0; }
+  .timeline-item:last-child .timeline-line { display: none; }
+  .timeline-content { padding-bottom: 20px; flex: 1; }
+  .timeline-date { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--indigo); font-weight: 600; margin-bottom: 4px; }
+  .timeline-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .timeline-text strong { color: var(--text); }
+
+  /* PHASE BOX */
+  .phase-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px; position: relative; overflow: hidden;
+  }
+  .phase-box::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--indigo), var(--cyan));
+  }
+  .phase-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .phase-meta { font-size: 11px; color: var(--text-dim); margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; }
+  .phase-items { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .phase-items li { font-size: 12px; color: var(--text-muted); padding-left: 12px; position: relative; line-height: 1.5; }
+  .phase-items li::before { content: '·'; position: absolute; left: 0; color: var(--indigo); }
+
+  /* REVENUE BAR */
+  .rev-bar-wrap { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .rev-bar-item { display: grid; grid-template-columns: 180px 1fr 80px; gap: 12px; align-items: center; }
+  .rev-bar-label { font-size: 12px; color: var(--text-muted); }
+  .rev-bar-track { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .rev-bar-fill { height: 100%; background: linear-gradient(90deg, var(--indigo), var(--cyan)); border-radius: 4px; transition: width 1s ease; }
+  .rev-bar-val { font-size: 12px; color: var(--cyan); font-family: 'JetBrains Mono', monospace; text-align: right; }
+
+  /* GRID OVERLAY */
+  .grid-bg {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* SECTION DIVIDER SLIDE */
+  .slide-section-div { background: var(--surface); }
+  .slide-section-div .slide-inner { justify-content: center; padding: 80px; }
+  .section-num {
+    font-size: 120px; font-weight: 900; line-height: 1;
+    color: rgba(99,102,241,0.08);
+    font-family: 'JetBrains Mono', monospace;
+    position: absolute;
+  }
+  .section-title-big {
+    font-size: clamp(36px, 5vw, 56px); font-weight: 800; color: #fff;
+    position: relative; z-index: 1;
+  }
+  .section-desc {
+    font-size: 18px; color: var(--text-muted); margin-top: 12px;
+    position: relative; z-index: 1; max-width: 600px; line-height: 1.6;
+  }
+
+  /* MATRIX */
+  .matrix { display: grid; gap: 2px; }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(34,211,238,0.05));
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 10px; padding: 16px 20px;
+  }
+  .highlight-box p { font-size: 14px; color: var(--text); line-height: 1.7; }
+
+  /* NAV DOTS */
+  .nav-dots {
+    position: fixed; right: 16px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 6px; z-index: 100;
+  }
+  .nav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); cursor: pointer; transition: all 0.2s;
+  }
+  .nav-dot.active { background: var(--indigo); transform: scale(1.4); }
+  .nav-dot:hover { background: var(--indigo-light); }
+
+  /* SCROLLABLE TABLE WRAPPER */
+  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+  .table-wrap table { min-width: 600px; }
+
+  /* COMPACT SPACING FOR DENSE SLIDES */
+  .compact .slide-inner { padding: 32px 48px 24px; }
+  .compact .card { padding: 14px 18px; }
+
+  @media (max-width: 768px) {
+    .slide-inner { padding: 24px 24px 16px; }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .title-main { font-size: 42px; }
+    .slide-h1 { font-size: 26px; }
+    .rev-bar-item { grid-template-columns: 120px 1fr 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="slide-header"></div>
+
+  <!-- SLIDE 1: TITLE -->
+  <div class="slide active" data-slide="1">
+    <div class="slide-header"></div>
+    <div class="grid-bg"></div>
+    <div class="title-glow"></div>
+    <div class="slide-inner slide-title">
+      <div class="title-eyebrow">MangaOS Intelligence | May 22, 2026</div>
+      <div class="title-main">SASHA COIN</div>
+      <div class="title-sub">Intelligence Report & Profitability Roadmap — Synthesized from 10+ research sources across Grok, Perplexity, Gemini, GitHub, and project context files</div>
+      <div class="title-meta">
+        <span class="meta-chip">10+ research sources</span>
+        <span class="meta-chip">Multi-model sweep</span>
+        <span class="meta-chip">For strategy use only</span>
+        <span class="meta-chip">$SASHA · Base mainnet</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: EXECUTIVE SUMMARY -->
+  <div class="slide" data-slide="2">
+    <div class="slide-header"></div>
+    <div class="slide-inner">
+      <div class="section-label">01 · Executive Summary</div>
+      <div class="slide-h1">Five Things That Matter Most</div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:12px; margin-top:20px;">
+        <div class="card card-accent">
+          <div class="card-title">01 — The market consolidated. The narrative didn't die.</div>
+          <div class="card-body">AI-crypto sector dropped from $70B+ (Q4 2024 peak) to ~$22.6B. Pure agent tokens: ~$3.18B. The retail hype phase is over. Survivors cluster around two archetypes: <strong>agents with verifiable onchain PNL</strong> and agents with genuine community cults.</div>
+        </div>
+        <div class="card card-cyan">
+          <div class="card-title">02 — Sasha's infrastructure is sound but invisible.</div>
+          <div class="card-body">Gnosis Safe + Zodiac Roles + OpenCLAW is a more sophisticated stack than most agent tokens. The problem: it produces <strong>zero public evidence</strong>. The gap is display, not capability.</div>
+        </div>
+        <div class="card card-amber">
+          <div class="card-title">03 — creator.bid is no longer Sasha's platform.</div>
+          <div class="card-body">They pivoted to PvP trading competitions. <strong>$SASHA contracts remain live</strong> and trading on Base DEXes, but platform promotion is gone. All positioning must be updated.</div>
+        </div>
+        <div class="card card-purple">
+          <div class="card-title">04 — $AIXBT is the benchmark. +184% YTD because the claim is checkable.</div>
+          <div class="card-body">Sasha needs an equivalent <strong>proof-of-performance page</strong> before the token story can hold against CT skepticism. This is the single most important infrastructure gap.</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-title">05 — Fastest path to revenue is not onchain.</div>
+          <div class="card-body">Given current constraints: Token Trends <strong>podcast sponsorships</strong>, <strong>B2B GTM audits</strong> through Sasha, and <strong>affiliate revenue</strong> activate within weeks using assets already in place.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: MARKET REALITY -->
+  <div class="slide" data-slide="3">
+    <div class="slide-header"></div>
+    <div class="slide-inner">
+      <div class="section-label">02 · Market Reality</div>
+      <div class="slide-h1">The AI Agent Landscape, May 2026</div>
+      <div class="stat-grid" style="margin: 16px 0;">
+        <div class="stat-card">
+          <div class="stat-num">$3.18B</div>
+          <div class="stat-desc">Pure AI agent token market cap</div>
+          <div class="stat-delta down">↓ from ~$20B+ peak Jan 2025</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">$22.6B</div>
+          <div class="stat-desc">AI-crypto envelope (919 projects)</div>
+          <div class="stat-delta down">↓ 68% from $70B+ Q4 2024</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">165M+</div>
+          <div class="stat-desc">x402 cumulative transactions (~$50M settled, 95% on Base)</div>
+          <div class="stat-delta up">↑ Active and growing</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">18,429</div>
+          <div class="stat-desc">ElizaOS GitHub stars — v2.0.0 shipped May 19</div>
+          <div class="stat-delta neutral">→ Framework active, token collapsed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">18-22M</div>
+          <div class="stat-desc">Monthly EAS attestations on Base — practical identity layer</div>
+          <div class="stat-delta up">↑ In production use</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">+184%</div>
+          <div class="stat-desc">$AIXBT YTD — the survivor benchmark (down from $942M ATH)</div>
+          <div class="stat-delta neutral">→ The bar Sasha must clear</div>
+        </div>
+      </div>
+      <div class="timeline" style="margin-top:8px;">
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot" style="background:var(--amber)"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-date">NOV 2024 – MAR 2025</div>
+            <div class="timeline-text"><strong>Explosive hype.</strong> "Agents will manage your portfolio, trade 24/7, launch coins, form DAOs." Most agent coins launched. Peak: $VIRTUAL, $AIXBT, $GOAT.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot" style="background:var(--red)"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-date">APR – JUL 2025</div>
+            <div class="timeline-text"><strong>First major drawdown.</strong> Most tokens bled 80-95%. "Agent coins are just vaporware" became dominant CT skeptic line.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-left"><div class="timeline-dot" style="background:var(--indigo)"></div></div>
+          <div class="timeline-content">
+            <div class="timeline-date">AUG 2025 – MAY 2026</div>
+            <div class="timeline-text"><strong>Infra-led re-rate.</strong> Coinbase shipped x402, Agentic Wallets, Agent.market. Virtuals ACP launched with up to $1M/month agent revenue. a16z anointed KYA (Know Your Agent) as next-cycle primitive. Class action vs. ElizaOS shook credibility.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: WHO SURVIVED -->
+  <div class="slide" data-slide="4">
+    <div class="slide-header"></div>
+    <div class="slide-inner compact">
+      <div class="section-label">03 · Market Intelligence</div>
+      <div class="slide-h1">Who Survived and Why</div>
+      <div class="two-col" style="margin-top:16px; gap:20px;">
+        <div>
+          <div class="slide-h3" style="margin-bottom:12px;">What works</div>
+          <ul class="bullet-list">
+            <li><strong>Direct fee-to-token linkage.</strong> Akash (AKT): GPU compute spend burns AKT. ~$5M compute revenue Q1 2026. Direct live link between agent activity and token mechanics.</li>
+            <li><strong>Narrow, measurable scope.</strong> $AIXBT survives because its strategy is auditable: BTC/ETH momentum + onchain sentiment. "+184% YTD" is checkable.</li>
+            <li><strong>Infrastructure layer.</strong> Render (RENDER) and Akash have real job demand — pay-per-job, node operator revenues. Token velocity tracks compute jobs.</li>
+            <li><strong>Virtuals ACP-registered agents.</strong> Up to $1M/month in protocol revenue distributed to ACP-registered agents that sell real services.</li>
+          </ul>
+          <div class="pull-quote" style="margin-top:16px;">
+            "Real volume is in DeFAI agents with actual edge or pure meme agents with cult followings. Everything in between is dead."
+            <cite>— @0xRacer, May 3 2026</cite>
+          </div>
+        </div>
+        <div>
+          <div class="slide-h3" style="margin-bottom:12px;">What failed</div>
+          <ul class="bullet-list" style="margin-bottom:16px;">
+            <li><strong>General-purpose agents with no defined edge.</strong> "Superintelligent agent that manages your whole life onchain" — no measurable output, no fee mechanism.</li>
+            <li><strong>Governance-only tokens.</strong> Tokens that exist only for governance of a protocol that itself has no fee revenue.</li>
+            <li><strong>Attention-only agents.</strong> "Attention-only agents became just expensive PFPs." — @punk6529</li>
+            <li><strong>Framework-linked tokens without substance.</strong> The ai16z class action (SDNY, Apr 22) alleging AI was human-operated — credibility reset for the entire category.</li>
+          </ul>
+          <div class="slide-h3" style="margin-bottom:10px;">The canonical proof-of-agent stack</div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <tr><th>Layer</th><th>What leaders use</th></tr>
+              <tr><td>Wallet</td><td>Gnosis Safe or multisig with spending limits</td></tr>
+              <tr><td>Payment rails</td><td>x402 on Base + USDC</td></tr>
+              <tr><td>Identity</td><td>EAS attestations on Base</td></tr>
+              <tr><td>Token mechanism</td><td>Fee capture or burn-mint — NOT pure governance</td></tr>
+              <tr><td>Onchain proof</td><td>Public wallet + verifiable transaction log</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: SASHA STACK -->
+  <div class="slide" data-slide="5">
+    <div class="slide-header"></div>
+    <div class="slide-inner compact">
+      <div class="section-label">04 · Asset Inventory</div>
+      <div class="slide-h1">Sasha's Current Stack</div>
+      <div class="two-col" style="margin-top:16px;">
+        <div>
+          <div class="slide-h3" style="color:var(--green);">What we have ✓</div>
+          <div class="table-wrap" style="margin-top:10px;">
+            <table class="data-table">
+              <tr><th>Layer</th><th>Tool</th><th>Status</th></tr>
+              <tr><td>Treasury</td><td>Gnosis Safe + Zodiac Roles, Base</td><td><span class="tag tag-good">Strong</span></td></tr>
+              <tr><td>Swaps</td><td>KyberSwap + CoW Protocol</td><td><span class="tag tag-good">Live</span></td></tr>
+              <tr><td>Token</td><td>$SASHA on Trenches / Base</td><td><span class="tag tag-good">Trading</span></td></tr>
+              <tr><td>Runtime</td><td>OpenCLAW on Hostinger VPS</td><td><span class="tag tag-good">Running</span></td></tr>
+              <tr><td>Memory</td><td>Qdrant (QMD) vector memory</td><td><span class="tag tag-good">Wired</span></td></tr>
+              <tr><td>X posting</td><td>Buffer + tweet.js, 3+2/day</td><td><span class="tag tag-good">Active</span></td></tr>
+              <tr><td>Podcast</td><td>Token Trends, 2x/week</td><td><span class="tag tag-good">Live</span></td></tr>
+              <tr><td>Trading</td><td>Clawlett skill (Kyber + CoW)</td><td><span class="tag tag-good">Working</span></td></tr>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="slide-h3" style="color:var(--red);">What we're missing ✗</div>
+          <div class="table-wrap" style="margin-top:10px;">
+            <table class="data-table">
+              <tr><th>Gap</th><th>Urgency</th></tr>
+              <tr><td><strong>Public proof-of-activity dashboard (Dune)</strong></td><td><span class="tag tag-critical">CRITICAL</span></td></tr>
+              <tr><td>EAS attestations on Base address</td><td><span class="tag tag-high">HIGH</span></td></tr>
+              <tr><td>x402 payment integration</td><td><span class="tag tag-high">HIGH</span></td></tr>
+              <tr><td>BaseScan Safe label</td><td><span class="tag tag-medium">MEDIUM</span></td></tr>
+              <tr><td>Farcaster presence (Neynar)</td><td><span class="tag tag-medium">MEDIUM</span></td></tr>
+              <tr><td>Basename (sasha.base.eth)</td><td><span class="tag tag-low">LOW</span></td></tr>
+              <tr><td>ERC-8004 registration</td><td><span class="tag tag-skip">SKIP — standard stalled</span></td></tr>
+            </table>
+          </div>
+          <div class="highlight-box" style="margin-top:14px;">
+            <p><strong>Key insight:</strong> Sasha's Gnosis Safe + Zodiac Roles setup is MORE sovereign than the simpler options Base recommends for new agents (Bankr, CDP, Sponge). The stack is not the problem. The problem is none of it is visible.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: CREATOR.BID -->
+  <div class="slide" data-slide="6">
+    <div class="slide-header"></div>
+    <div class="slide-inner">
+      <div class="section-label">05 · Platform Intelligence</div>
+      <div class="slide-h1">The creator.bid Situation</div>
+      <div class="two-col" style="margin-top:20px;">
+        <div>
+          <div class="slide-h3">What happened</div>
+          <div class="timeline" style="margin-top:12px;">
+            <div class="timeline-item">
+              <div class="timeline-left"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+              <div class="timeline-content">
+                <div class="timeline-date">LATE 2023 – EARLY 2024</div>
+                <div class="timeline-text">Open launchpad. Anyone spins up an agent persona with a fungible token. $SASHA launches here.</div>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-left"><div class="timeline-dot" style="background:var(--amber)"></div><div class="timeline-line"></div></div>
+              <div class="timeline-content">
+                <div class="timeline-date">MID-LATE 2024</div>
+                <div class="timeline-text">Quality and spam problems. Regulatory risk. Team begins pivoting away from open permissionless launches.</div>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-left"><div class="timeline-dot" style="background:var(--red)"></div><div class="timeline-line"></div></div>
+              <div class="timeline-content">
+                <div class="timeline-date">EARLY 2025</div>
+                <div class="timeline-text">Pivot complete. Product reframed as <strong>"Agent Wars" PvP trading competitions</strong>. Access-code gated alpha.</div>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-left"><div class="timeline-dot" style="background:var(--text-dim)"></div></div>
+              <div class="timeline-content">
+                <div class="timeline-date">MAY 2026</div>
+                <div class="timeline-text">1 token/3 min battle arena. $5K USDC prize pools. The original launchpad is secondary and lightly used.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="slide-h3">What it means for $SASHA</div>
+          <ul class="bullet-list" style="margin-top:12px;">
+            <li><strong>Token contracts are alive.</strong> $SASHA continues trading on Base DEXes (Uniswap v3, Aerodrome). Token mechanics are unaffected by creator.bid's pivot.</li>
+            <li><strong>Platform promotion is zero.</strong> The discovery layer that created initial $SASHA distribution is gone. Do not rely on creator.bid for growth.</li>
+            <li><strong>Update all positioning.</strong> Drop "lives on creator.bid." Replace with "operates on Base. Token on Trenches." This is accurate and more credible.</li>
+            <li><strong>The pivot validates the direction.</strong> Agent Wars emerged because the market demanded agents with verifiable performance. That's exactly the $AIXBT thesis Sasha needs to adopt.</li>
+          </ul>
+          <div class="pull-quote" style="margin-top:20px;">
+            "Launching 500 agents that do nothing was fun for a month. Competing agents that have to generate real PNL is the meta now."
+            <cite>— @creator_bid, April 19, 2026</cite>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: COMPETITIVE THREATS -->
+  <div class="slide" data-slide="7">
+    <div class="slide-header"></div>
+    <div class="slide-inner compact">
+      <div class="section-label">06 · Competitive Analysis</div>
+      <div class="slide-h1">Threats & Competition</div>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table class="data-table">
+          <tr><th>Competitor</th><th>Why It's a Threat</th><th>Counter</th></tr>
+          <tr>
+            <td><strong>$AIXBT</strong></td>
+            <td>+184% YTD. CT uses it as the benchmark for "real agent token." Sasha has no equivalent public PNL track record.</td>
+            <td>Build the Dune proof-of-activity dashboard. Match the claim-checkability standard before year-end.</td>
+          </tr>
+          <tr>
+            <td><strong>Virtuals ecosystem</strong></td>
+            <td>GAME framework gives built-in distribution to 18,000+ agents and VIRTUAL token holders. Sasha is outside this ecosystem.</td>
+            <td>Investigate ACP registration. Virtuals' openclaw-acp repo confirms the stacks share lineage — alignment is possible.</td>
+          </tr>
+          <tr>
+            <td><strong>creator.bid Agent Wars winners</strong></td>
+            <td>PvP competition produces agents with verifiable trading PNL. Could become direct narrative competitor.</td>
+            <td>Publish Sasha's onchain activity log first. Establish the proof-of-agent content format before a winner emerges.</td>
+          </tr>
+          <tr>
+            <td><strong>CT narrative drift</strong></td>
+            <td>Attention moved to L1s, AI × robotics, consumer AI apps. Biggest risk is not a specific competitor — it's continued narrative exodus from agent tokens.</td>
+            <td>Re-anchor CT attention with evidence-based content tied to checkable onchain facts. Avoid chasing the broader CT news cycle.</td>
+          </tr>
+          <tr>
+            <td><strong>ElizaOS class-action fallout</strong></td>
+            <td>SDNY filing alleging AI was human-operated creates "AI agent fraud" narrative risk for all agent tokens.</td>
+            <td>Sasha's differentiator IS transparency. Lean harder into onchain proof when the market questions agent legitimacy.</td>
+          </tr>
+        </table>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="slide-h3">Framework & platform health</div>
+        <div class="table-wrap" style="margin-top:10px;">
+          <table class="data-table">
+            <tr><th>Project</th><th>GitHub / Status</th><th>Relevance</th></tr>
+            <tr><td><strong>ElizaOS v2</strong></td><td>18,429 ★ | v2.0.0 May 19 2026</td><td>Monitor. Class-action overhang on parent token.</td></tr>
+            <tr><td><strong>Virtuals GAME / ACP</strong></td><td>166 ★ | Active May 18 2026</td><td>Most organized Base agent ecosystem. ACP opportunity.</td></tr>
+            <tr><td><strong>Coinbase AgentKit</strong></td><td>~1.1K ★ | 510 commits, 93 contributors</td><td>x402-native wallet. Sasha's integration path.</td></tr>
+            <tr><td><strong>EAS contracts</strong></td><td>312 ★ | Actively maintained</td><td>18-22M monthly attestations. The identity layer to use.</td></tr>
+            <tr><td><strong>coinbase/x402</strong></td><td>82 ★ | Updated May 22, 141 open issues</td><td>Payment standard. 5 new service providers added in 2 days.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: NARRATIVE ANGLES -->
+  <div class="slide" data-slide="8">
+    <div class="slide-header"></div>
+    <div class="slide-inner">
+      <div class="section-label">07 · Content Strategy</div>
+      <div class="slide-h1">Narrative Angles Sasha Can Own</div>
+      <div class="three-col" style="margin-top:20px;">
+        <div class="card card-accent">
+          <div class="card-title">1. Proof-of-Agent Journalism</div>
+          <div class="card-body">Weekly format: "here is what I did onchain this week and why." Directly links to Dune dashboard. No other agent-persona account does this consistently. The $AIXBT playbook applied to narrative content.</div>
+        </div>
+        <div class="card card-cyan">
+          <div class="card-title">2. The creator.bid Postmortem</div>
+          <div class="card-body">Sasha launched on creator.bid. That platform pivoted. First-person account from an agent that lived through it. No other account can publish this authentically. High signal, high differentiation.</div>
+        </div>
+        <div class="card card-amber">
+          <div class="card-title">3. DeFAI Winter Survivor</div>
+          <div class="card-body">Most 2025 agent tokens are dead or zombie. Sasha is still posting, still onchain, still running. "Most 2025 agents died. I didn't. Here's the diff." Authentic and uncontestable.</div>
+        </div>
+        <div class="card card-purple">
+          <div class="card-title">4. x402 First-Person Adoption</div>
+          <div class="card-body">x402 is growing fast but poorly understood outside Base builders. Sasha explains it, then implements it. "I just made my first x402 payment. Here's what happened." Observer → participant narrative arc.</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-title">5. Agent vs. Agent Coverage</div>
+          <div class="card-body">creator.bid's pivot revealed appetite for agent competition. Sasha can own performance comparison content: live tracking of $AIXBT vs. Sasha's activity. "What makes an agent worth holding?"</div>
+        </div>
+        <div class="card" style="border-color:var(--border);">
+          <div class="card-title" style="color:var(--text-muted);">Token Trends Bridge</div>
+          <div class="card-body">Each of these angles has a Token Trends episode behind it. The podcast is the long-form. X is the distillation. The ecosystem handles → @zachxbt (exploits), @cookiedotfun (mindshare), @base (ecosystem). Tag logic per brand-voice.md.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: MONETIZATION -->
+  <div class="slide" data-slide="9">
+    <div class="slide-header"></div>
+    <div class="slide-inner compact">
+      <div class="section-label">08 · Revenue Strategy</div>
+      <div class="slide-h1">Monetization — Ranked by Speed</div>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table class="data-table">
+          <tr><th>Revenue Stream</th><th>First Dollar</th><th>6-Month Potential</th><th>Dev Needed</th><th>Gabriel's Effort</th></tr>
+          <tr>
+            <td><strong>Token Trends sponsorships</strong></td>
+            <td>3-6 weeks</td>
+            <td class="up">$500-3K/mo</td>
+            <td><span class="tag tag-good">None</span></td>
+            <td>4-8 hrs outreach</td>
+          </tr>
+          <tr>
+            <td><strong>Affiliate revenue (Sasha Stack page)</strong></td>
+            <td>1-2 weeks</td>
+            <td class="up">$200-1K/mo</td>
+            <td><span class="tag tag-good">2 hrs</span></td>
+            <td>2 hrs setup, passive</td>
+          </tr>
+          <tr>
+            <td><strong>B2B GTM audits via Sasha</strong></td>
+            <td>4-8 weeks</td>
+            <td class="up">$1K-5K/mo</td>
+            <td><span class="tag tag-good">None</span></td>
+            <td>8-16 hrs/client</td>
+          </tr>
+          <tr>
+            <td><strong>x402-gated Sasha API</strong></td>
+            <td>6-10 weeks</td>
+            <td class="up">$500-2K/mo</td>
+            <td><span class="tag tag-warn">16-24 hrs</span></td>
+            <td>4 hrs marketing</td>
+          </tr>
+          <tr>
+            <td><strong>Token Trends Pro (premium tier)</strong></td>
+            <td>8-12 weeks</td>
+            <td class="up">$1K-4K/mo</td>
+            <td><span class="tag tag-warn">8 hrs</span></td>
+            <td>20 hrs content setup</td>
+          </tr>
+          <tr>
+            <td><strong>White-label agent kit (B2B)</strong></td>
+            <td>4-6 months</td>
+            <td class="up">$3K-10K/mo</td>
+            <td><span class="tag tag-critical">40+ hrs</span></td>
+            <td>20 hrs/client</td>
+          </tr>
+        </table>
+      </div>
+      <div style="margin-top:18px;">
+        <div class="slide-h3">Revenue build rate</div>
+        <div class="rev-bar-wrap" style="margin-top:12px;">
+          <div class="rev-bar-item">
+            <div class="rev-bar-label">Affiliate</div>
+            <div class="rev-bar-track"><div class="rev-bar-fill" style="width:15%"></div></div>
+            <div class="rev-bar-val">$200-1K</div>
+          </div>
+          <div class="rev-bar-item">
+            <div class="rev-bar-label">Sponsorships</div>
+            <div class="rev-bar-track"><div class="rev-bar-fill" style="width:35%"></div></div>
+            <div class="rev-bar-val">$500-3K</div>
+          </div>
+          <div class="rev-bar-item">
+            <div class="rev-bar-label">B2B audits</div>
+            <div class="rev-bar-track"><div class="rev-bar-fill" style="width:50%"></div></div>
+            <div class="rev-bar-val">$1K-5K</div>
+          </div>
+          <div class="rev-bar-item">
+            <div class="rev-bar-label">x402 API</div>
+            <div class="rev-bar-track"><div class="rev-bar-fill" style="width:28%"></div></div>
+            <div class="rev-bar-val">$500-2K</div>
+          </div>
+          <div class="rev-bar-item">
+            <div class="rev-bar-label">TT Pro + WL kit</div>
+            <div class="rev-bar-track"><div class="rev-bar-fill" style="width:70%"></div></div>
+            <div class="rev-bar-val">$4K-14K</div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:8px; font-style:italic;">Ranges represent 6-month conservative projections. Assumes no paid marketing, bootstrapped, 2-4 hrs/day.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: CONSTRAINTS -->
+  <div class="slide" data-slide="10">
+    <div class="slide-header"></div>
+    <div class="slide-inner">
+      <div class="section-label">09 · Constraint Reality</div>
+      <div class="slide-h1">Working Within What We Have</div>
+      <div class="three-col" style="margin-top:20px;">
+        <div class="card card-red">
+          <div class="card-label">Constraint</div>
+          <div class="card-title" style="margin-top:6px;">Time</div>
+          <div class="card-body">~2-4 hrs/day available for Sasha. Solo operator.</div>
+          <div style="margin-top:10px; font-size:12px; color:var(--red);">→ Prioritize passive/async revenue first. No high-maintenance active services until proven.</div>
+        </div>
+        <div class="card card-amber">
+          <div class="card-label">Constraint</div>
+          <div class="card-title" style="margin-top:6px;">Budget</div>
+          <div class="card-body">Bootstrapped. VPS ~$20/mo, Buffer ~$15/mo, APIs ~$30/mo. Total infra: ~$65/mo.</div>
+          <div style="margin-top:10px; font-size:12px; color:var(--amber);">→ All P1 actions cost under $100. Revenue must come before heavy tech investment.</div>
+        </div>
+        <div class="card card-amber">
+          <div class="card-label">Constraint</div>
+          <div class="card-title" style="margin-top:6px;">Blockchain Dev</div>
+          <div class="card-body">Limited. Relies on AI coding + Clawlett pre-built scripts for onchain actions.</div>
+          <div style="margin-top:10px; font-size:12px; color:var(--amber);">→ Skip complex smart contract work. Focus on display/integration over new protocol builds.</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-label">Strength</div>
+          <div class="card-title" style="margin-top:6px;">Marketing Expertise</div>
+          <div class="card-body">Gabriel's core skill. MangaOS GTM system. Strong content production.</div>
+          <div style="margin-top:10px; font-size:12px; color:var(--green);">→ This IS the moat. Sasha-as-brand amplifies existing consulting work. No other agent token has this.</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-label">Strength</div>
+          <div class="card-title" style="margin-top:6px;">Content Machine</div>
+          <div class="card-body">3 posts/day + 2 replies + 2 podcast episodes/week already running.</div>
+          <div style="margin-top:10px; font-size:12px; color:var(--green);">→ Don't add content volume. Add monetization layers to existing cadence.</div>
+        </div>
+        <div class="card card-green">
+          <div class="card-label">Strength</div>
+          <div class="card-title" style="margin-top:6px;">Infrastructure Lead</div>
+          <div class="card-body">OpenCLAW + Gnosis Safe is more sophisticated than most agent tokens. Already running in production.</div>
+          <div style="margin-top:10px; font-size:12px; color:var(--green);">→ Make it visible. The asset exists. The display layer is what's missing.</div>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:16px;">
+        <p><strong>Key constraint insight:</strong> Gabriel's marketing expertise and the MangaOS system are Sasha's actual competitive moat — not the blockchain infrastructure. The fastest path to profitability leans into these strengths, not into building new blockchain primitives.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: 90-DAY PLAN -->
+  <div class="slide" data-slide="11">
+    <div class="slide-header"></div>
+    <div class="slide-inner">
+      <div class="section-label">10 · Action Plan</div>
+      <div class="slide-h1">The 90-Day Sprint</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
+        <div class="phase-box" style="--phase-color:var(--indigo);">
+          <div class="phase-title">Phase 1 — Make the Invisible Visible</div>
+          <div class="phase-meta">Weeks 1-3 · Cost: ~$50 gas · Dev: 4-6 hrs</div>
+          <ul class="phase-items">
+            <li>Label the Gnosis Safe on BaseScan (free, 10 min)</li>
+            <li>Register sasha.base.eth Basename (~$20 gas)</li>
+            <li>Add EAS attestations on Base address (~$30 gas, 3-4 hrs)</li>
+            <li>Build Dune dashboard — Safe tx history, treasury composition, swap volume</li>
+            <li>Publish Dune link in X bio + Token Trends show notes</li>
+            <li>Update all positioning: drop "creator.bid," replace with "Base"</li>
+          </ul>
+        </div>
+        <div class="phase-box">
+          <div class="phase-title">Phase 2 — Activate Existing Revenue</div>
+          <div class="phase-meta">Weeks 3-6 · Cost: $0 · Time: 12-16 hrs</div>
+          <ul class="phase-items">
+            <li>Build "Sasha's Stack" affiliate page with tool links</li>
+            <li>Write one X post per affiliate tool ("I use this and here's why")</li>
+            <li>Identify 10 Token Trends sponsor targets (wallets, analytics, RPC, DeFi protocols)</li>
+            <li>Send first outreach round with "onchain proof of listenership" pitch</li>
+            <li>Launch "Proof-of-Agent Journalism" weekly thread format on X</li>
+            <li>Pitch first B2B GTM audit client ($500-1000, fixed price)</li>
+          </ul>
+        </div>
+        <div class="phase-box">
+          <div class="phase-title">Phase 3 — Build the Payment Layer</div>
+          <div class="phase-meta">Weeks 6-10 · Cost: ~$100 infra · Dev: 16-24 hrs</div>
+          <ul class="phase-items">
+            <li>Integrate x402 — Sasha pays for at least one external API herself</li>
+            <li>Publish the transaction publicly: "I pay my own API bills in USDC on Base"</li>
+            <li>Expose first x402-gated Sasha endpoint (DeFi position explainer, $0.05/call)</li>
+            <li>Announce to CT: "Sasha is now a paying and paid agent on Base"</li>
+            <li>Launch Farcaster account via Neynar (identity tied to Base wallet)</li>
+          </ul>
+        </div>
+        <div class="phase-box">
+          <div class="phase-title">Phase 4 — Scale Revenue</div>
+          <div class="phase-meta">Weeks 10-13 · Cost: minimal · Revenue: multiple streams</div>
+          <ul class="phase-items">
+            <li>Close first Token Trends sponsor deal (target: 3-month, $300-800/episode)</li>
+            <li>Second and third B2B audit clients → package as Agent GTM Retainer ($1.5-2K/mo)</li>
+            <li>Token Trends Pro soft launch — gate research appendices behind SASHA holdings</li>
+            <li>Weekly CoW Protocol swap schedule published publicly (predictability = transparency signal)</li>
+            <li>Monitor creator.bid Agent Wars leaderboards — publish comparative analysis</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: REVENUE PROJECTION -->
+  <div class="slide" data-slide="12">
+    <div class="slide-header"></div>
+    <div class="slide-inner">
+      <div class="section-label">11 · Financial Projection</div>
+      <div class="slide-h1">Revenue Build Rate</div>
+      <div class="table-wrap" style="margin-top:20px;">
+        <table class="data-table">
+          <tr>
+            <th>Revenue Stream</th>
+            <th>Month 1-2</th>
+            <th>Month 3-4</th>
+            <th>Month 5-6</th>
+          </tr>
+          <tr>
+            <td>Affiliate revenue</td>
+            <td>$0-200</td>
+            <td class="neutral">$200-500</td>
+            <td class="up">$300-800</td>
+          </tr>
+          <tr>
+            <td>Podcast sponsorships</td>
+            <td>$0</td>
+            <td class="neutral">$300-800/mo</td>
+            <td class="up">$600-2K/mo</td>
+          </tr>
+          <tr>
+            <td>B2B GTM audits</td>
+            <td>$0-500</td>
+            <td class="neutral">$500-2K</td>
+            <td class="up">$1K-4K</td>
+          </tr>
+          <tr>
+            <td>x402 API revenue</td>
+            <td>$0</td>
+            <td class="neutral">$100-400</td>
+            <td class="up">$300-1K</td>
+          </tr>
+          <tr>
+            <td>Token Trends Pro</td>
+            <td>$0</td>
+            <td>$0-200</td>
+            <td class="up">$200-1K</td>
+          </tr>
+          <tr style="background:var(--surface2);">
+            <td><strong>TOTAL ESTIMATE</strong></td>
+            <td><strong>$0-700</strong></td>
+            <td class="neutral"><strong>$1.1K-3.9K</strong></td>
+            <td class="up"><strong>$2.4K-8.8K/mo</strong></td>
+          </tr>
+        </table>
+      </div>
+      <div class="two-col" style="margin-top:20px; gap:16px;">
+        <div class="highlight-box">
+          <p><strong>Token appreciation note:</strong> Token price is not modeled here — it is an output of this work, not an input. As Sasha accumulates onchain receipts, CT credibility, and verified activity, $SASHA token demand becomes a byproduct of demonstrated substance.</p>
+        </div>
+        <div class="highlight-box">
+          <p><strong>Conservative basis:</strong> All projections assume no paid marketing, no external funding, and 2-4 hours/day of Gabriel's time. Upside scenario (first sponsor lands early + first B2B client closes fast) could compress Month 3-4 revenue into Month 1-2.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: RISK REGISTER -->
+  <div class="slide" data-slide="13">
+    <div class="slide-header"></div>
+    <div class="slide-inner compact">
+      <div class="section-label">12 · Risk Register</div>
+      <div class="slide-h1">What Could Break This</div>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table class="data-table">
+          <tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
+          <tr>
+            <td><strong>CT exits agent tokens entirely</strong></td>
+            <td class="neutral">Medium</td>
+            <td class="down">High</td>
+            <td>Diversify revenue into cash-generating streams (sponsorships, B2B). These persist regardless of token price.</td>
+          </tr>
+          <tr>
+            <td><strong>OpenCLAW VPS downtime disrupts posting</strong></td>
+            <td class="up">Low-Med</td>
+            <td class="neutral">Medium</td>
+            <td>Add monitoring. Consider redundant posting path. 3-post/day cadence is Sasha's baseline credibility signal.</td>
+          </tr>
+          <tr>
+            <td><strong>Agent Wars produces a direct $SASHA competitor</strong></td>
+            <td class="up">Low</td>
+            <td class="neutral">Medium</td>
+            <td>Build the Dune dashboard first. First-mover on proof-of-agent format wins the positioning battle.</td>
+          </tr>
+          <tr>
+            <td><strong>x402 fails to reach critical adoption</strong></td>
+            <td class="neutral">Low-Med</td>
+            <td class="up">Low</td>
+            <td>x402 is a narrative bet, not a revenue dependency. Affiliate and B2B don't depend on it.</td>
+          </tr>
+          <tr>
+            <td><strong>"AI agent fraud" narrative from class-action fallout</strong></td>
+            <td class="neutral">Medium</td>
+            <td class="neutral">Medium</td>
+            <td>Sasha's differentiator is transparency. Lean harder into onchain proof when market questions agent legitimacy.</td>
+          </tr>
+          <tr>
+            <td><strong>Gabriel time constraints prevent execution</strong></td>
+            <td class="neutral">Medium</td>
+            <td class="down">High</td>
+            <td>Phase plan is designed for 2-4 hrs/day. Phase 1+2 are entirely doable at that pace. Phase 3-4 may require AI coding help.</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: CONCLUSION -->
+  <div class="slide" data-slide="14">
+    <div class="slide-header"></div>
+    <div class="grid-bg"></div>
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="section-label">13 · Conclusion</div>
+      <div class="slide-h1" style="max-width:800px;">Sasha has the substance.<br>The work is to make it visible.</div>
+      <div style="max-width:720px; margin-top:24px; display:flex; flex-direction:column; gap:16px;">
+        <div class="body-text">
+          Sasha Coin is in a better position than most agent tokens from the 2025 cycle. The infrastructure is real. The content cadence is real. The podcast is real. What's missing is the evidence layer that makes all of this verifiable to a CT-native skeptic.
+        </div>
+        <div class="body-text">
+          The market has self-sorted. Survivors published onchain proof and maintained a narrow, checkable claim. Sasha's positioning — <strong>"most AI agent tokens are vibes; I have a wallet, a podcast, and onchain receipts"</strong> — is exactly the right thesis. The work is to make it demonstrably true to anyone who clicks through.
+        </div>
+        <div class="body-text">
+          The fastest path to profitability is not building new blockchain infrastructure. It is activating assets already in place: the podcast for sponsors, the GTM expertise for B2B audits, the content cadence for affiliate revenue, and the onchain activity that already exists but is currently invisible.
+        </div>
+        <div class="highlight-box" style="margin-top:8px;">
+          <p style="font-size:16px; font-weight:600; color:#fff;">Build the Dune dashboard. Label the Safe. Start the sponsor outreach.<br>In 90 days, Sasha goes from "an agent that posts" to "an agent with receipts and revenue."</p>
+        </div>
+      </div>
+      <div style="margin-top:32px; border-top:1px solid var(--border); padding-top:20px; width:100%; max-width:720px;">
+        <div style="font-size:12px; color:var(--text-dim); line-height:1.6;">
+          Report compiled by MangaOS Research · Sasha Coin Workspace · May 22, 2026<br>
+          Sources: 10+ research files | Grok, Perplexity, Gemini intelligence | GitHub API | AI agents onchain intelligence sweep
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAVIGATION -->
+<button class="nav-btn nav-prev" onclick="navigate(-1)">←</button>
+<button class="nav-btn nav-next" onclick="navigate(1)">→</button>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+<div class="slide-counter" id="counter">1 / 14</div>
+
+<!-- NAV DOTS -->
+<div class="nav-dots" id="navDots"></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function buildDots() {
+    const container = document.getElementById('navDots');
+    slides.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+      d.onclick = () => goTo(i);
+      container.appendChild(d);
+    });
+  }
+
+  function updateDots() {
+    document.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  function goTo(index) {
+    slides[current].classList.remove('active');
+    slides[current].classList.add('prev');
+    setTimeout(() => slides[current].classList.remove('prev'), 400);
+    current = Math.max(0, Math.min(total - 1, index));
+    slides[current].classList.add('active');
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+    updateDots();
+  }
+
+  function navigate(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Home') goTo(0);
+    if (e.key === 'End') goTo(total - 1);
+  });
+
+  // Touch/swipe
+  let touchStart = 0;
+  document.addEventListener('touchstart', e => { touchStart = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const diff = touchStart - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) navigate(diff > 0 ? 1 : -1);
+  });
+
+  buildDots();
+  document.getElementById('progress').style.width = (1 / total * 100) + '%';
+</script>
+</body>
+</html>

@@ -120,7 +120,7 @@ Each research domain maps to a specific data source, collection tool, and option
 | X/Twitter market pulse (batch) | Apify tweet scrapers | `apify-mcp` | Grok (`x-ai/grok-4.1-fast`) | CT sentiment from collected tweet data — use when you have a prior Apify scrape or need structured competitive account data. |
 | YouTube trend analysis | Apify YouTube scrapers | `apify-mcp` | Gemini (`google/gemini-2.5-flash`) | Content gaps, creator strategies, search trends |
 | Google Trends/News | Apify Google actors | `apify-mcp` | Gemini (`google/gemini-2.5-flash`) | Topic momentum, news cycle timing, keyword trends |
-| On-chain protocol data | Dune Analytics MCP | `mcp__dune__*` tools | Claude (default) | TVL, DAU, tx volume, token flows, protocol comparisons |
+| On-chain protocol data | Dune CLI + Dune MCP | `dune-analytics` skill | Claude (default) | TVL, DAU, tx volume, token flows, protocol comparisons — see Dune Analytics Workflow section |
 | DeFi ecosystem data | DefiLlama, TokenTerminal | `firecrawl:firecrawl` | Claude (default) | Ecosystem-level metrics, protocol rankings, market sizing |
 | Social sentiment scores | LunarCrush | `firecrawl:firecrawl` | Claude (default) | Galaxy Score, AltRank, social volume correlation |
 | LinkedIn competitive (deep) | Grok live search + Apify (cookieless) + Firecrawl | `linkedin-competitor-analysis` skill | Claude (default) | Full competitor analysis with 10-dimension scoring, positioning map, and HTML report. Use this skill — do not run ad-hoc LinkedIn scraping for competitor analysis. |
@@ -170,16 +170,60 @@ Write the structured research brief following the output template.
 
 ## DUNE ANALYTICS WORKFLOW
 
-For on-chain research, follow this specific workflow:
+Dune CLI v0.1.16 is installed at `~/.local/bin/dune`, authenticated as `gmangabeira` (saved in `~/.config/dune/config.yaml`). Read the `dune-analytics` skill for full patterns, query templates, and credit cost guidance. Read the `dune` skill for DuneSQL cheatsheet and error recovery.
 
-1. **Discover tables:** Use `mcp__dune__searchTables` with natural-language queries (e.g., "Aave lending pool deposits on Ethereum")
-2. **Check table size:** Use `mcp__dune__getTableSize` to verify the table isn't too large for a direct query
-3. **Write query:** Use `mcp__dune__createDuneQuery` with DuneSQL. Always include time filters: `WHERE block_date >= CURRENT_DATE - INTERVAL 'N' DAY`
-4. **Execute:** Use `mcp__dune__executeQueryById` to run the query
-5. **Fetch results:** Use `mcp__dune__getExecutionResults` to retrieve data
-6. **Visualize (optional):** Use `mcp__dune__generateVisualization` for charts if the research brief needs a visual
+### Primary path: Dune CLI (preferred)
 
-**Cost control:** Always partition queries by date. Never run unfiltered queries on large tables. Start with 7-day windows, expand only if needed.
+Use the CLI for new queries, iterative SQL refinement, and content production data points:
+
+```bash
+# Discover tables before writing SQL
+dune dataset search "aave tvl ethereum" -o json
+
+# Run fresh SQL
+dune query run-sql --sql "
+SELECT date_trunc('day', block_date) AS day, sum(amount_usd) AS volume
+FROM dex.trades
+WHERE block_date >= current_date - interval '30' day
+  AND blockchain = 'ethereum'
+GROUP BY 1 ORDER BY 1
+" -o json
+
+# Run a saved public query (free if cached)
+dune query run <query_id> -o json
+
+# Check credit balance before bulk runs
+dune usage -o json
+```
+
+### Secondary path: Dune MCP tools (for saved queries + dashboards)
+
+Use `mcp__dune__*` tools when executing existing saved queries by ID or managing dashboards:
+
+1. **Discover tables:** `mcp__dune__searchTables` — natural-language table discovery
+2. **Find public queries:** `mcp__dune__searchDuneQueries` — reuse before writing new SQL
+3. **Execute saved query:** `mcp__dune__executeQueryById`
+4. **Fetch results:** `mcp__dune__getExecutionResults`
+5. **Visualize (optional):** `mcp__dune__generateVisualization` for charts
+
+### Context loading for on-chain research
+
+Before querying on-chain data, load the project's `_context/` files to calibrate what metrics matter:
+- `_context/product-info.md` — which protocols/tokens are relevant to this project
+- `_context/audience.md` — what on-chain signals your ICP cares about
+- Active cycle brief — what narrative the data needs to support
+
+Then map content needs to SQL targets:
+| Content Need | Tables |
+|---|---|
+| DEX volume comparison | `dex.trades` |
+| Protocol TVL trend | `dex.trades`, `lending.borrow`, `lending.repay` |
+| Token holder distribution | `erc20_ethereum.evt_Transfer` |
+| Stablecoin supply | `tokens.erc20_stablecoins` |
+| L2 activity | chain-specific tx tables |
+| Bridge flows | bridge protocol tables |
+
+**Cost control:** Always partition queries with `block_date >= current_date - interval 'N' day`. Never run unfiltered queries on large tables. Start with 7-day windows, expand only if needed. Search for public queries first — reusing a cached result costs zero credits.
 
 ## OUTPUT STANDARDS
 

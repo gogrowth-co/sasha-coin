@@ -1,0 +1,20 @@
+{
+  "_comment": "Copy to <project>/_context/typefully-accounts.json and fill in real values. Never put the API key here — it lives in .env.",
+  "default_account": "SASHA_COIN",
+  "accounts": {
+    "SASHA_COIN": {
+      "social_set_id": 255726,
+      "username": "SashaCoin95",
+      "plan": "free",
+      "monthly_post_cap": 15,
+      "platforms_enabled": ["x"]
+    },
+    "MANGABEIRA": {
+      "social_set_id": 0,
+      "username": "gmangabeira",
+      "plan": "free",
+      "monthly_post_cap": 15,
+      "platforms_enabled": ["x", "linkedin"]
+    }
+  }
+}

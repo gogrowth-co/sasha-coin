@@ -51,3 +51,6 @@ venv_buffer/
 # Clawlett private state (must stay VPS-only)
 Clawlett/config/
 Clawlett/clawlett/scripts/config/
+
+# Mantle hackathon — dynamic generated signal file (regenerated on VPS each run)
+content/mantle-signal.json

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0D1117;
+    --surface: #161B22;
+    --surface2:#1C2333;
+    --border:  #30363D;
+    --text:    #E6EDF3;
+    --muted:   #8B949E;
+    --accent:  #1FB6FF;
+  }
+
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+  /* ── HEADER ── */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; align-items: center; gap: 16px; padding: 14px 0 10px; border-bottom: 1px solid var(--border); }
+  .logo { font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; }
+  .logo span { color: var(--accent); }
+  .logo-divider { width: 1px; height: 18px; background: var(--border); }
+  .logo-sub { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .refresh-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit; }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .refresh-time { font-size: 11px; color: var(--muted); }
+
+  /* ── MAIN TABS ── */
+  .main-tabs { display: flex; gap: 0; padding: 0 24px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .main-tab { padding: 12px 20px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .main-tab:hover { color: var(--text); }
+  .main-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .main-tab .tab-count { display: inline-block; background: var(--surface2); border-radius: 10px; padding: 1px 6px; font-size: 10px; margin-left: 5px; color: var(--muted); }
+  .main-tab.active .tab-count { background: rgba(31,182,255,.15); color: var(--accent); }
+
+  /* ── CONTENT ── */
+  .content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── KANBAN ── */
+  .kanban-board { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px; align-items: flex-start; }
+  .kanban-col { flex-shrink: 0; width: 210px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .kanban-col-header { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .kanban-col-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .kanban-col-count { font-size: 11px; font-weight: 600; color: var(--muted); background: var(--surface2); padding: 1px 7px; border-radius: 10px; }
+  .kanban-cards { padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 40px; }
+
+  .task-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; transition: border-color .15s; cursor: default; }
+  .task-card:hover { border-color: #4A5568; }
+  .task-card-title { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 8px; }
+  .task-card-meta { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+
+  /* ── BADGES ── */
+  .badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .badge-channel { background: rgba(31,182,255,.12); color: #1FB6FF; border: 1px solid rgba(31,182,255,.25); }
+  .badge-approval { background: rgba(255,184,0,.12); color: #FFB800; border: 1px solid rgba(255,184,0,.25); }
+  .badge-stage { background: rgba(139,148,158,.12); color: #8B949E; border: 1px solid rgba(139,148,158,.2); }
+  .badge-campaign { background: rgba(31,182,255,.08); color: #8B949E; border: 1px solid rgba(139,148,158,.2); }
+
+  .due-label { font-size: 10px; color: var(--muted); }
+  .due-label.overdue { color: #FF6B35; }
+  .due-label.soon { color: #FFB800; }
+
+  /* ── APPROVAL QUEUE ── */
+  .queue-list { display: flex; flex-direction: column; gap: 8px; max-width: 860px; }
+  .queue-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; transition: border-color .15s; }
+  .queue-item:hover { border-color: #4A5568; }
+  .queue-urgency { width: 3px; align-self: stretch; border-radius: 2px; flex-shrink: 0; }
+  .queue-body { flex: 1; min-width: 0; }
+  .queue-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .queue-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .queue-waiting { font-size: 11px; color: var(--muted); margin-left: auto; flex-shrink: 0; font-weight: 500; }
+  .queue-waiting.urgent { color: #FF6B35; }
+  .queue-waiting.warn { color: #FFB800; }
+
+  /* ── CALENDAR ── */
+  .calendar-list { max-width: 720px; display: flex; flex-direction: column; gap: 24px; }
+  .cal-week-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .cal-items { display: flex; flex-direction: column; gap: 6px; }
+  .cal-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; transition: border-color .15s; }
+  .cal-item:hover { border-color: #4A5568; }
+  .cal-date { font-size: 12px; font-weight: 600; color: var(--muted); width: 48px; flex-shrink: 0; text-align: center; }
+  .cal-date .day-num { font-size: 18px; font-weight: 700; color: var(--text); display: block; line-height: 1; }
+  .cal-date .day-mon { font-size: 10px; color: var(--muted); text-transform: uppercase; display: block; }
+  .cal-divider { width: 1px; height: 36px; background: var(--border); flex-shrink: 0; }
+  .cal-body { flex: 1; min-width: 0; }
+  .cal-title { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  .cal-meta { display: flex; gap: 6px; align-items: center; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── CAMPAIGNS ── */
+  .campaigns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+  .campaign-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .campaign-card-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 10px; justify-content: space-between; }
+  .campaign-card-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .campaign-card-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .campaign-status { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; }
+  .status-active  { background: rgba(31,182,255,.12); color: #1FB6FF; }
+  .status-paused  { background: rgba(139,148,158,.12); color: #8B949E; }
+  .status-done    { background: rgba(76,175,80,.12); color: #4CAF50; }
+  .campaign-card-body { padding: 14px 16px; }
+  .kpi-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .kpi-row:last-child { margin-bottom: 0; }
+  .kpi-label { font-size: 11px; color: var(--muted); flex: 0 0 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .kpi-bar { height: 100%; border-radius: 2px; transition: width .3s; }
+  .kpi-val { font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; min-width: 60px; text-align: right; }
+  .gate-list { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; gap: 6px; flex-wrap: wrap; }
+  .gate-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: rgba(255,107,53,.1); color: #FF6B35; border: 1px solid rgba(255,107,53,.2); }
+
+  /* ── SECTION HEADER ── */
+  .section-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .section-count { font-size: 12px; color: var(--muted); }
+
+  /* ── EMPTY / LOADING ── */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state p { font-size: 14px; margin-top: 8px; }
+  .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: .4; }
+  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #4A5568; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo" id="projectLogo">Project<span>OS</span></div>
+    <div class="logo-divider"></div>
+    <div class="logo-sub" id="projectDesc">Marketing Ops</div>
+    <div class="header-right">
+      <span class="refresh-time" id="refreshTime"></span>
+      <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+    </div>
+  </div>
+</header>
+
+<div class="main-tabs">
+  <button class="main-tab active" data-tab="kanban">Kanban <span class="tab-count" id="tc-kanban">—</span></button>
+  <button class="main-tab" data-tab="approvals">Approval Queue <span class="tab-count" id="tc-approvals">—</span></button>
+  <button class="main-tab" data-tab="calendar">Calendar <span class="tab-count" id="tc-calendar">—</span></button>
+  <button class="main-tab" data-tab="campaigns">Campaigns <span class="tab-count" id="tc-campaigns">—</span></button>
+</div>
+
+<div class="content">
+  <div id="kanban"    class="tab-panel active"><div class="loading">Loading tasks…</div></div>
+  <div id="approvals" class="tab-panel"><div class="loading">Loading approval queue…</div></div>
+  <div id="calendar"  class="tab-panel"><div class="loading">Loading calendar…</div></div>
+  <div id="campaigns" class="tab-panel"><div class="loading">Loading campaigns…</div></div>
+</div>
+
+<script>
+const PIPELINE_STAGES = [
+  { key:'idea-backlog',  label:'Idea Backlog' },
+  { key:'research',      label:'Research' },
+  { key:'outline',       label:'Outline' },
+  { key:'writing',       label:'Writing' },
+  { key:'design',        label:'Design' },
+  { key:'editing',       label:'Editing' },
+  { key:'publish',       label:'Publish' },
+  { key:'distribution',  label:'Distribution' },
+  { key:'done',          label:'Done' },
+];
+
+// Non-CE tasks get their own ops columns
+const OPS_STATUS_COLS = [
+  { key:'todo',        label:'To Do' },
+  { key:'in-progress', label:'In Progress' },
+  { key:'review',      label:'Review' },
+  { key:'blocked',     label:'Blocked' },
+  { key:'done',        label:'Done' },
+];
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let activeTab = 'kanban';
+let cfg = { projectName: 'Project', primaryColor: '#1FB6FF' };
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function apiFetch(url) {
+  try { const r = await fetch(url); return r.ok ? await r.json() : null; }
+  catch { return null; }
+}
+
+async function loadConfig() {
+  const data = await apiFetch('/api/config');
+  if (!data) return;
+  cfg = data;
+  document.title = `${cfg.projectName} — Dashboard`;
+  document.getElementById('projectLogo').innerHTML = `${cfg.projectName}<span> OS</span>`;
+  document.getElementById('projectDesc').textContent = cfg.description || 'Marketing Ops';
+  if (cfg.primaryColor) document.documentElement.style.setProperty('--accent', cfg.primaryColor);
+}
+
+async function loadAll() {
+  await Promise.all([
+    loadKanban(),
+    loadApprovals(),
+    loadCalendar(),
+    loadCampaigns(),
+  ]);
+  document.getElementById('refreshTime').textContent = `Updated ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.main-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const key = btn.dataset.tab;
+    document.getElementById(key).classList.add('active');
+    activeTab = key;
+  });
+});
+
+// ── KANBAN ────────────────────────────────────────────────────────────────────
+async function loadKanban() {
+  const data = await apiFetch('/api/tasks');
+  if (!data) { document.getElementById('kanban').innerHTML = emptyState('Could not load tasks'); return; }
+
+  const all = data.tasks || [];
+  const ce = all.filter(t => t.type === 'content-piece' || t.pipelineStage);
+  const ops = all.filter(t => !t.type && !t.pipelineStage);
+
+  document.getElementById('tc-kanban').textContent = all.length;
+
+  const wrap = document.createElement('div');
+
+  // Content Engine kanban
+  if (ce.length) {
+    const h = document.createElement('div');
+    h.className = 'section-header';
+    h.innerHTML = `<span class="section-title">Content Pipeline</span><span class="section-count">${ce.length} pieces</span>`;
+    wrap.appendChild(h);
+    wrap.appendChild(buildKanban(ce, PIPELINE_STAGES, t => t.pipelineStage || 'idea-backlog'));
+  }
+
+  // Ops kanban
+  if (ops.length) {
+    const h = document.createElement('div');
+    h.className = 'section-header';
+    h.style.marginTop = ce.length ? '32px' : '0';
+    h.innerHTML = `<span class="section-title">Ops Tasks</span><span class="section-count">${ops.length} tasks</span>`;
+    wrap.appendChild(h);
+    wrap.appendChild(buildKanban(ops, OPS_STATUS_COLS, t => t.status || 'todo'));
+  }
+
+  if (!ce.length && !ops.length) {
+    wrap.innerHTML = emptyState('No tasks yet');
+  }
+
+  document.getElementById('kanban').innerHTML = '';
+  document.getElementById('kanban').appendChild(wrap);
+}
+
+function buildKanban(tasks, stages, getKey) {
+  const byStage = {};
+  for (const s of stages) byStage[s.key] = [];
+  for (const t of tasks) {
+    const k = getKey(t);
+    if (byStage[k]) byStage[k].push(t);
+    else byStage[stages[0].key].push(t);
+  }
+
+  const board = document.createElement('div');
+  board.className = 'kanban-board';
+  board.style.marginBottom = '8px';
+
+  for (const stage of stages) {
+    const col = document.createElement('div');
+    col.className = 'kanban-col';
+
+    const header = document.createElement('div');
+    header.className = 'kanban-col-header';
+    header.innerHTML = `<span class="kanban-col-title">${stage.label}</span><span class="kanban-col-count">${byStage[stage.key].length}</span>`;
+    col.appendChild(header);
+
+    const cards = document.createElement('div');
+    cards.className = 'kanban-cards';
+    for (const t of byStage[stage.key]) cards.appendChild(makeTaskCard(t));
+    col.appendChild(cards);
+    board.appendChild(col);
+  }
+  return board;
+}
+
+function makeTaskCard(task) {
+  const card = document.createElement('div');
+  card.className = 'task-card';
+
+  const title = document.createElement('div');
+  title.className = 'task-card-title';
+  title.textContent = task.title || task.id || 'Untitled';
+  card.appendChild(title);
+
+  const meta = document.createElement('div');
+  meta.className = 'task-card-meta';
+
+  if (task.channel) {
+    const ch = document.createElement('span');
+    ch.className = 'badge badge-channel';
+    ch.textContent = task.channel;
+    meta.appendChild(ch);
+  }
+
+  if (task.approvalStatus === 'pending') {
+    const ap = document.createElement('span');
+    ap.className = 'badge badge-approval';
+    ap.textContent = 'Needs Approval';
+    meta.appendChild(ap);
+  }
+
+  if (task.dueDate) {
+    const dl = daysUntil(task.dueDate);
+    const due = document.createElement('span');
+    due.className = 'due-label';
+    if (dl < 0)      { due.classList.add('overdue'); due.textContent = `${Math.abs(dl)}d overdue`; }
+    else if (dl <= 3) { due.classList.add('soon');    due.textContent = `${dl}d left`; }
+    else              { due.textContent = formatDate(task.dueDate); }
+    meta.appendChild(due);
+  }
+
+  card.appendChild(meta);
+  return card;
+}
+
+// ── APPROVAL QUEUE ────────────────────────────────────────────────────────────
+async function loadApprovals() {
+  const data = await apiFetch('/api/approval-queue');
+  const tasks = data?.tasks || [];
+  document.getElementById('tc-approvals').textContent = tasks.length;
+
+  const panel = document.getElementById('approvals');
+  panel.innerHTML = '';
+
+  const h = document.createElement('div');
+  h.className = 'section-header';
+  h.innerHTML = `<span class="section-title">Approval Queue</span><span class="section-count">${tasks.length} pending</span>`;
+  panel.appendChild(h);
+
+  if (!tasks.length) { panel.innerHTML += emptyState('All clear — nothing pending approval'); return; }
+
+  const list = document.createElement('div');
+  list.className = 'queue-list';
+  for (const task of tasks) list.appendChild(makeQueueItem(task));
+  panel.appendChild(list);
+}
+
+function makeQueueItem(task) {
+  const daysWaiting = task.statusChangedDate ? daysSince(task.statusChangedDate) : 0;
+  const urgencyColor = daysWaiting >= 5 ? '#FF6B35' : daysWaiting >= 2 ? '#FFB800' : cfg.primaryColor || '#1FB6FF';
+  const waitClass = daysWaiting >= 5 ? ' urgent' : daysWaiting >= 2 ? ' warn' : '';
+
+  const item = document.createElement('div');
+  item.className = 'queue-item';
+  item.innerHTML = `
+    <div class="queue-urgency" style="background:${urgencyColor}"></div>
+    <div class="queue-body">
+      <div class="queue-title">${task.title || task.id || 'Untitled'}</div>
+      <div class="queue-meta">
+        ${task.channel     ? `<span class="badge badge-channel">${task.channel}</span>` : ''}
+        ${task.pipelineStage ? `<span class="badge badge-stage">${task.pipelineStage}</span>` : ''}
+        ${task.campaign    ? `<span class="badge badge-campaign">${task.campaign}</span>` : ''}
+        ${task.qaStatus === 'hold' ? `<span class="badge" style="background:rgba(255,107,53,.1);color:#FF6B35;border:1px solid rgba(255,107,53,.2);">QA Hold</span>` : ''}
+      </div>
+    </div>
+    <div class="queue-waiting${waitClass}">${daysWaiting === 0 ? 'today' : `${daysWaiting}d waiting`}</div>
+  `;
+  return item;
+}
+
+// ── CALENDAR ─────────────────────────────────────────────────────────────────
+async function loadCalendar() {
+  const data = await apiFetch('/api/upcoming');
+  const tasks = data?.tasks || [];
+  document.getElementById('tc-calendar').textContent = tasks.length;
+
+  const panel = document.getElementById('calendar');
+  panel.innerHTML = '';
+
+  const h = document.createElement('div');
+  h.className = 'section-header';
+  h.innerHTML = `<span class="section-title">Upcoming Deadlines</span><span class="section-count">next 30 days</span>`;
+  panel.appendChild(h);
+
+  if (!tasks.length) { panel.innerHTML += emptyState('No upcoming deadlines in the next 30 days'); return; }
+
+  // Group by week
+  const weeks = {};
+  for (const t of tasks) {
+    const ws = getWeekStart(new Date(t.dueDate));
+    const key = ws.toISOString().slice(0, 10);
+    if (!weeks[key]) weeks[key] = { label: weekLabel(ws), tasks: [] };
+    weeks[key].tasks.push(t);
+  }
+
+  const list = document.createElement('div');
+  list.className = 'calendar-list';
+
+  for (const key of Object.keys(weeks).sort()) {
+    const wk = weeks[key];
+    const sec = document.createElement('div');
+    sec.className = 'cal-week';
+    const lbl = document.createElement('div');
+    lbl.className = 'cal-week-label';
+    lbl.textContent = wk.label;
+    sec.appendChild(lbl);
+
+    const items = document.createElement('div');
+    items.className = 'cal-items';
+    for (const t of wk.tasks) items.appendChild(makeCalItem(t));
+    sec.appendChild(items);
+    list.appendChild(sec);
+  }
+  panel.appendChild(list);
+}
+
+function makeCalItem(task) {
+  const d   = new Date(task.dueDate);
+  const dl  = daysUntil(task.dueDate);
+  const dot = dl < 0 ? '#FF6B35' : dl <= 3 ? '#FFB800' : '#4CAF50';
+  let dueText = dl < 0 ? `${Math.abs(dl)}d overdue` : dl === 0 ? 'Today' : dl === 1 ? 'Tomorrow' : `in ${dl}d`;
+  let dueClass = dl < 0 ? 'overdue' : dl <= 3 ? 'soon' : '';
+
+  const item = document.createElement('div');
+  item.className = 'cal-item';
+  item.innerHTML = `
+    <div class="cal-date">
+      <span class="day-num">${d.getUTCDate()}</span>
+      <span class="day-mon">${MONTHS[d.getUTCMonth()]}</span>
+    </div>
+    <div class="cal-divider"></div>
+    <div class="cal-body">
+      <div class="cal-title">${task.title || task.id || 'Untitled'}</div>
+      <div class="cal-meta">
+        ${task.channel ? `<span class="badge badge-channel">${task.channel}</span>` : ''}
+        ${task.status  ? `<span class="badge badge-stage">${task.status}</span>` : ''}
+        <span class="status-dot" style="background:${dot}"></span>
+        <span class="due-label ${dueClass}">${dueText}</span>
+      </div>
+    </div>
+  `;
+  return item;
+}
+
+// ── CAMPAIGNS ─────────────────────────────────────────────────────────────────
+async function loadCampaigns() {
+  const data = await apiFetch('/api/campaigns');
+  const campaigns = (data?.campaigns || []).filter(c => c.status !== 'archived');
+  document.getElementById('tc-campaigns').textContent = campaigns.length;
+
+  const panel = document.getElementById('campaigns');
+  panel.innerHTML = '';
+
+  const h = document.createElement('div');
+  h.className = 'section-header';
+  h.innerHTML = `<span class="section-title">Campaigns</span><span class="section-count">${campaigns.length} active</span>`;
+  panel.appendChild(h);
+
+  if (!campaigns.length) { panel.innerHTML += emptyState('No active campaigns'); return; }
+
+  const grid = document.createElement('div');
+  grid.className = 'campaigns-grid';
+
+  for (const c of campaigns) {
+    const card = document.createElement('div');
+    card.className = 'campaign-card';
+    const statusCls = c.status === 'active' ? 'status-active' : c.status === 'done' || c.status === 'complete' ? 'status-done' : 'status-paused';
+
+    const kpisHtml = (c.kpis || []).map(k => {
+      const pct = k.target > 0 ? Math.min(100, Math.round((k.current / k.target) * 100)) : 0;
+      return `<div class="kpi-row">
+        <div class="kpi-label">${k.metric}</div>
+        <div class="kpi-bar-wrap"><div class="kpi-bar" style="width:${pct}%;background:${cfg.primaryColor || '#1FB6FF'}"></div></div>
+        <div class="kpi-val">${k.current}/${k.target}</div>
+      </div>`;
+    }).join('');
+
+    const pendingGates = (c.approvalGates || []).filter(g => g.status === 'pending');
+    const gatesHtml = pendingGates.length
+      ? `<div class="gate-list">${pendingGates.map(g => `<span class="gate-badge">⚠ ${g.gate}</span>`).join('')}</div>`
+      : '';
+
+    card.innerHTML = `
+      <div class="campaign-card-header">
+        <div>
+          <div class="campaign-card-name">${c.name}</div>
+          <div class="campaign-card-meta">
+            <span class="campaign-status ${statusCls}">${c.status}</span>
+            ${c.type ? `<span class="badge badge-stage">${c.type}</span>` : ''}
+            ${c.endDate ? `<span class="badge badge-campaign">ends ${c.endDate}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="campaign-card-body">
+        ${kpisHtml}
+        ${gatesHtml}
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+  panel.appendChild(grid);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function emptyState(msg) {
+  return `<div class="empty-state"><div class="empty-icon">--</div><p>${msg}</p></div>`;
+}
+function daysUntil(dateStr) {
+  const d = new Date(dateStr); const now = new Date();
+  return Math.ceil((d - now) / 86400000);
+}
+function daysSince(dateStr) {
+  return Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+}
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+function getWeekStart(d) {
+  const day = d.getUTCDay();
+  const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1);
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), diff));
+}
+function weekLabel(ws) {
+  const end = new Date(ws.getTime() + 6 * 86400000);
+  return `Week of ${MONTHS[ws.getUTCMonth()]} ${ws.getUTCDate()} — ${MONTHS[end.getUTCMonth()]} ${end.getUTCDate()}`;
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+loadConfig().then(loadAll);
+setInterval(loadAll, 30000);
+</script>
+</body>
+</html>

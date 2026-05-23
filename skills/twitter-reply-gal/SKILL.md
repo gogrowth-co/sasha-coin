@@ -3,6 +3,15 @@
 ## When to use this skill
 Triggered by cron with message: `[TWITTER_REPLY_GAL]`
 
+
+## HARD RULES — never violate
+
+> **RULE: Never reply to the same X post twice.**
+> Before selecting any candidate, load `state/replied-tweets.json` and exclude any tweet whose ID is already present.
+> This check is in addition to the 12h per-handle cooldown — both must pass.
+> The implementation guard lives in `scripts/morning-reply-run.js` (repliedIds Set filter on line ~95).
+> Do NOT remove or skip this filter. Do not reply to a tweet ID already in replied-tweets.json under any circumstance.
+
 ## Steps
 
 ### 1. Load reply targets

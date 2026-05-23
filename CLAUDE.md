@@ -22,10 +22,17 @@ The contract between layers is the `content/` folder. The VPS skills (`twitter-s
 
 At the start of every new conversation in this workspace:
 
-1. Read this CLAUDE.md (you are now).
-2. Read `_context/brand-voice.md`, `_context/audience.md`, `_context/product-info.md`, `_context/positioning.md`. They define who Sasha is. Never write content without loading them.
-3. If the user mentions a campaign by name, load `campaigns/[slug]/brief.md`.
-4. Check `research/sasha-narrative-arc.md` to know what Sasha has already said.
+1. **Read shared cross-project memory** — scan `~/Documents/Gabriel Mangabeira/shared/`. Read `project-facts.md` for portfolio state and any Sasha-specific facts, then check recent entries in `decisions.md` and `research.md`. When you learn something cross-project, write it back to `shared/` immediately — no prompt needed. Project-scoped state stays in this workspace.
+
+   **Write triggers (act immediately, without being asked):**
+   - → `shared/decisions.md` when: a portfolio-wide decision is made, a "from now on" rule is set, a tool standard or cross-project constraint is established
+   - → `shared/research.md` when: a research task finishes with a verdict applicable beyond this project, a tool/framework is evaluated
+   - → `shared/skills-log.md` when: a new skill is created, a skill is propagated to another project, or a skill is deprecated
+   - → `shared/project-facts.md` when: a project status changes, a port/URL/path is established or changes, a project is added or archived
+2. Read this CLAUDE.md (you are now).
+3. Read `_context/brand-voice.md`, `_context/audience.md`, `_context/product-info.md`, `_context/positioning.md`. They define who Sasha is. Never write content without loading them.
+4. If the user mentions a campaign by name, load `campaigns/[slug]/brief.md`.
+5. Check `research/sasha-narrative-arc.md` to know what Sasha has already said.
 
 ---
 
@@ -72,8 +79,10 @@ When the user asks for content, you produce finished, ready-to-publish material 
 6. **CTA is implicit.** Never end a post with a direct sales push. The token + the podcast + the wallet do the selling.
 7. **Use tools before asking.** Check Bash, SSH, GA4, GSC, files first. Only ask Gabriel when the answer requires his judgment.
 8. **Never hardcode secrets.** Every API key reads from env. Update `.env.example` when adding a new key, point to `/docker/openclaw-h3mk/data/.openclaw/.env` for storage.
-9. **Output routing.** Calendar/triggers/briefs go to `content/`. Drafts go to `social/x/drafts/`. Archive of posted goes to `social/x/archive/YYYY-MM/`. Campaign briefs to `campaigns/[slug]/brief.md`. Narrative arc to `research/sasha-narrative-arc.md`. Reports to `reports/`.
+9. **No year in URL slugs.** Never include a year in a URL slug unless it is a one-time dated event that will never be updated. A slug like `/topic-2026/` cannot be refreshed the following year without losing ranking history. Use `/topic/` always.
+10. **Output routing.** Calendar/triggers/briefs go to `content/`. Drafts go to `social/x/drafts/`. Archive of posted goes to `social/x/archive/YYYY-MM/`. Campaign briefs to `campaigns/[slug]/brief.md`. Narrative arc to `research/sasha-narrative-arc.md`. Reports to `reports/`.
 10. **Log decisions.** Architectural changes go to `docs/decision-log.md`.
+11. **Ecosystem mentions — mandatory QA gate.** Every thread and Buffer post must tag at least one relevant protocol or KOL. Zero mentions = QA fail, rewrite before moving to editing stage. Tag logic: security/exploit topics → @zachxbt, @0xfoobar; agent frameworks → @elizaos_devs, @VirtualsProtocol; mindshare/data → @cookiedotfun, @aixbt; Base ecosystem → @base; active CT debates → tag the accounts Sasha is directly responding to. Mentions must be woven into the argument, not sprayed at the end.
 
 ---
 

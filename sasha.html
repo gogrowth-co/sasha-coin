@@ -130,7 +130,8 @@
     <div class="nav">
       <a href="/">Tasks</a>
       <a href="/reports">Reports</a>
-      <a href="/sasha">Sasha</a>
+      <a href="/sasha">Activity</a>
+      <a href="/replies">Replies</a>
       <button class="refresh-btn" id="refresh-btn">Refresh</button>
       <span class="last-synced" id="last-synced">—</span>
     </div>
@@ -148,6 +149,65 @@
         <div class="stat-label">Pending in Buffer cloud queue</div>
       </div>
     </div>
+
+    <!-- ── Mantle Turing Test Hackathon Panel ─────────────────────────────── -->
+    <div class="card full-width" id="mantle-panel" style="margin-bottom: 16px; border-left: 3px solid #6B4EFF;">
+      <h2 style="display:flex; align-items:center; gap:8px;">
+        <span>⚡ Mantle Hackathon</span>
+        <small style="font-size:12px; font-weight:400; color:#888; margin-left:auto;">
+          Agentic Wallets &amp; Economy · Byreal Solana · ERC-8004 Mantle · <a href="https://dorahacks.io/hackathon/mantleturingtesthackathon2026" target="_blank" style="color:#6B4EFF;">DoraHacks</a>
+        </small>
+      </h2>
+
+      <!-- Stats row -->
+      <div class="grid" style="margin-bottom:12px;">
+        <div class="card" style="text-align:center; padding:12px 16px;">
+          <div class="stat" id="mantle-trades">—</div>
+          <div class="stat-label">Trades executed</div>
+        </div>
+        <div class="card" style="text-align:center; padding:12px 16px;">
+          <div class="stat" id="mantle-last-action">—</div>
+          <div class="stat-label">Last action</div>
+        </div>
+        <div class="card" style="text-align:center; padding:12px 16px;">
+          <div class="stat" id="mantle-erc8004-id">—</div>
+          <div class="stat-label">ERC-8004 Agent ID</div>
+        </div>
+        <div class="card" style="text-align:center; padding:12px 16px;">
+          <div class="stat" id="mantle-signal-apr">—</div>
+          <div class="stat-label">Top pool APR (last signal)</div>
+        </div>
+      </div>
+
+      <!-- Signal summary -->
+      <div id="mantle-signal-block" style="background:#111; border-radius:6px; padding:10px 14px; margin-bottom:12px; font-size:13px; color:#ccc; display:none;">
+        <strong style="color:#6B4EFF;">Latest signal</strong> &nbsp;·&nbsp;
+        <span id="mantle-signal-action" style="font-weight:600;"></span>
+        <span id="mantle-signal-meta" style="color:#888; margin-left:8px;"></span>
+        <div id="mantle-signal-rationale" style="margin-top:4px; color:#aaa;"></div>
+      </div>
+
+      <!-- Trade log table -->
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Action</th>
+            <th>Pool</th>
+            <th>Status</th>
+            <th>Solana TX</th>
+            <th>Mantle Attestation</th>
+          </tr>
+        </thead>
+        <tbody id="mantle-trade-table"></tbody>
+      </table>
+
+      <!-- ERC-8004 identity footer -->
+      <div id="mantle-identity-block" style="margin-top:10px; font-size:12px; color:#666; display:none;">
+        ERC-8004: <span id="mantle-identity-addr"></span> · <a id="mantle-identity-link" href="#" target="_blank" style="color:#6B4EFF;">View on Mantle Explorer</a>
+      </div>
+    </div>
+    <!-- ── /Mantle Panel ──────────────────────────────────────────────────── -->
 
     <div class="card full-width" style="margin-bottom: 16px;">
       <h2>Recent posts (VPS)</h2>
@@ -192,6 +252,66 @@
              d.getUTCDate() === now.getUTCDate();
     };
     const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    // ── Mantle panel loader ────────────────────────────────────────────────
+    async function loadMantleState() {
+      try {
+        const m = await fetch('/api/mantle-state').then(r => r.json());
+
+        // Stats
+        $('mantle-trades').textContent = m.executedCount ?? '0';
+        $('mantle-last-action').textContent = m.lastTrade?.action ?? 'No trades yet';
+        $('mantle-erc8004-id').textContent = m.erc8004?.agentId != null
+          ? `#${m.erc8004.agentId}` : 'Not registered';
+        $('mantle-signal-apr').textContent = m.signal?.topPoolAPR != null
+          ? `${Number(m.signal.topPoolAPR).toFixed(1)}%` : '—';
+
+        // Signal block
+        if (m.signal) {
+          const sb = $('mantle-signal-block');
+          sb.style.display = 'block';
+          $('mantle-signal-action').textContent = m.signal.action ?? '';
+          $('mantle-signal-action').style.color =
+            m.signal.action === 'HOLD' ? '#888' :
+            m.signal.action?.includes('STABLE') ? '#f0a500' : '#4ade80';
+          $('mantle-signal-meta').textContent =
+            `${m.signal.riskAppetite ?? ''} · confidence ${m.signal.confidence ?? '?'} · top pool: ${m.signal.topPool ?? '?'} · ${fmt(m.signal.generatedAt)}`;
+          $('mantle-signal-rationale').textContent = m.signal.rationale ?? '';
+        }
+
+        // ERC-8004 identity
+        if (m.erc8004?.agentAddress) {
+          const ib = $('mantle-identity-block');
+          ib.style.display = 'block';
+          $('mantle-identity-addr').textContent = m.erc8004.agentAddress;
+          const link = $('mantle-identity-link');
+          if (m.erc8004.explorerUrl) link.href = m.erc8004.explorerUrl;
+        }
+
+        // Trade table
+        const trades = Array.isArray(m.tradeLog) ? m.tradeLog : [];
+        const tradeHtml = trades.map(t => {
+          const statusCls = t.status === 'executed' ? 'pill-sent' :
+                            t.status === 'dry-run'  ? 'pill-queued' : 'pill-error';
+          const solscanUrl = t.txSignature ? `https://solscan.io/tx/${escapeHtml(t.txSignature)}` : '';
+          const mantleTx = t.erc8004Tx ? `https://explorer.mantle.xyz/tx/${escapeHtml(t.erc8004Tx)}` : '';
+          return `
+            <tr>
+              <td class="ts">${fmt(t.executedAt)}</td>
+              <td style="font-weight:600;">${escapeHtml(t.action ?? '—')}</td>
+              <td>${escapeHtml(t.poolName || t.poolAddress?.slice(0, 8) || '—')}</td>
+              <td><span class="pill ${statusCls}">${escapeHtml(t.status ?? '—')}</span></td>
+              <td>${solscanUrl ? `<a class="ext" href="${solscanUrl}" target="_blank">${escapeHtml(t.txSignature?.slice(0, 12) + '…')}</a>` : '—'}</td>
+              <td>${mantleTx ? `<a class="ext" href="${mantleTx}" target="_blank">${escapeHtml(t.erc8004Tx?.slice(0, 12) + '…')}</a>` : '—'}</td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="6" class="empty">No trades yet — send [BYREAL_TRADE] to OpenCLAW to execute the first trade.</td></tr>';
+        $('mantle-trade-table').innerHTML = tradeHtml;
+      } catch (e) {
+        console.warn('[mantle] panel load failed:', e.message);
+        $('mantle-trade-table').innerHTML = `<tr><td colspan="6" class="empty">Could not load Mantle state: ${escapeHtml(e.message)}</td></tr>`;
+      }
+    }
 
     async function load() {
       const [stateRes, bufRes] = await Promise.allSettled([
@@ -257,9 +377,10 @@
       }
     }
 
-    $('refresh-btn').addEventListener('click', load);
+    $('refresh-btn').addEventListener('click', () => { load(); loadMantleState(); });
     load();
-    setInterval(load, 60_000); // mirror VPS state once per minute
+    loadMantleState();
+    setInterval(() => { load(); loadMantleState(); }, 60_000); // mirror VPS state once per minute
   </script>
 </body>
 </html>

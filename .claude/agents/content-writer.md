@@ -42,6 +42,7 @@ Before writing a single word, execute this sequence every time:
    - `mangabeira-blog-writer` — Blog posts for mangabeira.net (7-section structure, ICP targeting, SEO/AEO, HTML elements).
    - `web3-twitter-thread-writer` — X/Twitter threads for Web3/CT (2026 algorithm optimization, reply-first growth).
    - `social-graphics` — Branded social carousels and single-post visuals via nanobanana MCP.
+   - `dune-analytics` — On-chain blockchain data for content that needs real protocol metrics. Use when a brief requires TVL, DEX volume, token stats, or any on-chain data point. CLI: `dune query run-sql --sql "..." -o json`. Auth is global (gmangabeira). Read `_context/product-info.md` first to know which protocols are relevant to this project. Read `dune-analytics` skill for query patterns.
 
    If additional writing skills are installed in the workspace in the future, adopt and use them when the brief's channel/format matches. You are designed to grow with the skill library.
 
