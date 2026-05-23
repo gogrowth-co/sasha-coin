@@ -195,9 +195,22 @@ function executeSwap(r) {
         '-o', 'json',
     ]
 
-    if (!DRY_RUN) cmdArgs.push('--confirm')
-    else cmdArgs.push('--dry-run')
+    // In dry-run mode, skip actual CLI call — byreal-cli requires wallet even for --dry-run
+    if (DRY_RUN) {
+        const preview = [...cmdArgs, '--dry-run']
+        console.log(`[trade][dry-run] Would run: byreal-cli ${preview.join(' ')}`)
+        return {
+            type: 'swap',
+            fromToken: r.fromToken,
+            toToken: r.toToken,
+            amount: DEMO_AMOUNT,
+            txSignature: null,
+            outputAmount: null,
+            raw: { dryRun: true },
+        }
+    }
 
+    cmdArgs.push('--confirm')
     console.log(`[trade] Running: byreal-cli ${cmdArgs.join(' ')}`)
 
     const result = spawnSync('byreal-cli', cmdArgs, {
@@ -207,7 +220,8 @@ function executeSwap(r) {
     })
 
     if (result.status !== 0) {
-        throw new Error(`byreal-cli swap failed (exit ${result.status}): ${result.stderr?.trim()}`)
+        const errMsg = result.stderr?.trim() || result.stdout?.trim() || '(no output)'
+        throw new Error(`byreal-cli swap failed (exit ${result.status}): ${errMsg}`)
     }
 
     const output = JSON.parse(result.stdout || '{}')
@@ -272,9 +286,24 @@ function executeLPPosition(r) {
         '-o', 'json',
     ]
 
-    if (!DRY_RUN) cmdArgs.push('--confirm')
-    else cmdArgs.push('--dry-run')
+    // In dry-run mode, skip actual CLI call — byreal-cli requires wallet even for --dry-run
+    if (DRY_RUN) {
+        const preview = [...cmdArgs, '--dry-run']
+        console.log(`[trade][dry-run] Would run: byreal-cli ${preview.join(' ')}`)
+        return {
+            type: 'lp_open',
+            pool: r.poolAddress,
+            poolName: r.poolName,
+            amountUSD: DEMO_AMOUNT_USD,
+            priceLower: parseFloat(priceLower),
+            priceUpper: parseFloat(priceUpper),
+            txSignature: null,
+            nftMint: null,
+            raw: { dryRun: true },
+        }
+    }
 
+    cmdArgs.push('--confirm')
     console.log(`[trade] Running: byreal-cli ${cmdArgs.join(' ')}`)
 
     const result = spawnSync('byreal-cli', cmdArgs, {
@@ -284,7 +313,8 @@ function executeLPPosition(r) {
     })
 
     if (result.status !== 0) {
-        throw new Error(`byreal-cli positions open failed (exit ${result.status}): ${result.stderr?.trim()}`)
+        const errMsg = result.stderr?.trim() || result.stdout?.trim() || '(no output)'
+        throw new Error(`byreal-cli positions open failed (exit ${result.status}): ${errMsg}`)
     }
 
     const output = JSON.parse(result.stdout || '{}')
@@ -482,7 +512,31 @@ async function main() {
         process.exit(1)
     }
 
-    // Step 6: ERC-8004 reputation write (best-effort, non-blocking)
+    // Step 6a: mETH treasury auto-compound (best-effort, non-blocking)
+    // If trade succeeded and MANTLE_AGENT_PK is set, trigger compounding.
+    // This makes Mantle economically load-bearing — idle capital earns yield.
+    if (!DRY_RUN && process.env.MANTLE_AGENT_PK) {
+        console.log('[trade] Triggering mETH treasury compound...')
+        const { spawnSync: spawn2 } = await import('child_process')
+        const treasuryScript = path.join(WORKSPACE, 'scripts', 'mantle-treasury.js')
+        if (fs.existsSync(treasuryScript)) {
+            const tResult = spawn2('node', [treasuryScript, '--action', 'compound', '--execute'], {
+                encoding: 'utf8',
+                timeout: 30000,
+                cwd: WORKSPACE,
+                env: { ...process.env, TREASURY_NONBLOCKING: '1' },
+            })
+            if (tResult.status === 0) {
+                console.log('[trade][treasury] Compound result:', (tResult.stdout || '').trim().slice(0, 200))
+            } else {
+                console.warn('[trade][treasury] Compound skipped:', (tResult.stderr || tResult.stdout || '').trim().slice(0, 100))
+            }
+        }
+    } else if (DRY_RUN) {
+        console.log('[trade][dry-run] Would trigger: node scripts/mantle-treasury.js --action compound --execute')
+    }
+
+    // Step 6b: ERC-8004 reputation write (best-effort, non-blocking)
     const erc8004Result = await writeERC8004Reputation(tradeResult, signal)
 
     // Step 7: Append to trade log

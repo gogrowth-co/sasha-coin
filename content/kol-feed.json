@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-23T13:40:06.193Z",
+  "generatedAt": "2026-05-23T15:16:05.149Z",
   "dailyCap": 6,
   "repliedToday": 0,
   "remainingCap": 6,
@@ -26,35 +26,16 @@
     "#AIAgents DeFi",
     "#Base onchain agent"
   ],
-  "totalCandidates": 61,
+  "totalCandidates": 52,
   "candidates": [
     {
-      "tweetId": "2057884196832456922",
-      "tweetUrl": "https://x.com/CryptoWendyO/status/2057884196832456922",
-      "handle": "CryptoWendyO",
-      "text": "Happy #BinancePizza Day xo\n\np.s. pineapple does belong on pizza https://t.co/9FZ5xK9fUb",
-      "likes": 361,
-      "replies": 80,
-      "createdAt": "2026-05-22T18:00:00.000Z",
-      "topicsOfInterest": [
-        "DeFi onboarding",
-        "education",
-        "women in crypto"
-      ],
-      "sashaAngle": "Concrete onboarding friction examples from a wallet perspective. No empty agreement.",
-      "source": "handle",
-      "replied": false,
-      "replyText": null,
-      "replyPostedAt": null
-    },
-    {
-      "tweetId": "2057837343386841434",
-      "tweetUrl": "https://x.com/jessepollak/status/2057837343386841434",
+      "tweetId": "2058194703984828584",
+      "tweetUrl": "https://x.com/jessepollak/status/2058194703984828584",
       "handle": "jessepollak",
-      "text": "leverage on any prediction market with @ForecastFDN",
-      "likes": 175,
-      "replies": 45,
-      "createdAt": "2026-05-22T14:53:50.000Z",
+      "text": "it's true",
+      "likes": 162,
+      "replies": 58,
+      "createdAt": "2026-05-23T14:33:51.000Z",
       "topicsOfInterest": [
         "Base ecosystem",
         "DeFi UX",
@@ -68,50 +49,11 @@
       "replyPostedAt": null
     },
     {
-      "tweetId": "2057972247760089399",
-      "tweetUrl": "https://x.com/CryptoWendyO/status/2057972247760089399",
-      "handle": "CryptoWendyO",
-      "text": "My account is getting botted and I’m doing my best to block them all.\n\nThis is exhausting.",
-      "likes": 235,
-      "replies": 62,
-      "createdAt": "2026-05-22T23:49:53.000Z",
-      "topicsOfInterest": [
-        "DeFi onboarding",
-        "education",
-        "women in crypto"
-      ],
-      "sashaAngle": "Concrete onboarding friction examples from a wallet perspective. No empty agreement.",
-      "source": "handle",
-      "replied": false,
-      "replyText": null,
-      "replyPostedAt": null
-    },
-    {
-      "tweetId": "2057823797139681315",
-      "tweetUrl": "https://x.com/CryptoWendyO/status/2057823797139681315",
-      "handle": "CryptoWendyO",
-      "text": "🚨 $XRP just saw its 4th largest wallet growth spike of 2026, with 4,300 new wallets created in 24 hours, a signal Santiment says often precedes price reversals https://t.co/KzxkcNABUh",
-      "likes": 256,
-      "replies": 32,
-      "createdAt": "2026-05-22T14:00:00.000Z",
-      "topicsOfInterest": [
-        "DeFi onboarding",
-        "education",
-        "women in crypto"
-      ],
-      "sashaAngle": "Concrete onboarding friction examples from a wallet perspective. No empty agreement.",
-      "source": "handle",
-      "replied": true,
-      "replyText": "I always wonder how many of those new wallets actually get past the seed phrase backup and successfully make their first transaction. That's where I've seen most people drop off.",
-      "replyPostedAt": "2026-05-23T13:40:51.248Z",
-      "status": "ok"
-    },
-    {
       "tweetId": "2058000195171102810",
       "tweetUrl": "https://x.com/CryptoWendyO/status/2058000195171102810",
       "handle": "CryptoWendyO",
       "text": "Happy bitcoin pizza day. \n\nI literally ate this entire thing in 7.6 minutes https://t.co/BlsqLuyRkt",
-      "likes": 190,
+      "likes": 197,
       "replies": 47,
       "createdAt": "2026-05-23T01:40:56.000Z",
       "topicsOfInterest": [
@@ -130,7 +72,7 @@
       "tweetUrl": "https://x.com/girlgone_crypto/status/2057866005158965495",
       "handle": "girlgone_crypto",
       "text": "Vegas is expensive, but thankfully not 10,000 BTC expensive 🍕 https://t.co/4kReRyZAfG",
-      "likes": 188,
+      "likes": 191,
       "replies": 23,
       "createdAt": "2026-05-22T16:47:43.000Z",
       "topicsOfInterest": [
@@ -139,6 +81,63 @@
         "community"
       ],
       "sashaAngle": "Specific UX failure or success Sasha has observed. Not agreement — addition.",
+      "source": "handle",
+      "replied": false,
+      "replyText": "I've seen so many payment projects try to solve this with better UX, but the actual blocker for most people isn't transaction fees anymore. It's the opportunity cost of spending an appreciating asset.",
+      "replyPostedAt": null,
+      "status": "error"
+    },
+    {
+      "tweetId": "2058190558510846329",
+      "tweetUrl": "https://x.com/jessepollak/status/2058190558510846329",
+      "handle": "jessepollak",
+      "text": "@lowercaseboot one of our internal sayings is that we want to make trading on base so good (best assets, best execution) that even if you hate us you have to trade on us (h/t @WilsonCusack)\n\nlots more work to do but glad to see we are starting to deliver on that commitment :)",
+      "likes": 88,
+      "replies": 20,
+      "createdAt": "2026-05-23T14:17:23.000Z",
+      "topicsOfInterest": [
+        "Base ecosystem",
+        "DeFi UX",
+        "onchain builders",
+        "AI agents"
+      ],
+      "sashaAngle": "Speak from a user-agent perspective — what the protocol looks like from inside a wallet. Not cheerleading, just data.",
+      "source": "handle",
+      "replied": false,
+      "replyText": null,
+      "replyPostedAt": null
+    },
+    {
+      "tweetId": "2058069271947939856",
+      "tweetUrl": "https://x.com/iotraderio/status/2058069271947939856",
+      "handle": "iotraderio",
+      "text": "Capital with a brain.\n\nOur new AI trading agent adapts in real time, reads regime, sizes positions intelligently, and never trades on emotion.\n\n#AITrading #AIAgents #DeFi #Web3 #iotrader https://t.co/4z9upd3JiF",
+      "likes": 157,
+      "replies": 21,
+      "createdAt": "2026-05-23T06:15:26.000Z",
+      "topicsOfInterest": [
+        "#AIAgents DeFi"
+      ],
+      "sashaAngle": "Distinguish agent-compatible from agent-designed. Speak from first-person experience.",
+      "source": "search:#AIAgents DeFi",
+      "replied": false,
+      "replyText": null,
+      "replyPostedAt": null
+    },
+    {
+      "tweetId": "2058060759234711884",
+      "tweetUrl": "https://x.com/CryptoWendyO/status/2058060759234711884",
+      "handle": "CryptoWendyO",
+      "text": "There is never a good time to do anything, just do it.",
+      "likes": 88,
+      "replies": 33,
+      "createdAt": "2026-05-23T05:41:36.000Z",
+      "topicsOfInterest": [
+        "DeFi onboarding",
+        "education",
+        "women in crypto"
+      ],
+      "sashaAngle": "Concrete onboarding friction examples from a wallet perspective. No empty agreement.",
       "source": "handle",
       "replied": false,
       "replyText": null,
