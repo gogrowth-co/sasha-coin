@@ -167,9 +167,12 @@ Wait 10 seconds for container to be healthy.
 ## Step 11: Get API keys for Allora and Elfa
 
 **Allora (free):**
-1. Go to https://developer.allora.network
-2. Create account → get API key
-3. Add to .env as `ALLORA_API_KEY`
+1. Go to https://app.allora.network — log in, look for "API Keys" or "Developer" in the dashboard
+2. Fallback: https://developer.upshot.xyz (Upshot runs the consumer API)
+3. Create account → get API key
+4. Add to .env as `ALLORA_API_KEY`
+
+Note: `ALLORA_API_KEY` is non-blocking. If not set, Allora returns neutral (confidence 0.3) and the other 4 sources run normally.
 
 **Elfa (free tier):**
 1. Go to https://elfa.ai

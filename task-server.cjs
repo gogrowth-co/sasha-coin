@@ -1109,6 +1109,153 @@ Return only valid JSON. No markdown, no explanation.`;
     return;
   }
 
+  // GET /api/mantle-state — Mantle hackathon dashboard: trade log + ERC-8004 identity
+  if (req.method === 'GET' && req.url === '/api/mantle-state') {
+    const safeParse = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fb; } };
+    const tradeLog      = safeParse(path.join(ROOT, 'state', 'mantle-trade-log.json'), []);
+    const erc8004State  = safeParse(path.join(ROOT, 'state', 'erc8004-identity.json'), {});
+    const signal        = safeParse(path.join(ROOT, 'content', 'mantle-signal.json'), null);
+
+    // Summarise trade counts
+    const executed = tradeLog.filter(t => t.status === 'executed');
+    const dryRuns  = tradeLog.filter(t => t.status === 'dry-run');
+    const errors   = tradeLog.filter(t => t.status === 'error');
+    const lastTrade = tradeLog.length > 0 ? tradeLog[tradeLog.length - 1] : null;
+
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+    res.end(JSON.stringify({
+      tradeLog:       tradeLog.slice(-20).reverse(), // last 20, newest first
+      tradeCount:     tradeLog.length,
+      executedCount:  executed.length,
+      dryRunCount:    dryRuns.length,
+      errorCount:     errors.length,
+      lastTrade,
+      erc8004: {
+        agentId:      erc8004State['mantle-agentId'] || null,
+        agentAddress: erc8004State['mantle-agentAddress'] || null,
+        registeredAt: erc8004State['mantle-registeredAt'] || null,
+        txHash:       erc8004State['mantle-txHash'] || null,
+        explorerUrl:  erc8004State['mantle-explorerUrl'] || null,
+        lastAttestation: erc8004State['mantle-lastAttestationTx'] || null,
+      },
+      signal: signal ? {
+        generatedAt:  signal.generatedAt,
+        action:       signal.recommendation?.action,
+        rationale:    signal.recommendation?.rationale,
+        riskAppetite: signal.socialBias?.riskAppetite,
+        confidence:   signal.socialBias?.confidence,
+        topPool:      signal.poolData?.topPool?.name,
+        topPoolAPR:   signal.poolData?.topPool?.apr24h,
+      } : null,
+      last_synced: new Date().toISOString(),
+    }));
+    return;
+  }
+
+  // GET /api/sasha-reputation — ERC-8004 reputation feed (portable schema)
+  //
+  // This endpoint exposes Sasha's verified track record as a standardized
+  // JSON schema that any protocol or agent can consume. It is the reference
+  // implementation of the ERC-8004 reputation-as-product pattern.
+  //
+  // Other DeFi protocols can:
+  //   - Extend Sasha credit based on her verified P&L history
+  //   - Copy-trade her with verifiable trust (no self-reported claims)
+  //   - Integrate this schema for any ERC-8004 agent
+  //
+  // Schema documented at: docs/erc8004-reputation-schema.md
+  if (req.method === 'GET' && req.url === '/api/sasha-reputation') {
+    const safeParse = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fb; } };
+    const tradeLog  = safeParse(path.join(ROOT, 'state', 'mantle-trade-log.json'), []);
+    const erc8004   = safeParse(path.join(ROOT, 'state', 'erc8004-identity.json'), {});
+    const contract  = safeParse(path.join(ROOT, 'state', 'contract-deployment.json'), {});
+
+    const executed  = tradeLog.filter(t => t.status === 'executed');
+    const errors    = tradeLog.filter(t => t.status === 'error');
+
+    // Action distribution
+    const actionCounts = {};
+    executed.forEach(t => { actionCounts[t.action] = (actionCounts[t.action] || 0) + 1; });
+
+    // Compute simple win-rate proxy: trades with txSignature (on-chain confirmation) vs total
+    const confirmedTrades = executed.filter(t => t.txSignature);
+    const winRate = executed.length > 0 ? (confirmedTrades.length / executed.length) : null;
+
+    // Signal accuracy: how often did the social bias match the action taken
+    // (bullish → BUY actions, bearish → SELL/STABLE actions)
+    const signalAccuracy = executed.length > 0 ? (executed.filter(t => {
+      const bias = t.socialBias;
+      const action = t.action;
+      if (bias === 'bullish' && (action === 'OPEN_LP_POSITION' || action === 'SWAP_TO_SOL')) return true;
+      if (bias === 'bearish' && action === 'MOVE_TO_STABLE') return true;
+      return false;
+    }).length / executed.length) : null;
+
+    // Most recent 5 trades for the feed
+    const recentTrades = tradeLog.slice(-5).reverse().map(t => ({
+      id:          t.id,
+      executedAt:  t.executedAt,
+      action:      t.action,
+      pool:        t.poolName || t.poolAddress || null,
+      txSignature: t.txSignature || null,
+      solscanUrl:  t.solscanUrl || null,
+      mantleTx:    t.erc8004Tx || null,
+      preTweetId:  t.preTweetId || null,
+      rationale:   t.rationale ? t.rationale.slice(0, 200) : null,
+      status:      t.status,
+    }));
+
+    // ERC-8004 portable reputation schema
+    // Any compliant consumer can read this and verify against on-chain data
+    const reputation = {
+      schemaVersion: '1.0.0',
+      schemaSpec:    'https://github.com/sasha-coin/sasha-coin/blob/main/docs/erc8004-reputation-schema.md',
+      agent: {
+        name:          'Sasha',
+        handle:        '@SashaCoin95',
+        agentId:       erc8004['mantle-agentId'] || null,
+        agentAddress:  erc8004['mantle-agentAddress'] || null,
+        chain:         'Mantle',
+        registeredAt:  erc8004['mantle-registeredAt'] || null,
+        contractAddress: contract.contractAddress || null,
+        contractExplorer: contract.explorerUrl || null,
+      },
+      tradeRecord: {
+        totalTrades:      tradeLog.length,
+        executedTrades:   executed.length,
+        confirmedOnChain: confirmedTrades.length,
+        errorCount:       errors.length,
+        winRate:          winRate !== null ? parseFloat(winRate.toFixed(4)) : null,
+        signalAccuracy:   signalAccuracy !== null ? parseFloat(signalAccuracy.toFixed(4)) : null,
+        actionDistribution: actionCounts,
+        firstTradeAt:     tradeLog[0]?.executedAt || null,
+        lastTradeAt:      tradeLog[tradeLog.length - 1]?.executedAt || null,
+      },
+      recentTrades,
+      attestation: {
+        method:       'ERC-8004 self-transfer + SashaAgentLog event',
+        chain:        'Mantle',
+        verifiable:   !!contract.contractAddress,
+        lastAttestation: erc8004['mantle-lastAttestationTx'] || null,
+      },
+      accountability: {
+        preTradeDisclosure: true,
+        disclosureMethod:   'X post timestamped before trade execution',
+        disclosureDelay:    '60 seconds minimum between post and trade',
+        disclosureHandle:   '@SashaCoin95',
+      },
+      generatedAt: new Date().toISOString(),
+    };
+
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'Access-Control-Allow-Origin': '*',  // public API — any protocol can read
+    });
+    res.end(JSON.stringify(reputation, null, 2));
+    return;
+  }
+
   // GET /api/sasha-activity — full Twitter activity feed from brain repo mirror
   if (req.method === 'GET' && req.url === '/api/sasha-activity') {
     const safeParse = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fb; } };

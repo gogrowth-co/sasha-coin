@@ -84,7 +84,7 @@ MANTLE_RPC_URL=https://rpc.mantle.xyz
 
 # Signal sources
 OPENROUTER_API_KEY=<openrouter.ai>   # social bias LLM
-ALLORA_API_KEY=<developer.allora.network>  # free
+ALLORA_API_KEY=<app.allora.network or developer.upshot.xyz>  # free
 ELFA_API_KEY=<elfa.ai>               # free tier
 
 # Notifications

@@ -24,7 +24,7 @@
 import https from 'https'
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '../..')
@@ -270,7 +270,7 @@ export async function getElfaSignal(tickers = TICKERS) {
 // CLI
 // ---------------------------------------------------------------------------
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     const args = process.argv.slice(2)
     const tickerIdx = args.indexOf('--ticker')
     const tickers = tickerIdx !== -1 ? [args[tickerIdx + 1]] : TICKERS

@@ -24,7 +24,7 @@
 import https from 'https'
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '../..')
@@ -275,7 +275,7 @@ export async function getPolymarketSignal() {
 // CLI
 // ---------------------------------------------------------------------------
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     const signal = await getPolymarketSignal()
     console.log('\n--- Polymarket Signal ---')
     console.log(JSON.stringify(signal, null, 2))

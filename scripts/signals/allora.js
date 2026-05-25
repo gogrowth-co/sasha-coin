@@ -16,7 +16,7 @@
  *   node scripts/signals/allora.js              # prints signal JSON
  *   node scripts/signals/allora.js --dry-run    # same, explicit
  *
- * Env: ALLORA_API_KEY (get from developer.allora.network — free tier)
+ * Env: ALLORA_API_KEY (get from https://app.allora.network — free tier)
  *
  * Mantle Turing Test Hackathon 2026 — Sasha Coin
  */
@@ -24,7 +24,7 @@
 import https from 'https'
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '../..')
@@ -175,7 +175,7 @@ export async function getAlloraSignal() {
     const apiKey = process.env.ALLORA_API_KEY
     if (!apiKey) {
         console.warn('[allora] ALLORA_API_KEY not set — returning neutral signal')
-        console.warn('[allora] Get your free key at: https://developer.allora.network')
+        console.warn('[allora] Get your free key at: https://app.allora.network (or https://developer.upshot.xyz)')
         return NEUTRAL_SIGNAL
     }
 
@@ -272,7 +272,7 @@ export async function getAlloraSignal() {
 // CLI entry point
 // ---------------------------------------------------------------------------
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     const signal = await getAlloraSignal()
     console.log('\n--- Allora Signal ---')
     console.log(JSON.stringify(signal, null, 2))
