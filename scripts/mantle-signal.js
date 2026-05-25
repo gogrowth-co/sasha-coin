@@ -264,7 +264,8 @@ function fuseSignals(socialBias, poolData, alloraSignal, elfaSignal, polymarketS
     const polyScore       = dirToScore(poly.directionalBias)     * WEIGHTS.polymarket * (poly.confidence || 0.35)
 
     // Onchain: APR > threshold = bullish signal with 30% weight
-    const onchainSentiment = poolData?.topPool?.apr24h > 50 && poolData?.topPool?.tvl > 100_000 ? 1 : 0
+    // TVL threshold lowered to 1_000 for hackathon demo (small pool, small trade size)
+    const onchainSentiment = poolData?.topPool?.apr24h > 50 && poolData?.topPool?.tvl > 1_000 ? 1 : 0
     const onchainScore     = onchainSentiment * WEIGHTS.onchain
 
     const totalScore = socialScore + alloraScore + elfaScore + polyScore + onchainScore
@@ -298,7 +299,7 @@ function fuseSignals(socialBias, poolData, alloraSignal, elfaSignal, polymarketS
         }
     }
 
-    if (effectiveScore > 0.2 && poolData?.topPool?.apr24h > 50 && poolData?.topPool?.tvl > 100_000) {
+    if (effectiveScore >= 0.19 && poolData?.topPool?.apr24h > 50 && poolData?.topPool?.tvl > 1_000) {
         // Bullish consensus + high-APR opportunity on-chain
         return {
             action: 'OPEN_LP_POSITION',
