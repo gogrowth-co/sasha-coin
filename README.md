@@ -124,10 +124,10 @@ npm run signal:dry
 ## Deployed contract
 
 ```
-Address:  [placeholder — update after VPS deploy]
+Address:  0x71e27D792ADF726eD5C55f74052E8A8f063B9EF8
 Network:  Mantle Mainnet
-TX:       [placeholder]
-Explorer: https://explorer.mantle.xyz/address/[address]
+TX:       0xe3ff3c40ba6370a307ee7cbecbb0f9008844c1e9251000a3cd69ab7b31d0e623
+Explorer: https://explorer.mantle.xyz/address/0x71e27D792ADF726eD5C55f74052E8A8f063B9EF8
 ```
 
 ---
@@ -135,7 +135,9 @@ Explorer: https://explorer.mantle.xyz/address/[address]
 ## ERC-8004 agent identity
 
 ```
-Agent ID: [placeholder — update after erc8004:register runs on VPS]
+Agent ID: 100
+Registry: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432
+Explorer: https://explorer.mantle.xyz/token/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432/instance/100
 ```
 
 ---
