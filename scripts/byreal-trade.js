@@ -418,8 +418,8 @@ function appendTradeLog(entry) {
 // ---------------------------------------------------------------------------
 
 function sendTelegram(message) {
-    const token = process.env.TELEGRAM_BOT_TOKEN
-    const chatId = process.env.TELEGRAM_CHAT_ID
+    const token = process.env.TELEGRAM_BOT_TOKEN || process.env.TERMUX_BRIDGE_TOKEN
+    const chatId = process.env.TELEGRAM_CHAT_ID || process.env.COMMANDER_CHAT_ID
 
     if (!token || !chatId) {
         console.warn('[trade] Telegram not configured (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID missing)')
