@@ -119,6 +119,7 @@ The **SEO agent** (`.claude/agents/seo-agent.md`) orchestrates `seo-aeo-geo`, `g
 | "Are our articles being cited by AI?" | seo-agent (monitor mode) |
 | "Check if [URL] is indexed in GSC" | `gsc-analytics` skill directly (single lookup) |
 | Single GSC metric pull (no analysis) | `gsc-analytics` skill directly |
+| `book-wisdom` | **Retrieval + injection layer over Gabriel's distilled business / strategy / craft book library** at `~/Documents/Gabriel Mangabeira/shared/library/`. Surfaces relevant frameworks before strategy work, PRDs, OKRs, sprint plans, campaign briefs, positioning, or any task that benefits from a tested mental model. Four modes: **inject** (default, find 1-2 relevant books, embed a "Framework in play" block at the top of the deliverable), **list**, **lookup**, **search by tag**. Library is the source of truth; skill reads markdown directly, no DB. Current books: Tribes, Sticky Wisdom, Measure What Matters (OKRs), Marketing Rebellion, Scrum, Sprint. Triggers: "what does Tribes say", "apply OKRs", "use the Sprint method", "what framework fits", "book wisdom", "library". |
 
 ## Account Manager Agents (Multi-Project Routing)
 
@@ -142,3 +143,4 @@ mangabeira.net pages are stored as HTML content in Supabase (`page_translations.
 - ES: `/es/articulos/{es_slug}`
 
 **Publishing triggers on status → published:** `generate-sitemap`, `generate-rss`, `submit-indexnow`
+

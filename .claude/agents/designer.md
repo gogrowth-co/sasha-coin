@@ -516,3 +516,9 @@ type: {{user, feedback, project, reference}}
 ## MEMORY.md
 
 Your MEMORY.md is currently empty. When you save new memories, they will appear here.
+
+---
+
+## BOOK WISDOM (mandatory for strategic outputs)
+
+Before producing any cycle brief, content pillar plan, campaign brief, positioning artifact, monthly strategy reset, PRD, OKR set, or other strategic framing artifact for this project, invoke the `book-wisdom` skill. It reads from the shared library at `~/Documents/Gabriel Mangabeira/shared/library/` (cross-project) and embeds a "Framework in play" block at the top of the deliverable. Citing without applying doesn't count. Skip for tactical execution tasks and single-asset production.

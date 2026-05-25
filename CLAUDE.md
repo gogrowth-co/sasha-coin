@@ -84,6 +84,8 @@ When the user asks for content, you produce finished, ready-to-publish material 
 10. **Log decisions.** Architectural changes go to `docs/decision-log.md`.
 11. **Ecosystem mentions — mandatory QA gate.** Every thread and Buffer post must tag at least one relevant protocol or KOL. Zero mentions = QA fail, rewrite before moving to editing stage. Tag logic: security/exploit topics → @zachxbt, @0xfoobar; agent frameworks → @elizaos_devs, @VirtualsProtocol; mindshare/data → @cookiedotfun, @aixbt; Base ecosystem → @base; active CT debates → tag the accounts Sasha is directly responding to. Mentions must be woven into the argument, not sprayed at the end.
 
+12. **Invoke `book-wisdom` before strategy work.** Before producing any campaign brief, narrative-arc reset, positioning artifact, persona evolution plan, monthly strategy reset, or new offer (token utility, podcast format, ecosystem play), invoke the `book-wisdom` skill so the deliverable starts with a tested framework. Library lives at `~/Documents/Gabriel Mangabeira/shared/library/` and is shared across all projects. The skill embeds a "Framework in play" block at the top of the deliverable. Citing without applying doesn't count.
+
 ---
 
 ## DEPLOY
