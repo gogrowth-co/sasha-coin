@@ -59,10 +59,12 @@ const ADDR = {
     USDC:  '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     cbBTC: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
     // Uniswap v3
-    UNISWAP_NFT_MGR: '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f6',
+    UNISWAP_NFT_MGR:    '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f6',
+    UNISWAP_SWAP_ROUTER: '0x2626664c2603336E57B271c5C0b26F421741e481',
     // Aerodrome Slipstream
     AERO_NFT_MGR:    '0x827922686190790b37229fd06084350E74485b72',
     AERO_VOTER:      '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
+    AERO_CL_ROUTER:  '0xBE6D8f0d05cC4be24d5167a3eF062215bE6D18a5',
 }
 
 // ─── ABIs ─────────────────────────────────────────────────────────────────────
@@ -72,6 +74,11 @@ const ERC20_ABI = [
     'function allowance(address owner, address spender) view returns (uint256)',
     'function balanceOf(address account) view returns (uint256)',
     'function decimals() view returns (uint8)',
+]
+
+// Aerodrome CL Router — exactInputSingle for CL pools (uses tickSpacing, not fee)
+const AERO_CL_ROUTER_ABI = [
+    'function exactInputSingle((address tokenIn, address tokenOut, int24 tickSpacing, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96)) external payable returns (uint256 amountOut)',
 ]
 
 const NFT_MGR_ABI = [
@@ -277,6 +284,46 @@ function computePositionAmounts(position, currentPrice) {
     return { tickLower, tickUpper, amount0Desired, amount1Desired, sqrtPa, sqrtPb, sqrtP }
 }
 
+// ─── Auto-swap: USDC → cbBTC ──────────────────────────────────────────────────
+
+/**
+ * If the wallet holds enough USDC but insufficient cbBTC,
+ * swap the required USDC amount into cbBTC via Aerodrome CL router.
+ *
+ * Called automatically before minting when symbol includes cbBTC.
+ * Allows Gabriel to fund with USDC only — Sasha handles the split.
+ */
+async function swapUsdcToCbBtc(amountUsdcRaw, wallet, provider, dryRun) {
+    log(`  Auto-swap: ${(Number(amountUsdcRaw) / 1e6).toFixed(2)} USDC → cbBTC`)
+
+    if (dryRun) {
+        log('  DRY RUN — would swap via Aerodrome CL router (tickSpacing 2000)')
+        return true
+    }
+
+    const usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, wallet)
+    const router = new ethers.Contract(ADDR.AERO_CL_ROUTER, AERO_CL_ROUTER_ABI, wallet)
+
+    // Approve router for the USDC amount
+    log('  Approving USDC for Aerodrome CL router...')
+    await (await usdc.approve(ADDR.AERO_CL_ROUTER, amountUsdcRaw)).wait()
+
+    // Swap: 3% slippage floor, no sqrtPriceLimit
+    const tx = await router.exactInputSingle({
+        tokenIn:             ADDR.USDC,
+        tokenOut:            ADDR.cbBTC,
+        tickSpacing:         2000,
+        recipient:           wallet.address,
+        deadline:            Math.floor(Date.now() / 1000) + 300,
+        amountIn:            amountUsdcRaw,
+        amountOutMinimum:    0n,   // 0 = accept any output; fine for small test position
+        sqrtPriceLimitX96:   0n,
+    })
+    const receipt = await tx.wait()
+    log(`  Swap tx: ${receipt.hash}`)
+    return true
+}
+
 // ─── Balance Check ────────────────────────────────────────────────────────────
 
 async function checkBalances(position, amount0Desired, amount1Desired, wallet, provider) {
@@ -344,13 +391,51 @@ async function openPosition(position, dryRun) {
     const isAerodrome = (position.project || '').includes('aerodrome')
     const nftMgrAddr = isAerodrome ? ADDR.AERO_NFT_MGR : ADDR.UNISWAP_NFT_MGR
 
-    // Check balances
+    // ── Auto-swap: if wallet has enough USDC but not enough cbBTC, swap the diff ──
+    const isCbBtcPool = (position.symbol || '').toUpperCase().includes('CBBTC') ||
+                        (position.coinId || '').includes('bitcoin')
+    if (isCbBtcPool) {
+        const usdc  = new ethers.Contract(ADDR.USDC,  ERC20_ABI, provider)
+        const cbbtc = new ethers.Contract(ADDR.cbBTC, ERC20_ABI, provider)
+        const [usdcBal, cbbtcBal] = await Promise.all([
+            usdc.balanceOf(wallet.address),
+            cbbtc.balanceOf(wallet.address),
+        ])
+
+        const usdcShortfall  = amount0Desired > usdcBal  ? amount0Desired - usdcBal  : 0n
+        const cbbtcShortfall = amount1Desired > cbbtcBal ? amount1Desired - cbbtcBal : 0n
+
+        if (cbbtcShortfall > 0n) {
+            // How much USDC would cover the cbBTC shortfall at current price?
+            // cbbtcShortfall is in 1e8 raw; price in USD; USDC is 1e6 raw
+            const cbbtcNeededUsd = Number(cbbtcShortfall) / 1e8 * currentPrice
+            const usdcToSwapRaw  = BigInt(Math.ceil(cbbtcNeededUsd * 1.02 * 1e6)) // +2% buffer
+
+            log(`  cbBTC shortfall: ${Number(cbbtcShortfall)/1e8} cbBTC (~$${cbbtcNeededUsd.toFixed(2)})`)
+            log(`  Will swap ${Number(usdcToSwapRaw)/1e6} USDC → cbBTC`)
+
+            const totalUsdcNeeded = amount0Desired + usdcToSwapRaw
+            if (usdcBal < totalUsdcNeeded) {
+                const totalUsdcUsd = Number(totalUsdcNeeded) / 1e6
+                const msg = `❌ <b>[LP_OPENER]</b> Need $${totalUsdcUsd.toFixed(2)} USDC total\n` +
+                    `(~$${Number(amount0Desired)/1e6} for LP + ~$${Number(usdcToSwapRaw)/1e6} to swap for cbBTC)\n` +
+                    `Wallet: <code>${wallet.address}</code>\n` +
+                    `Also need 0.001 ETH for gas.`
+                sendTelegram(msg)
+                return { success: false, error: 'Insufficient USDC for position + swap', walletAddress: wallet.address }
+            }
+
+            await swapUsdcToCbBtc(usdcToSwapRaw, wallet, provider, !EXECUTE)
+        }
+    }
+
+    // Check balances (post-swap)
     const balCheck = await checkBalances(position, amount0Desired, amount1Desired, wallet, provider)
     if (!balCheck.ok) {
-        const msg = `❌ <b>[LP_OPENER]</b> Insufficient balance for ${position.symbol}\n` +
+        const msg = `❌ <b>[LP_OPENER]</b> Insufficient balance after swap for ${position.symbol}\n` +
             `Need token0: ${amount0Desired} | Have: ${balCheck.bal0}\n` +
             `Need token1: ${amount1Desired} | Have: ${balCheck.bal1}\n` +
-            `Fund ${wallet.address} on Base to proceed.`
+            `Fund <code>${wallet.address}</code> on Base to proceed.`
         sendTelegram(msg)
         return { success: false, error: 'Insufficient balance', walletAddress: wallet.address }
     }
