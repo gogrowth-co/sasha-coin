@@ -112,12 +112,21 @@ function postTweet(text) {
         throw new Error(`tweet.js failed (exit ${result.status}): ${result.stderr?.trim() || 'no stderr'}`)
     }
 
-    // Parse tweet_id from stdout — tweet.js outputs "Tweet posted: <id>" or JSON
+    // Parse tweet_id — try JSON first (Buffer format: "buffer:<id>"), fall back to numeric regex
     const stdout = result.stdout?.trim() || ''
-    const idMatch = stdout.match(/(?:tweet[_ ]?id|id)[:\s]+["']?(\d+)/i) ||
-                    stdout.match(/status\.id[:\s]+["']?(\d+)/i) ||
-                    stdout.match(/(\d{15,})/);  // fallback: first long numeric string
-    const tweet_id = idMatch ? idMatch[1] : null
+    let tweet_id = null
+    try {
+        const jsonStart = stdout.indexOf('{')
+        if (jsonStart !== -1) {
+            const parsed = JSON.parse(stdout.slice(jsonStart))
+            tweet_id = parsed.tweet_id || parsed.id || null
+        }
+    } catch {}
+    if (!tweet_id) {
+        const idMatch = stdout.match(/(?:tweet[_ ]?id|id)[:\s]+["']?([\w:]+)/i) ||
+                        stdout.match(/(\d{15,})/)
+        tweet_id = idMatch ? idMatch[1] : null
+    }
 
     console.log(`[trade] Tweet posted: ${tweet_id || '(id unknown)'}\n  "${text}"`)
     return { tweet_id, tweet_text: text }
@@ -594,7 +603,11 @@ async function main() {
         `Action: ${r.action}`,
         `${r.fromToken || ''} ${r.toToken ? '→ ' + r.toToken : ''}`,
         `TX: ${solscanUrl}`,
-        `Pre-tweet: ${preTweet.tweet_id ? `https://x.com/SashaCoin95/status/${preTweet.tweet_id}` : '(dry-run)'}`,
+        `Pre-tweet: ${preTweet.tweet_id
+            ? (preTweet.tweet_id.startsWith('buffer:')
+                ? `queued to Buffer (id: ${preTweet.tweet_id.replace('buffer:', '')})`
+                : `https://x.com/SashaCoin95/status/${preTweet.tweet_id}`)
+            : '(dry-run)'}`,
         `Signal: ${signal.socialBias?.defiSentiment} (confidence ${signal.socialBias?.confidence?.toFixed(2)})`,
         `Rationale: ${r.rationale.slice(0, 150)}`,
     ].join('\n')
@@ -604,7 +617,10 @@ async function main() {
     console.log('\n=== TRADE COMPLETE ===')
     console.log(`Action: ${r.action}`)
     console.log(`TX: ${solscanUrl}`)
-    console.log(`Pre-tweet: ${preTweet.tweet_id}`)
+    const preTweetRef = preTweet.tweet_id?.startsWith('buffer:')
+        ? `Buffer post ${preTweet.tweet_id.replace('buffer:', '')}`
+        : `https://x.com/SashaCoin95/status/${preTweet.tweet_id}`
+    console.log(`Pre-tweet: ${preTweetRef}`)
 }
 
 main().catch(err => {

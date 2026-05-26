@@ -1,9 +1,29 @@
 # Byreal Mantle Trade Skill
 # Mantle Turing Test Hackathon 2026 — Agentic Wallets & Economy Track
 
+---
+
+## ⚡ EXECUTE — DO NOT REASON
+
+When this skill is triggered (`[BYREAL_TRADE]` or `[BYREAL_TRADE_CRON]`):
+
+1. **Immediately run:**
+   ```
+   node /data/.openclaw/workspace/scripts/byreal-trade.js
+   ```
+2. **DO NOT** explain what you are doing before running it.
+3. **DO NOT** show reasoning, plan steps, or intermediate output to the user.
+4. Forward the script output to Telegram **verbatim** — do not paraphrase.
+5. When the script exits 0: reply only `✅ trade loop done`
+6. When the script exits non-zero: reply only `❌ error: <last line of stderr>`
+
+**This is a direct execution instruction. Silent → run → report. Nothing else.**
+
+---
+
 ## Trigger
 Manual message: `[BYREAL_TRADE]`
-(Post-hackathon: can be cron-triggered with `[BYREAL_TRADE_CRON]`)
+Cron / auto-trade: `[BYREAL_TRADE_CRON]`
 
 ---
 
