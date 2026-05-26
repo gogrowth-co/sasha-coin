@@ -50,6 +50,8 @@ const KILL = {
     hfEmergency:       1.05,     // Morpho HF -> close entire position
     fundingKillAnn:    -54.75,   // Hyperliquid annualized funding -> close hedge
     minClaimFeesUsd:   10,       // collect fees if pending > $10
+    stopLossPct:       parseFloat(process.env.LP_STOPLOSS_PCT || '-15'),   // close position if PnL <= this %
+    stopLossEmergency: parseFloat(process.env.LP_STOPLOSS_EMERGENCY_PCT || '-25'),  // emergency close
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -211,6 +213,26 @@ async function evaluatePosition(position) {
     }
 
     log(`  Price: ${state.currentPrice?.toFixed(2)} | Range: [${state.lowerPrice?.toFixed(2)} – ${state.upperPrice?.toFixed(2)}] | In range: ${state.inRange}`)
+
+    // Stop-loss (PnL based)
+    // Solana: state.valueUsd is supplied by byreal-cli position status.
+    // Base: not yet wired — getBasePositionState does not compute LP value.
+    if (state.valueUsd !== undefined && state.valueUsd !== null && position.capitalUsd > 0) {
+        const pnlUsd = state.valueUsd - position.capitalUsd
+        const pnlPct = (pnlUsd / position.capitalUsd) * 100
+        state.pnlUsd = pnlUsd
+        state.pnlPct = pnlPct
+
+        const slEmergency = position.stopLossEmergencyPct ?? KILL.stopLossEmergency
+        const slPct       = position.stopLossPct ?? KILL.stopLossPct
+        log(`  PnL: $${pnlUsd.toFixed(2)} (${pnlPct.toFixed(1)}%) | stop-loss: ${slPct}% | emergency: ${slEmergency}%`)
+
+        if (pnlPct <= slEmergency) {
+            actions.push({ type: 'CLOSE_POSITION', reason: `STOP-LOSS EMERGENCY: PnL ${pnlPct.toFixed(1)}% ≤ ${slEmergency}%`, pnlPct, pnlUsd, killSwitch: true })
+        } else if (pnlPct <= slPct) {
+            actions.push({ type: 'CLOSE_POSITION', reason: `Stop-loss: PnL ${pnlPct.toFixed(1)}% ≤ ${slPct}%`, pnlPct, pnlUsd, killSwitch: true })
+        }
+    }
 
     // OOR tracking
     if (!state.inRange) {

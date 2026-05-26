@@ -42,6 +42,33 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..')
 
+// ─── Load .env if present (handles invocation outside the agent runtime) ──────
+// OpenClaw's agent loads env at boot, but direct script invocation (cron payload,
+// SSH, or docker exec) doesn't inherit it. Read /data/.openclaw/.env if it exists.
+;(() => {
+    const candidates = [
+        '/data/.openclaw/.env',
+        path.resolve(WORKSPACE, '..', '.env'),
+        path.resolve(WORKSPACE, '.env'),
+    ]
+    for (const envPath of candidates) {
+        if (!fs.existsSync(envPath)) continue
+        const content = fs.readFileSync(envPath, 'utf8')
+        for (const line of content.split('\n')) {
+            const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)\s*$/i)
+            if (!m) continue
+            const [, key, rawVal] = m
+            if (process.env[key]) continue  // don't override existing
+            let val = rawVal.trim()
+            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                val = val.slice(1, -1)
+            }
+            process.env[key] = val
+        }
+        break
+    }
+})()
+
 // ─── CLI args ────────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2)
@@ -76,13 +103,21 @@ const ERC20_ABI = [
     'function decimals() view returns (uint8)',
 ]
 
-// Aerodrome CL Router — exactInputSingle for CL pools (uses tickSpacing, not fee)
-const AERO_CL_ROUTER_ABI = [
-    'function exactInputSingle((address tokenIn, address tokenOut, int24 tickSpacing, address recipient, uint256 deadline, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96)) external payable returns (uint256 amountOut)',
+// Uniswap v3 SwapRouter02 — exactInput (multi-hop) via path bytes
+const UNI_SWAP_ROUTER_ABI = [
+    'function exactInput((bytes path, address recipient, uint256 amountIn, uint256 amountOutMinimum)) external payable returns (uint256 amountOut)',
 ]
 
-const NFT_MGR_ABI = [
+// Uniswap v3 NftPositionManager: 3rd param is `uint24 fee`
+const UNI_NFT_MGR_ABI = [
     'function mint((address token0, address token1, uint24 fee, int24 tickLower, int24 tickUpper, uint256 amount0Desired, uint256 amount1Desired, uint256 amount0Min, uint256 amount1Min, address recipient, uint256 deadline)) returns (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)',
+    'function approve(address to, uint256 tokenId)',
+]
+
+// Aerodrome Slipstream NftPositionManager: 3rd param is `int24 tickSpacing`,
+// PLUS an extra `uint160 sqrtPriceX96` at the end (for initial pool price if uninitialized — pass 0 if pool exists)
+const AERO_NFT_MGR_ABI = [
+    'function mint((address token0, address token1, int24 tickSpacing, int24 tickLower, int24 tickUpper, uint256 amount0Desired, uint256 amount1Desired, uint256 amount0Min, uint256 amount1Min, address recipient, uint256 deadline, uint160 sqrtPriceX96)) returns (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1)',
     'function approve(address to, uint256 tokenId)',
 ]
 
@@ -297,27 +332,43 @@ async function swapUsdcToCbBtc(amountUsdcRaw, wallet, provider, dryRun) {
     log(`  Auto-swap: ${(Number(amountUsdcRaw) / 1e6).toFixed(2)} USDC → cbBTC`)
 
     if (dryRun) {
-        log('  DRY RUN — would swap via Aerodrome CL router (tickSpacing 2000)')
+        log('  DRY RUN — would swap via Uniswap v3 multi-hop USDC→WETH→cbBTC')
         return true
     }
 
     const usdc = new ethers.Contract(ADDR.USDC, ERC20_ABI, wallet)
-    const router = new ethers.Contract(ADDR.AERO_CL_ROUTER, AERO_CL_ROUTER_ABI, wallet)
+    const router = new ethers.Contract(ADDR.UNISWAP_SWAP_ROUTER, UNI_SWAP_ROUTER_ABI, wallet)
 
-    // Approve router for the USDC amount
-    log('  Approving USDC for Aerodrome CL router...')
-    await (await usdc.approve(ADDR.AERO_CL_ROUTER, amountUsdcRaw)).wait()
+    // Check existing allowance; only approve if insufficient (saves gas + avoids state race)
+    const existingAllowance = await usdc.allowance(wallet.address, ADDR.UNISWAP_SWAP_ROUTER)
+    if (existingAllowance < amountUsdcRaw) {
+        log(`  Approving USDC for Uniswap SwapRouter02 (MaxUint256)...`)
+        const approveTx = await usdc.approve(ADDR.UNISWAP_SWAP_ROUTER, ethers.MaxUint256)
+        await approveTx.wait(2)  // wait 2 confirmations for state propagation
+        // Verify
+        const newAllowance = await usdc.allowance(wallet.address, ADDR.UNISWAP_SWAP_ROUTER)
+        log(`  Confirmed allowance: ${newAllowance.toString()}`)
+        if (newAllowance < amountUsdcRaw) throw new Error('Approval did not propagate')
+    } else {
+        log(`  USDC already approved for router (${existingAllowance.toString()})`)
+    }
 
-    // Swap: 3% slippage floor, no sqrtPriceLimit
-    const tx = await router.exactInputSingle({
-        tokenIn:             ADDR.USDC,
-        tokenOut:            ADDR.cbBTC,
-        tickSpacing:         2000,
-        recipient:           wallet.address,
-        deadline:            Math.floor(Date.now() / 1000) + 300,
-        amountIn:            amountUsdcRaw,
-        amountOutMinimum:    0n,   // 0 = accept any output; fine for small test position
-        sqrtPriceLimitX96:   0n,
+    // Build multi-hop path: USDC →(0.05%)→ WETH →(0.30%)→ cbBTC
+    // Encoding: tokenIn (20) + fee (3) + tokenMid (20) + fee (3) + tokenOut (20)
+    // 0.05% = 500 (0x0001f4), 0.30% = 3000 (0x000bb8)
+    const path = ethers.concat([
+        ADDR.USDC,
+        '0x0001f4',                                  // 500 = 0.05% WETH/USDC pool
+        ADDR.WETH,
+        '0x000bb8',                                  // 3000 = 0.30% WETH/cbBTC pool
+        ADDR.cbBTC,
+    ])
+
+    const tx = await router.exactInput({
+        path,
+        recipient:        wallet.address,
+        amountIn:         amountUsdcRaw,
+        amountOutMinimum: 0n,   // 0 = accept any output; fine for small test position
     })
     const receipt = await tx.wait()
     log(`  Swap tx: ${receipt.hash}`)
@@ -367,7 +418,8 @@ async function openPosition(position, dryRun) {
     }
     log(`  RPC: ${rpc.includes('alchemy') ? 'Alchemy' : 'public Base RPC'}`)
 
-    const provider = new ethers.JsonRpcProvider(rpc)
+    // Disable batching — public Base RPC chokes on batched eth_call requests
+    const provider = new ethers.JsonRpcProvider(rpc, undefined, { batchMaxCount: 1 })
     const wallet   = new ethers.Wallet(pk.startsWith('0x') ? pk : '0x' + pk, provider)
     log(`  Agent EOA: ${wallet.address}`)
 
@@ -387,8 +439,8 @@ async function openPosition(position, dryRun) {
     }
 
     // Slippage: 1% minimum
-    const amount0Min = amount0Desired * 99n / 100n
-    const amount1Min = amount1Desired * 99n / 100n
+    let amount0Min = amount0Desired * 99n / 100n
+    let amount1Min = amount1Desired * 99n / 100n
 
     // Determine which NftManager to use
     const isAerodrome = (position.project || '').includes('aerodrome')
@@ -412,7 +464,7 @@ async function openPosition(position, dryRun) {
             // How much USDC would cover the cbBTC shortfall at current price?
             // cbbtcShortfall is in 1e8 raw; price in USD; USDC is 1e6 raw
             const cbbtcNeededUsd = Number(cbbtcShortfall) / 1e8 * currentPrice
-            const usdcToSwapRaw  = BigInt(Math.ceil(cbbtcNeededUsd * 1.02 * 1e6)) // +2% buffer
+            const usdcToSwapRaw  = BigInt(Math.ceil(cbbtcNeededUsd * 1.005 * 1e6)) // +0.5% slippage buffer
 
             log(`  cbBTC shortfall: ${Number(cbbtcShortfall)/1e8} cbBTC (~$${cbbtcNeededUsd.toFixed(2)})`)
             log(`  Will swap ${Number(usdcToSwapRaw)/1e6} USDC → cbBTC`)
@@ -434,7 +486,25 @@ async function openPosition(position, dryRun) {
 
     // Check balances (post-swap)
     const balCheck = await checkBalances(position, amount0Desired, amount1Desired, wallet, provider)
-    if (!balCheck.ok) {
+
+    // Use actual post-swap balances if they're slightly below desired (handles swap-settlement drift).
+    // The mint() function deposits up to amount{0,1}Desired and returns unused — so capping
+    // desired to actual balance is safe and avoids tiny shortfalls from price tick movement.
+    if (balCheck.bal0 < amount0Desired && balCheck.bal0 >= amount0Desired * 95n / 100n) {
+        log(`  Capping amount0Desired to actual balance: ${amount0Desired} → ${balCheck.bal0}`)
+        amount0Desired = balCheck.bal0
+    }
+    if (balCheck.bal1 < amount1Desired && balCheck.bal1 >= amount1Desired * 95n / 100n) {
+        log(`  Capping amount1Desired to actual balance: ${amount1Desired} → ${balCheck.bal1}`)
+        amount1Desired = balCheck.bal1
+    }
+
+    // Recompute mins (more permissive after capping)
+    amount0Min = amount0Desired * 90n / 100n   // 10% slippage tolerance
+    amount1Min = amount1Desired * 90n / 100n
+
+    // Final check (must have at least 90% of computed amounts after capping)
+    if (balCheck.bal0 < amount0Desired * 90n / 100n || balCheck.bal1 < amount1Desired * 90n / 100n) {
         const msg = `❌ <b>[LP_OPENER]</b> Insufficient balance after swap for ${position.symbol}\n` +
             `Need token0: ${amount0Desired} | Have: ${balCheck.bal0}\n` +
             `Need token1: ${amount1Desired} | Have: ${balCheck.bal1}\n` +
@@ -458,37 +528,61 @@ async function openPosition(position, dryRun) {
         `Capital: $${position.capitalUsd} | ticks: [${tickLower}, ${tickUpper}]`
     )
 
-    // Approve tokens
-    const nftMgr = new ethers.Contract(nftMgrAddr, NFT_MGR_ABI, wallet)
+    // Approve tokens (skip if already approved)
+    const nftMgrAbi = isAerodrome ? AERO_NFT_MGR_ABI : UNI_NFT_MGR_ABI
+    const nftMgr = new ethers.Contract(nftMgrAddr, nftMgrAbi, wallet)
     const token0 = new ethers.Contract(balCheck.token0Addr, ERC20_ABI, wallet)
     const token1 = new ethers.Contract(balCheck.token1Addr, ERC20_ABI, wallet)
 
-    log('  Approving token0...')
-    await (await token0.approve(nftMgrAddr, ethers.MaxUint256)).wait()
-    log('  Approving token1...')
-    await (await token1.approve(nftMgrAddr, ethers.MaxUint256)).wait()
-
-    // Determine fee from tickSpacing (Aerodrome uses tickSpacing as fee param too)
-    // For Aerodrome CL2000: fee encoding = tickSpacing * 100 → but Aerodrome mint uses (token0,token1,tickSpacing,tL,tU,...)
-    // Aerodrome NftPosManager.mint uses same interface as Uniswap v3 but fee = tickSpacing for CL pools
-    const feeOrTickSpacing = isAerodrome ? 2000 : 500  // CL2000 for Aerodrome, 0.05% for Uniswap
+    const [allow0, allow1] = await Promise.all([
+        token0.allowance(wallet.address, nftMgrAddr),
+        token1.allowance(wallet.address, nftMgrAddr),
+    ])
+    if (allow0 < amount0Desired) {
+        log('  Approving token0...')
+        await (await token0.approve(nftMgrAddr, ethers.MaxUint256)).wait(2)
+    } else log('  token0 already approved')
+    if (allow1 < amount1Desired) {
+        log('  Approving token1...')
+        await (await token1.approve(nftMgrAddr, ethers.MaxUint256)).wait(2)
+    } else log('  token1 already approved')
 
     // Mint
-    log('  Minting position...')
-    const deadline = Math.floor(Date.now() / 1000) + 300
-    const mintTx = await nftMgr.mint({
-        token0: balCheck.token0Addr,
-        token1: balCheck.token1Addr,
-        fee:        feeOrTickSpacing,
-        tickLower,
-        tickUpper,
-        amount0Desired,
-        amount1Desired,
-        amount0Min,
-        amount1Min,
-        recipient:  wallet.address,
-        deadline,
-    })
+    log(`  Minting position (${isAerodrome ? 'Aerodrome Slipstream' : 'Uniswap v3'})...`)
+    const deadline = Math.floor(Date.now() / 1000) + 600
+
+    let mintParams
+    if (isAerodrome) {
+        mintParams = {
+            token0:       balCheck.token0Addr,
+            token1:       balCheck.token1Addr,
+            tickSpacing:  2000,                  // CL2000
+            tickLower,
+            tickUpper,
+            amount0Desired,
+            amount1Desired,
+            amount0Min,
+            amount1Min,
+            recipient:    wallet.address,
+            deadline,
+            sqrtPriceX96: 0n,                    // 0 = pool already initialized
+        }
+    } else {
+        mintParams = {
+            token0:    balCheck.token0Addr,
+            token1:    balCheck.token1Addr,
+            fee:       500,                      // 0.05% for WETH/USDC
+            tickLower,
+            tickUpper,
+            amount0Desired,
+            amount1Desired,
+            amount0Min,
+            amount1Min,
+            recipient: wallet.address,
+            deadline,
+        }
+    }
+    const mintTx = await nftMgr.mint(mintParams)
     const receipt = await mintTx.wait()
     log(`  Mint tx: ${receipt.hash}`)
 
