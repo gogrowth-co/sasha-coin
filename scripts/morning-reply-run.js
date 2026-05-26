@@ -323,6 +323,9 @@ if (!DRY_RUN) {
       target_handle: r.handle,
       in_reply_to: r.tweetId,
       tweet_url: r.tweetUrl,
+      original_text: r.text || null,
+      topics: r.topicsOfInterest || [],
+      sasha_angle: r.sashaAngle || null,
       tweet_text: r.replyText,
       posted_at: r.replyPostedAt,
       status: r.status,
@@ -333,6 +336,16 @@ if (!DRY_RUN) {
     });
   }
   writeFileSync(LOG_PATH, JSON.stringify(log, null, 2));
+
+  // Sync engagement + topics in the background (non-blocking — don't fail the run if it errors)
+  const syncScript = join(__dirname, 'sync-reply-engagement.js');
+  try {
+    spawnSync(process.execPath, [syncScript], {
+      encoding: 'utf8', env: { ...process.env }, stdio: 'inherit', timeout: 120000,
+    });
+  } catch (e) {
+    console.log(`  ⚠️  Engagement sync failed (non-fatal): ${e.message}`);
+  }
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────

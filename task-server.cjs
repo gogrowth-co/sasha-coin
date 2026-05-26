@@ -1256,13 +1256,13 @@ Return only valid JSON. No markdown, no explanation.`;
     return;
   }
 
-  // GET /api/sasha-activity — full Twitter activity feed from brain repo mirror
+  // GET /api/sasha-activity — full Twitter activity feed
   if (req.method === 'GET' && req.url === '/api/sasha-activity') {
     const safeParse = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fb; } };
-    const postedLog = safeParse(path.join(ROOT, 'social/x/posted-log.json'), []);
-    const replyLog  = safeParse(path.join(ROOT, 'social/x/reply-log.json'), []);
-
+    // state/posted-log.json is the canonical source written by morning-reply-run.js
+    const postedLog = safeParse(path.join(ROOT, 'state/posted-log.json'), []);
     // Separate posts from replies based on 'source' field
+    // original_text, topics, sasha_angle are now stored directly on each reply entry
     const posts   = postedLog.filter(e => e.source !== 'reply').sort((a, b) => new Date(b.queued_at || b.posted_at || 0) - new Date(a.queued_at || a.posted_at || 0));
     const replies = postedLog.filter(e => e.source === 'reply').sort((a, b) => new Date(b.posted_at || 0) - new Date(a.posted_at || 0));
 
@@ -1270,7 +1270,6 @@ Return only valid JSON. No markdown, no explanation.`;
     res.end(JSON.stringify({
       posts,
       replies,
-      reply_log:   replyLog,
       total_posts:   posts.length,
       total_replies: replies.length,
       last_synced:   new Date().toISOString(),
@@ -1422,6 +1421,17 @@ Return only valid JSON. No markdown, no explanation.`;
     child.unref();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, message: 'Scrape started — refresh feed in ~60s' }));
+    return;
+  }
+
+  // POST /api/sync-engagement — run sync-reply-engagement.js on demand
+  if (req.method === 'POST' && req.url === '/api/sync-engagement') {
+    const child = spawn(process.execPath, [path.join(ROOT, 'scripts', 'sync-reply-engagement.js')], {
+      detached: true, stdio: 'ignore', env: { ...process.env },
+    });
+    child.unref();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, message: 'Engagement sync started — refresh in ~30s' }));
     return;
   }
 

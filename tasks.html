@@ -1080,7 +1080,8 @@
         <div class="header-sub" id="twitterLastSync">Loading…</div>
       </div>
     </div>
-    <div class="header-right">
+    <div class="header-right" style="display:flex;gap:8px">
+      <button class="filter-btn" onclick="syncEngagement(this)" style="background:rgba(31,182,255,0.1);border-color:rgba(31,182,255,0.3)">⟳ Sync Engagement</button>
       <button class="filter-btn active" onclick="loadTwitterActivity()">↻ Refresh</button>
     </div>
   </div>
@@ -1099,9 +1100,80 @@
   </div>
 
   <!-- Replies panel -->
-  <div id="tw-panel-replies" style="padding:20px 24px;display:none">
-    <div id="tw-replies-list" style="display:flex;flex-direction:column;gap:10px">
-      <div style="color:var(--muted);font-size:13px">Loading replies…</div>
+  <div id="tw-panel-replies" style="display:none">
+
+    <!-- Guidelines collapsible -->
+    <div id="reply-guidelines" style="margin:16px 24px 0;border:1px solid rgba(255,184,0,0.25);border-radius:8px;overflow:hidden">
+      <div onclick="toggleGuidelines()" style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:rgba(255,184,0,0.06);cursor:pointer;user-select:none">
+        <span style="font-size:12px;font-weight:700;color:#FFB800;letter-spacing:.06em">📋 REPLY GUIDELINES</span>
+        <span id="guidelines-chevron" style="font-size:11px;color:var(--muted)">▼ show</span>
+      </div>
+      <div id="guidelines-body" style="display:none;padding:14px 16px;background:rgba(10,37,64,0.6)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;font-size:12px;line-height:1.6">
+          <div>
+            <div style="color:#1FB6FF;font-weight:700;margin-bottom:6px;font-size:11px;letter-spacing:.05em">✅ DO</div>
+            <ul style="margin:0;padding-left:16px;color:var(--white);opacity:.85">
+              <li>Max 240 chars</li>
+              <li>Start with the substance — open with a fact, observation, or question</li>
+              <li>First person singular (I / my / I've seen)</li>
+              <li>One concrete data point or angle the tweet didn't say</li>
+              <li>1–2 sentences max</li>
+              <li>Plain English — no jargon non-crypto people wouldn't know</li>
+              <li>Pick tweets in Sasha's lane: DeFAI · AI agents · DeFi UX · onchain activity</li>
+            </ul>
+          </div>
+          <div>
+            <div style="color:#ef4444;font-weight:700;margin-bottom:6px;font-size:11px;letter-spacing:.05em">🚫 DON'T</div>
+            <ul style="margin:0;padding-left:16px;color:var(--white);opacity:.85">
+              <li>No hashtags · no links · no @mentions</li>
+              <li>No emojis unless the original uses them</li>
+              <li>No validation openers: "Great point", "Exactly", "Fair point", "Totally", "Same here", "Valid", "I hear you"</li>
+              <li>No banned words: revolutionary · to the moon · wen · fren · gm · gn · alpha · bullish · bearish · WAGMI · LFG · based · ser · anon · ngmi · degen · ecosystem · paradigm shift · "the crypto space"</li>
+              <li>Never conflate two different populations (access vs adoption, etc.)</li>
+            </ul>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:var(--muted)">
+          📁 Full rules: <code style="font-size:10px;color:#1FB6FF">scripts/morning-reply-run.js</code> — Gemini prompt block (generateReply function)
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters + stats bar -->
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 24px 0">
+      <span style="font-size:11px;color:var(--muted)" id="reply-stats-label">Loading…</span>
+      <div style="flex:1"></div>
+      <select id="reply-filter-handle" onchange="renderRepliesTable()" style="background:var(--mid-navy);color:var(--white);border:1px solid rgba(31,182,255,0.15);border-radius:4px;padding:4px 8px;font-size:11px">
+        <option value="">All KOLs</option>
+      </select>
+      <select id="reply-filter-score" onchange="renderRepliesTable()" style="background:var(--mid-navy);color:var(--white);border:1px solid rgba(31,182,255,0.15);border-radius:4px;padding:4px 8px;font-size:11px">
+        <option value="">All scores</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+        <option value="unscored">Unscored</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div style="padding:12px 24px 24px;overflow-x:auto">
+      <table id="replies-table" style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(31,182,255,0.15);text-align:left">
+            <th style="padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;width:90px">Time</th>
+            <th style="padding:8px 10px;color:var(--muted);font-weight:600;width:120px">KOL</th>
+            <th style="padding:8px 10px;color:var(--muted);font-weight:600">Original Tweet</th>
+            <th style="padding:8px 10px;color:var(--muted);font-weight:600">Sasha's Reply</th>
+            <th style="padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;width:110px">Engagement</th>
+            <th style="padding:8px 10px;color:var(--muted);font-weight:600;width:130px">Topics</th>
+            <th style="padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;width:70px;text-align:center">Score</th>
+          </tr>
+        </thead>
+        <tbody id="replies-tbody">
+          <tr><td colspan="7" style="padding:20px;text-align:center;color:var(--muted)">Loading replies…</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -3978,17 +4050,136 @@ async function loadTwitterActivity() {
       postsList.innerHTML = twitterData.posts.map(e => renderTwitterCard(e, 'post')).join('');
     }
 
-    const repliesList = document.getElementById('tw-replies-list');
-    if (twitterData.replies.length === 0) {
-      repliesList.innerHTML = '<div style="color:var(--muted);font-size:13px">No replies logged yet. Cron fires next at 11:00 BRT.</div>';
-    } else {
-      repliesList.innerHTML = twitterData.replies.map(e => renderTwitterCard(e, 'reply')).join('');
-    }
+    renderRepliesTable();
   } catch (e) {
-    ['tw-posts-list','tw-replies-list'].forEach(id => {
-      document.getElementById(id).innerHTML = `<div style="color:#ef4444;font-size:13px">Error loading activity: ${e.message}</div>`;
-    });
+    document.getElementById('tw-posts-list').innerHTML = `<div style="color:#ef4444;font-size:13px">Error loading activity: ${e.message}</div>`;
+    document.getElementById('replies-tbody').innerHTML = `<tr><td colspan="7" style="padding:20px;text-align:center;color:#ef4444">Error: ${e.message}</td></tr>`;
   }
+}
+
+function toggleGuidelines() {
+  const body = document.getElementById('guidelines-body');
+  const chev = document.getElementById('guidelines-chevron');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  chev.textContent = open ? '▼ show' : '▲ hide';
+}
+
+function renderRepliesTable() {
+  if (!twitterData) return;
+  const filterHandle = document.getElementById('reply-filter-handle')?.value || '';
+  const filterScore  = document.getElementById('reply-filter-score')?.value  || '';
+
+  let rows = twitterData.replies || [];
+
+  // Populate handle filter (first time)
+  const handleSel = document.getElementById('reply-filter-handle');
+  if (handleSel && handleSel.options.length <= 1) {
+    const handles = [...new Set(rows.map(r => r.target_handle).filter(Boolean))].sort();
+    handles.forEach(h => { const o = document.createElement('option'); o.value = h; o.textContent = '@' + h; handleSel.appendChild(o); });
+  }
+
+  if (filterHandle) rows = rows.filter(r => r.target_handle === filterHandle);
+  if (filterScore === 'unscored') rows = rows.filter(r => !r.grade);
+  else if (filterScore) rows = rows.filter(r => r.grade === filterScore);
+
+  const statsEl = document.getElementById('reply-stats-label');
+  if (statsEl) {
+    const scored = (twitterData.replies || []).filter(r => r.grade).length;
+    const total  = (twitterData.replies || []).length;
+    statsEl.textContent = `${total} replies · ${scored} scored · ${total - scored} pending review`;
+  }
+
+  const SCORE_COLORS = { A:'#22c55e', B:'#1FB6FF', C:'#FFB800', D:'#ef4444' };
+  const SCORES = ['A','B','C','D'];
+
+  const tbody = document.getElementById('replies-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--muted)">No replies match the filter.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const ts = r.posted_at || '';
+    const time = ts ? new Date(ts).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+
+    // KOL cell: link goes to the ORIGINAL tweet; Sasha reply link separate
+    const kolCell = r.target_handle
+      ? `<a href="${r.tweet_url || '#'}" target="_blank" style="color:#1FB6FF;text-decoration:none;font-weight:600">@${r.target_handle}</a>`
+      : '—';
+
+    const origText = r.original_text
+      ? `<span title="${r.original_text.replace(/"/g,'&quot;')}" style="color:var(--white);opacity:.75;cursor:help">${r.original_text.length > 100 ? r.original_text.slice(0,100)+'…' : r.original_text}</span>`
+      : `<a href="${r.tweet_url || '#'}" target="_blank" style="color:var(--muted);font-size:11px;text-decoration:none">↗ view tweet</a>`;
+
+    const replyText = (r.tweet_text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    const hasSyncedEng = r.likes_latest != null;
+    const engLine = hasSyncedEng
+      ? `♥ ${r.likes_latest} · 💬 ${r.replies_latest} · 👁 ${r.views_latest ?? '—'}`
+      : (r.likes_24h != null ? `♥ ${r.likes_24h} · 💬 ${r.replies_24h}` : null);
+    const replyLink = r.sasha_tweet_url
+      ? `<br><a href="${r.sasha_tweet_url}" target="_blank" style="font-size:10px;color:var(--muted);text-decoration:none">↗ her reply</a>`
+      : '';
+    const eng = engLine
+      ? `<span style="white-space:nowrap;font-size:11px">${engLine}${replyLink}</span>`
+      : `<span style="color:var(--muted);font-size:11px">not synced${replyLink}</span>`;
+
+    const topics = (r.topics || []).length
+      ? r.topics.map(t => `<span style="background:rgba(31,182,255,0.1);color:#1FB6FF;border-radius:3px;padding:1px 5px;font-size:10px;white-space:nowrap">${t}</span>`).join(' ')
+      : '<span style="color:var(--muted)">—</span>';
+
+    const scoreCell = SCORES.map(s => {
+      const active = r.grade === s;
+      const col = SCORE_COLORS[s];
+      return `<button onclick="setReplyScore('${r.id}','${s}')" title="${s}" style="width:24px;height:22px;border-radius:3px;border:1px solid ${col};background:${active ? col : 'transparent'};color:${active ? '#000' : col};font-size:10px;font-weight:800;cursor:pointer;padding:0;line-height:1">${s}</button>`;
+    }).join('');
+
+    const rowBg = r.grade ? '' : 'background:rgba(255,184,0,0.03)';
+    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);${rowBg}" id="reply-row-${r.id}">
+      <td style="padding:10px 10px;color:var(--muted);white-space:nowrap;vertical-align:top">${time}</td>
+      <td style="padding:10px 10px;vertical-align:top">${kolCell}</td>
+      <td style="padding:10px 10px;vertical-align:top;max-width:220px">${origText}</td>
+      <td style="padding:10px 10px;vertical-align:top;color:var(--white);max-width:260px;line-height:1.5">${replyText}</td>
+      <td style="padding:10px 10px;vertical-align:top;color:var(--muted);white-space:nowrap;font-size:11px">${eng}</td>
+      <td style="padding:10px 10px;vertical-align:top">${topics}</td>
+      <td style="padding:10px 10px;vertical-align:top;text-align:center"><div style="display:flex;gap:3px;justify-content:center">${scoreCell}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function syncEngagement(btn) {
+  const orig = btn.textContent;
+  btn.textContent = '⟳ Syncing…';
+  btn.disabled = true;
+  try {
+    await fetch('/api/sync-engagement', { method: 'POST' });
+    // Wait ~35s for the background process then reload
+    setTimeout(async () => {
+      await loadTwitterActivity();
+      btn.textContent = '✅ Synced';
+      setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+    }, 35000);
+  } catch(e) {
+    btn.textContent = '❌ Failed';
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }
+}
+
+async function setReplyScore(id, score) {
+  // Toggle off if same score clicked again
+  const existing = (twitterData.replies || []).find(r => r.id === id);
+  const newGrade = existing && existing.grade === score ? null : score;
+  try {
+    await fetch('/api/reply-log/' + encodeURIComponent(id), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ grade: newGrade }),
+    });
+    if (existing) existing.grade = newGrade;
+    renderRepliesTable();
+  } catch(e) { console.error('Score update failed', e); }
 }
 </script>
 

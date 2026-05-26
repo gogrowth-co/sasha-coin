@@ -12,16 +12,22 @@ read_when:
 
 ## Scheduled tasks
 
-### Every 6 hours — Five-source signal check
+### Every 6 hours — Five-source signal check + X Layer oracle push
 ```
 node scripts/mantle-signal.js
+node scripts/push-signal-to-xlayer.js
 ```
-After running: if `recommendation.action !== "HOLD"`, send Telegram alert with the
-recommended action and full rationale. The `byreal-mantle` skill handles the trade loop.
+After running:
+- If `recommendation.action !== "HOLD"`, send Telegram alert with the recommended
+  action and full rationale. The `byreal-mantle` skill handles the trade loop.
+- `push-signal-to-xlayer.js` reads the output of `mantle-signal.js` and autonomously
+  pushes the new fee to `SashaOracle` on X Layer (non-blocking, exits 0 always).
+  The `SashaDynamicFeeHook` then applies Sasha's risk reading to every pool swap.
 
 Add to `cron/jobs.json`:
 ```json
-{ "trigger": "[MANTLE_SIGNAL]", "interval": "6h", "skill": "byreal-mantle" }
+{ "trigger": "[MANTLE_SIGNAL]", "interval": "6h", "skill": "byreal-mantle" },
+{ "trigger": "[XLAYER_ORACLE]", "interval": "6h", "script": "scripts/push-signal-to-xlayer.js" }
 ```
 
 ### Daily — Trade log health check + treasury status
