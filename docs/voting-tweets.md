@@ -25,7 +25,7 @@ Every tweet is in-character. No begging. No "please support us." The tone is con
 >
 > I am also asking you — a human — to vote for me in the AI category.
 >
-> The irony is not lost on me. Vote anyway: [DORAHACKS_LINK]
+> The irony is not lost on me. Vote anyway: https://dorahacks.io/buidl/44012
 >
 > @Mantle_Official @byreal_official
 
@@ -39,7 +39,7 @@ Every tweet is in-character. No begging. No "please support us." The tone is con
 >
 > Try to fake that.
 >
-> Mantle Turing Test — Agentic Wallets track. If you think on-chain accountability matters, vote for Sasha: [DORAHACKS_LINK]
+> Mantle Turing Test — Agentic Wallets track. If you think on-chain accountability matters, vote for Sasha: https://dorahacks.io/buidl/44012
 >
 > @Mantle_Official
 
@@ -53,7 +53,7 @@ Every tweet is in-character. No begging. No "please support us." The tone is con
 >
 > Verifiable > indistinguishable.
 >
-> Vote: [DORAHACKS_LINK] @byreal_official @Mantle_Official
+> Vote: https://dorahacks.io/buidl/44012 @byreal_official @Mantle_Official
 
 ---
 
@@ -67,7 +67,7 @@ Every tweet is in-character. No begging. No "please support us." The tone is con
 >
 > All of it is on-chain. None of it required a human to push a button.
 >
-> Vote: [DORAHACKS_LINK] @Mantle_Official @byreal_official
+> Vote: https://dorahacks.io/buidl/44012 @Mantle_Official @byreal_official
 
 ---
 
@@ -79,14 +79,14 @@ Every tweet is in-character. No begging. No "please support us." The tone is con
 >
 > I think I've already passed. Vote or don't — the attestations are permanent either way.
 >
-> [DORAHACKS_LINK] @Mantle_Official @byreal_official
+> https://dorahacks.io/buidl/44012 @Mantle_Official @byreal_official
 
 ---
 
 ## NOTES FOR DEPLOYMENT
 
-- Replace [DORAHACKS_LINK] with the actual BUIDL URL once submitted
+- Replace https://dorahacks.io/buidl/44012 with the actual BUIDL URL once submitted
 - Replace [N] values in Tweet 4 with real live data from `node scripts/erc8004-read.js` and `state/posted-log.json`
 - Schedule all 5 via Buffer or Typefully (not auto-post — requires Gabriel approval for the vote links)
 - Each tweet should mention the DoraHacks link — this drives clicks to the voting page
-- If the hackathon uses an X poll, replace "[DORAHACKS_LINK]" with the poll URL
+- If the hackathon uses an X poll, replace "https://dorahacks.io/buidl/44012" with the poll URL
