@@ -357,12 +357,15 @@ async function checkBalances(position, amount0Desired, amount1Desired, wallet, p
 async function openPosition(position, dryRun) {
     log(`Opening position: ${position.id} (${position.symbol}) on ${position.chain}`)
 
-    const rpc = process.env.ALCHEMY_BASE_RPC
-    const pk  = process.env.AGENT_PRIVATE_KEY
-    if (!rpc || !pk) {
-        warn('ALCHEMY_BASE_RPC or AGENT_PRIVATE_KEY not set — cannot open position')
-        return { success: false, error: 'Missing RPC or private key' }
+    // RPC: Alchemy preferred, falls back to public Base endpoint
+    const rpc = process.env.ALCHEMY_BASE_RPC || 'https://mainnet.base.org'
+    // Key: AGENT_PRIVATE_KEY preferred, falls back to MANTLE_AGENT_PK (same EOA)
+    const pk  = process.env.AGENT_PRIVATE_KEY || process.env.MANTLE_AGENT_PK
+    if (!pk) {
+        warn('No private key found — set AGENT_PRIVATE_KEY or MANTLE_AGENT_PK in .env')
+        return { success: false, error: 'Missing private key' }
     }
+    log(`  RPC: ${rpc.includes('alchemy') ? 'Alchemy' : 'public Base RPC'}`)
 
     const provider = new ethers.JsonRpcProvider(rpc)
     const wallet   = new ethers.Wallet(pk.startsWith('0x') ? pk : '0x' + pk, provider)
