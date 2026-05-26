@@ -52,5 +52,10 @@ venv_buffer/
 Clawlett/config/
 Clawlett/clawlett/scripts/config/
 
+# Runtime state (VPS-only after initial bootstrap — monitor writes back here continuously)
+# Bootstrap: SSH-copy state/lp-positions.json to VPS manually after first deploy.
+# Never let rsync overwrite VPS state with stale local copy.
+state/
+
 # Mantle hackathon — dynamic generated signal file (regenerated on VPS each run)
 content/mantle-signal.json
