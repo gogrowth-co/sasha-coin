@@ -135,14 +135,31 @@ async function getBasePositionState(position) {
             ? (Date.now() - lastInRange.getTime()) / 60_000
             : 0
 
+        // Estimate pending fees by time-elapsed since open or last claim.
+        // For passive positions (NFT staked in gauge), tokensOwed stays 0 on-chain
+        // until a write op. So we estimate via APR × time × time-in-range.
+        // Real fees are reconciled when lp-harvest.js runs.
+        let pendingFeesUsd = position.pendingFeesUsd || 0
+        if (position.status === 'open' && position.capitalUsd > 0) {
+            const refTime = position.lastClaimAt
+                ? new Date(position.lastClaimAt).getTime()
+                : position.openedAt ? new Date(position.openedAt).getTime() : null
+            if (refTime) {
+                const elapsedDays = (Date.now() - refTime) / 86_400_000
+                const apr = position.estimatedApr ?? 1.675   // 167.5% — default to scan rate
+                const inRangeAdj = inRange ? 1.0 : 0.0       // simple OOR penalty
+                const est = position.capitalUsd * apr * elapsedDays / 365 * inRangeAdj
+                pendingFeesUsd = est
+            }
+        }
+
         return {
             inRange,
             currentPrice,
             lowerPrice:   lower,
             upperPrice:   upper,
             oorMinutes,
-            // Fees: approximate from stored pendingFeesUsd (refreshed on claim)
-            pendingFeesUsd: position.pendingFeesUsd || 0,
+            pendingFeesUsd,
         }
     } catch (e) {
         log(`  Base price fetch failed: ${e.message}`)
@@ -249,9 +266,10 @@ async function evaluatePosition(position) {
         position.firstOorAt = null  // reset OOR timer
     }
 
-    // Fee claim
-    if ((state.pendingFeesUsd || 0) >= KILL.minClaimFeesUsd) {
-        log(`  Pending fees: $${state.pendingFeesUsd?.toFixed(2)} (threshold: $${KILL.minClaimFeesUsd})`)
+    // Fee claim — per-position threshold overrides global
+    const claimThreshold = position.minClaimFeesUsd ?? KILL.minClaimFeesUsd
+    if ((state.pendingFeesUsd || 0) >= claimThreshold) {
+        log(`  Pending fees: $${state.pendingFeesUsd?.toFixed(2)} (threshold: $${claimThreshold})`)
         actions.push({ type: 'CLAIM_FEES', reason: `Fees $${state.pendingFeesUsd?.toFixed(2)}`, killSwitch: false })
     }
 

@@ -116,9 +116,21 @@ async function claimFees(position, dryRun) {
         if (txSig) writeAttestation('CLAIM_FEES', position.symbol, txSig)
         return { success: true, action: 'CLAIM_FEES', txSig }
     }
-    log(`[claim] Base position — ethers.js collect (see base-defi-stack skill)`)
-    if (!dryRun) warn('Base fee collection requires AGENT_PRIVATE_KEY')
-    return { success: dryRun, action: 'CLAIM_FEES', chain: 'base', dry: dryRun }
+    // Base path — delegate to lp-harvest.js (handles unstake → collect → restake)
+    log(`[claim] Base position — invoking lp-harvest.js`)
+    try {
+        const harvestScript = path.join(WORKSPACE, 'scripts', 'lp-harvest.js')
+        const cmd = `node ${harvestScript} --position ${position.id}${dryRun ? '' : ' --execute'}`
+        const out = execSync(cmd, { timeout: 300_000, encoding: 'utf8', stdio: 'pipe' })
+        // Parse total realized from last "Realized:" line
+        const m = out.match(/Realized:.* = \$([\d.]+)/)
+        const totalUsd = m ? parseFloat(m[1]) : 0
+        writeAttestation('CLAIM_FEES', position.symbol, null)
+        return { success: true, action: 'CLAIM_FEES', chain: 'base', totalUsd, dry: dryRun }
+    } catch (e) {
+        warn(`lp-harvest.js failed: ${e.message}`)
+        return { success: false, action: 'CLAIM_FEES', chain: 'base', error: e.message }
+    }
 }
 
 async function closeAndReopen(position, dryRun) {
