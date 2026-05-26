@@ -1,0 +1,1 @@
+[{"inputs":[],"name":"ZERO_DELTA","outputs":[{"internalType":"BeforeSwapDelta","name":"","type":"int256"}],"stateMutability":"view","type":"function"}]
