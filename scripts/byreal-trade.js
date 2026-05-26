@@ -39,6 +39,7 @@ const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..'
 const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
 const SKIP_TWEET = args.includes('--skip-tweet') // for testing only
+const PRE_TWEET_ID_ARG = (() => { const i = args.indexOf('--pre-tweet-id'); return i !== -1 ? args[i + 1] : null })()
 const SIGNAL_MAX_AGE_HOURS = 4
 
 // ---------------------------------------------------------------------------
@@ -474,13 +475,20 @@ async function main() {
     console.log(`\n[trade] Pre-trade tweet:\n  "${preTweetText}"\n`)
 
     let preTweet
-    try {
-        preTweet = postTweet(preTweetText)
-    } catch (e) {
-        console.error(`[trade] ABORT: Pre-trade tweet failed: ${e.message}`)
-        console.error('[trade] No trade without public reasoning. Exiting.')
-        sendTelegram(`❌ [BYREAL_TRADE] ABORTED\nPre-trade tweet failed: ${e.message}\nNo trade executed.`)
-        process.exit(1)
+    if (PRE_TWEET_ID_ARG) {
+        // Tweet already posted externally (e.g. via Typefully) — use provided ID
+        preTweet = { tweet_id: PRE_TWEET_ID_ARG, text: preTweetText }
+        console.log(`[trade] Using pre-posted tweet ID: ${PRE_TWEET_ID_ARG}`)
+        console.log(`[trade] https://x.com/SashaCoin95/status/${PRE_TWEET_ID_ARG}`)
+    } else {
+        try {
+            preTweet = postTweet(preTweetText)
+        } catch (e) {
+            console.error(`[trade] ABORT: Pre-trade tweet failed: ${e.message}`)
+            console.error('[trade] No trade without public reasoning. Exiting.')
+            sendTelegram(`❌ [BYREAL_TRADE] ABORTED\nPre-trade tweet failed: ${e.message}\nNo trade executed.`)
+            process.exit(1)
+        }
     }
 
     // Step 4: Wait 60 seconds (accountability window)
