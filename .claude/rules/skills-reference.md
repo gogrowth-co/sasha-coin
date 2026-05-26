@@ -144,3 +144,28 @@ mangabeira.net pages are stored as HTML content in Supabase (`page_translations.
 
 **Publishing triggers on status → published:** `generate-sitemap`, `generate-rss`, `submit-indexnow`
 
+
+---
+
+## Liquidity Miner Skills
+
+| Skill | Use when... |
+|---|---|
+| `defi-lp-math` | Computing LP position values, sqrtPriceX96 decoding, tick math, 3-case amount formulas (cl_amounts), IL computation, delta-neutral hedge sizing (positionDelta), liquidity from amounts, fee accumulation (Q128), pool scoring formula. Use before any LP math calculation. |
+| `base-defi-stack` | Building or debugging Base L2 LP positions: Uniswap v3 contracts, Aerodrome Slipstream gauge integration, Morpho Blue health factor, token addresses (WETH/USDC/cbBTC), tick math utilities, NftPositionManager ABI. |
+| `solana-clmm` | Building or debugging Solana CLMM positions via Orca Whirlpools or Raydium CLMM: Byreal CLI commands, SDK functions, fee tiers, tick spacing, position PDA handling. |
+| `hyperliquid-perps` | Hyperliquid REST API, delta-neutral hedge sizing and adjustment logic, funding rate mechanics and kill switch (< -54.75% annualized), EIP-712 signing (chainId 1337), margin management. Use whenever building or debugging the hedge executor. |
+| `mantle-agent` | ERC-8004 Identity Registry on Mantle (0x8004...), agent registration flow, self-transfer attestation pattern, state/erc8004-identity.json schema. Use for Sasha's on-chain identity and attestation after any LP action. |
+| `protocol-changelog` | Weekly check procedure for protocol updates (Orca, Raydium, Uniswap, Aerodrome, Morpho, Hyperliquid, Byreal). Breaking change assessment, automated changelog script. Run weekly or before any deployment. |
+
+## Liquidity Miner Scripts
+
+| Script | Purpose |
+|---|---|
+| `node scripts/pool-scanner.js --chain <solana\|base\|all> --top 5` | Scan DefiLlama yields API, score and rank LP candidates, write content/lp-candidates.json + patch mantle-signal.json |
+| `node scripts/position-monitor.js` | Check all open positions in state/lp-positions.json for kill-switch conditions (OOR, hedge drift, HF breach, funding kill). Write content/lp-rebalance-signal.json + send Telegram alert. |
+| `node scripts/lp-rebalancer.js --execute` | Execute actions from content/lp-rebalance-signal.json (CLOSE_REOPEN, CLAIM_FEES, DELEVERAGE, KILL). Requires explicit Gabriel confirmation for any on-chain action. |
+| `node scripts/pool-scanner.js --dry-run` | Dry run pool scan (no signal write) |
+| `node scripts/position-monitor.js --dry-run` | Dry run monitor (no writes, no alerts) |
+| `node scripts/lp-rebalancer.js --dry-run` | Dry run rebalancer (validate signal, no execution) |
+

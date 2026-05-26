@@ -568,6 +568,59 @@
     }
   ],
   "schemaVersion": "2.1",
+  "week22_plan_appended_2026_05_25": [
+    {
+      "id": "SASHA-CE-016",
+      "title": "Reply batch — Week 22 (Mon May 26 - Thu May 29 AM)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "writing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-05-29",
+      "statusChangedDate": "2026-05-25",
+      "created": "2026-05-25",
+      "arc": "Week 22 — On-Chain Receipts",
+      "notes": "8 reply slots Mon–Thu AM. Targets: @StaniKulechov (TVL thread, 65k views), @BosonProtocol (36.7k views), @hosseeb CLOB/RFQ (213k views), @SuhailKakar (8k views), @DefiIgnas EF departures (91k views), @MilkRoad/Jordi Visser (8.3k views), @hosseeb neolabs (73k views), address poisoning thread. Angles and exact copy in reply queue file. Final targeting depends on what is live at run time.",
+      "artifacts": {
+        "draft_x": "social/x/drafts/sasha-week22-reply-queue.md",
+        "google_doc": "https://docs.google.com/document/d/18BZLYTrRLHpvUyY-F_vJQ2LnV2vDPnB7QL0_aEXZpUk/edit",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-017",
+      "title": "Thread — 7 signals an AI agent token is real (Wed May 28)",
+      "type": "content-piece",
+      "status": "in-progress",
+      "priority": "high",
+      "channel": "x",
+      "channels": ["x"],
+      "pipelineStage": "writing",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "sasha-thread-cadence",
+      "dueDate": "2026-05-28",
+      "scheduledDate": "2026-05-28",
+      "statusChangedDate": "2026-05-25",
+      "created": "2026-05-25",
+      "arc": "Week 22 — On-Chain Receipts",
+      "threadType": "Framework / Education",
+      "notes": "8-tweet thread. Hook: checked 10 agent wallets across 4 chains. 7 signals: wallet age, agent-initiated txns, protocol match, error states visible, token used by agent, team findable pre-launch, volume shape. Closer optional. Schedule: 1pm BRT Wed May 28 via Typefully.",
+      "artifacts": {
+        "draft_x": "social/x/threads/thread-2026-05-28-7-signals.md",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    }
+  ],
   "buffer_packs_appended_2026_05_21": [
     {
       "id": "SASHA-CE-011",

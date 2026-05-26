@@ -66,6 +66,16 @@ When the user asks for content, you produce finished, ready-to-publish material 
 | "Add a new skill" | Build under `skills/<name>/SKILL.md` + scripts, deploy |
 | "Why isn't she posting?" | SSH-tail container logs, check internal scheduler state, check Buffer queue |
 | Anything onchain | `Clawlett/clawlett/scripts/` — ALL execution requires explicit Gabriel confirmation per SKILL.md policy |
+| "Scan for best LP pools" | `scripts/pool-scanner.js` + `defi-lp-math` + `base-defi-stack` / `solana-clmm` skills |
+| "Check LP position health" | `scripts/position-monitor.js` -- reads `state/lp-positions.json`, writes `content/lp-rebalance-signal.json` |
+| "Execute LP rebalance" | `scripts/lp-rebalancer.js --execute` -- requires Gabriel confirmation before any on-chain tx |
+| "Add an LP position" | Add entry to `state/lp-positions.json` following the schema in position-monitor.js main() |
+| "Hedge an LP position" | `hyperliquid-perps` skill -- compute delta via `defi-lp-math`, short on Hyperliquid |
+| LP math / tick / sqrtPrice | `defi-lp-math` skill -- cl_amounts(), liquidityFromAmounts(), positionDelta() |
+| Base LP (Uniswap/Aerodrome) | `base-defi-stack` skill -- NftPositionManager, Aerodrome gauge, Morpho Blue HF |
+| Solana LP (Orca/Raydium) | `solana-clmm` skill + `byreal-cli` commands |
+| On-chain agent identity | `mantle-agent` skill -- ERC-8004 registration + attestation after LP actions |
+| Protocol update check | `protocol-changelog` skill -- weekly SDK/contract/API changelog sweep |
 
 ---
 
