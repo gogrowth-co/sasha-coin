@@ -1,22 +1,26 @@
 #!/usr/bin/env node
 /**
- * elfa.js — Elfa AI smart mentions signal
+ * elfa.js — Elfa AI smart mentions signal (V2 API)
  *
- * Elfa AI is both a hackathon judge AND provides the exact signal layer
- * Sasha's social intelligence needs: smart-account mention tracking that
- * leads price moves. The "/smart-mentions/{ticker}" endpoint weights
- * mentions by the historical alpha of the accounts posting them.
+ * Uses /v2/aggregations/trending-tokens to get mention counts and 24h change
+ * for SOL and MNT. Filters the trending list for our tracked tokens.
  *
- * This replaces naive sentiment analysis with quantified smart-money
- * social activity. Smart mention surges 24h-over-24h = leading signal.
+ * V2 response shape:
+ *   { success, data: { data: [{ token, current_count, previous_count, change_percent }] } }
+ *
+ * A "surging" token has change_percent > 20% (mentions growing fast).
+ * Risk-off: SOL trending bearish + surging negative sentiment.
+ *
+ * NOTE: V1 endpoint /smart-mentions/{ticker} never existed.
+ *       V1 /trending-tokens → V2 /v2/aggregations/trending-tokens
  *
  * Signal weight in fusion: 15%
  *
  * Usage:
- *   node scripts/signals/elfa.js              # prints signal for SOL, MNT, USDC
- *   node scripts/signals/elfa.js --ticker SOL  # single ticker
+ *   node scripts/signals/elfa.js
+ *   node scripts/signals/elfa.js --ticker SOL
  *
- * Env: ELFA_API_KEY (get from https://elfa.ai — free tier available)
+ * Env: ELFA_API_KEY (get from https://dev.elfa.ai — free tier available)
  *
  * Mantle Turing Test Hackathon 2026 — Sasha Coin
  */
@@ -29,9 +33,12 @@ import { fileURLToPath, pathToFileURL } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '../..')
 
-const TICKERS = ['SOL', 'MNT', 'USDC']
-const CACHE_TTL_MS = 10 * 60 * 1000  // 10 minutes
-const CACHE_PATH   = path.join(WORKSPACE, 'state', 'cache-elfa.json')
+const TRACKED_TOKENS = ['SOL', 'MNT', 'USDC']
+const CACHE_TTL_MS   = 10 * 60 * 1000  // 10 minutes
+const CACHE_PATH     = path.join(WORKSPACE, 'state', 'cache-elfa.json')
+
+// Surging threshold: token mentions up >20% vs prior window = surging
+const SURGE_THRESHOLD = 20   // change_percent
 
 // ---------------------------------------------------------------------------
 // Cache
@@ -55,7 +62,7 @@ function writeCache(data) {
 }
 
 // ---------------------------------------------------------------------------
-// API calls
+// API call — V2 trending-tokens
 // ---------------------------------------------------------------------------
 
 function elfaFetch(endpoint, apiKey) {
@@ -63,11 +70,11 @@ function elfaFetch(endpoint, apiKey) {
         const urlObj = new URL(`https://api.elfa.ai${endpoint}`)
         const options = {
             hostname: urlObj.hostname,
-            path: urlObj.pathname + urlObj.search,
-            method: 'GET',
-            headers: {
+            path:     urlObj.pathname + urlObj.search,
+            method:   'GET',
+            headers:  {
                 'x-elfa-api-key': apiKey,
-                'Accept': 'application/json',
+                'Accept':         'application/json',
             },
         }
         const req = https.request(options, (res) => {
@@ -78,9 +85,7 @@ function elfaFetch(endpoint, apiKey) {
                     try { resolve(JSON.parse(data)) }
                     catch (e) { reject(new Error(`JSON parse error: ${data.slice(0, 100)}`)) }
                 } else if (res.statusCode === 401 || res.statusCode === 403) {
-                    reject(new Error(`Elfa auth error ${res.statusCode} — check ELFA_API_KEY`))
-                } else if (res.statusCode === 404) {
-                    resolve(null)  // Ticker not found — not a hard error
+                    reject(new Error(`Elfa auth error ${res.statusCode} — check ELFA_API_KEY at dev.elfa.ai`))
                 } else {
                     reject(new Error(`Elfa API ${res.statusCode}: ${data.slice(0, 150)}`))
                 }
@@ -93,48 +98,51 @@ function elfaFetch(endpoint, apiKey) {
 }
 
 // ---------------------------------------------------------------------------
-// Parse smart mentions response
+// Parse trending-tokens response
 // ---------------------------------------------------------------------------
+//
+// Response: { success, data: { pageSize, page, total, data: [ { token, current_count, previous_count, change_percent } ] } }
+//
+// We filter by our TRACKED_TOKENS and build a per-ticker summary.
 
-function parseMentions(ticker, raw) {
-    if (!raw) return null
+function parseTrendingTokens(raw, tokens) {
+    const items = raw?.data?.data ?? raw?.data ?? []
+    if (!Array.isArray(items)) return {}
 
-    // Elfa response shape (may vary — handle multiple structures):
-    // { mentions: [...], mindshare: 0.xx, sentiment: 'bullish', ... }
-    // OR: { data: { smartMentions: N, mindshare: N, ... } }
-    const data = raw.data || raw
+    const result = {}
 
-    const smartMentions = data.smartMentions ?? data.smart_mentions ??
-                          (Array.isArray(data.mentions) ? data.mentions.length : null) ?? 0
+    for (const item of items) {
+        const ticker = (item.token ?? item.symbol ?? '').toUpperCase()
+        if (!tokens.includes(ticker)) continue
 
-    const mindshare = data.mindshare ?? data.mind_share ?? null
+        const currentCount  = item.current_count  ?? item.currentCount  ?? 0
+        const previousCount = item.previous_count ?? item.previousCount ?? 0
+        const changePct     = item.change_percent ?? item.changePercent  ?? 0
 
-    // Sentiment: direct field or derived from score
-    const rawSentiment = data.sentiment ?? data.sentiment_direction ?? null
-    const sentimentScore = data.sentiment_score ?? data.score ?? null
+        const surging    = changePct > SURGE_THRESHOLD
+        const collapsing = changePct < -SURGE_THRESHOLD  // sharp mention drop = possible risk-off
 
-    let sentimentDirection = 'neutral'
-    if (rawSentiment) {
-        const s = String(rawSentiment).toLowerCase()
-        sentimentDirection = s.includes('bull') ? 'bullish' : s.includes('bear') ? 'bearish' : 'neutral'
-    } else if (typeof sentimentScore === 'number') {
-        sentimentDirection = sentimentScore > 0.1 ? 'bullish' : sentimentScore < -0.1 ? 'bearish' : 'neutral'
+        // Derive sentiment from change direction — rising mentions = bullish pressure
+        let sentimentDirection = 'neutral'
+        if (changePct > 30)  sentimentDirection = 'bullish'   // strongly surging
+        else if (changePct > 10)  sentimentDirection = 'bullish'
+        else if (changePct < -30) sentimentDirection = 'bearish'
+        else if (changePct < -10) sentimentDirection = 'bearish'
+
+        result[ticker] = {
+            ticker,
+            smartMentions:    currentCount,
+            previousMentions: previousCount,
+            changePct:        changePct,
+            sentimentDirection,
+            surging,
+            collapsing,
+        }
+
+        console.log(`[elfa] ${ticker}: ${currentCount} mentions (${changePct > 0 ? '+' : ''}${changePct.toFixed(1)}%) → ${sentimentDirection}${surging ? ' 🔥' : ''}${collapsing ? ' ❄️' : ''}`)
     }
 
-    // Change metrics (24h delta) — key signal
-    const mentionsDelta = data.mentionsDelta ?? data.mentions_delta_24h ??
-                          data.change_24h ?? null
-
-    const surging = mentionsDelta !== null && mentionsDelta > 0.2  // >20% increase = surging
-
-    return {
-        ticker,
-        smartMentions,
-        mindshare,
-        sentimentDirection,
-        mentionsDelta24h: mentionsDelta,
-        surging,
-    }
+    return result
 }
 
 // ---------------------------------------------------------------------------
@@ -142,60 +150,73 @@ function parseMentions(ticker, raw) {
 // ---------------------------------------------------------------------------
 
 function deriveSignal(tickerData) {
-    const sol = tickerData.SOL
-    const mnt = tickerData.MNT
+    const sol  = tickerData.SOL
+    const mnt  = tickerData.MNT
 
     if (!sol && !mnt) {
         return {
             sentimentDirection: 'neutral',
-            confidence: 0.3,
-            smartMentionCount: 0,
-            surgingTickers: [],
-            riskOffSignal: false,
-            source: 'elfa',
-            note: 'No data for tracked tickers',
+            confidence:         0.3,
+            smartMentionCount:  0,
+            surgingTickers:     [],
+            riskOffSignal:      false,
+            source:             'elfa',
+            note:               'Tracked tokens not in trending list — low activity window',
         }
     }
 
-    const solBullish = sol?.sentimentDirection === 'bullish'
-    const solBearish = sol?.sentimentDirection === 'bearish'
-    const mntBullish = mnt?.sentimentDirection === 'bullish'
     const surgingTickers = Object.entries(tickerData)
         .filter(([, d]) => d?.surging)
+        .map(([t]) => t)
+
+    const collapsingTickers = Object.entries(tickerData)
+        .filter(([, d]) => d?.collapsing)
         .map(([t]) => t)
 
     const totalMentions = Object.values(tickerData)
         .reduce((sum, d) => sum + (d?.smartMentions || 0), 0)
 
-    // Risk-off: SOL bearish with surging bearish mentions = danger signal
-    const riskOffSignal = solBearish && (sol?.mentionsDelta24h || 0) > 0.15
+    // Risk-off: SOL mentions collapsing or SOL bearish + collapsing
+    const riskOffSignal = (sol?.collapsing && sol?.sentimentDirection === 'bearish')
+                       || (sol?.changePct < -40)  // extreme drop
 
-    // Overall direction
     let sentimentDirection = 'neutral'
-    let confidence = 0.4
+    let confidence = 0.40
 
-    if (solBullish || mntBullish || surgingTickers.length >= 2) {
+    const solBullish = sol?.sentimentDirection === 'bullish'
+    const solBearish = sol?.sentimentDirection === 'bearish'
+    const mntBullish = mnt?.sentimentDirection === 'bullish'
+
+    if (solBullish && mntBullish) {
         sentimentDirection = 'bullish'
-        confidence = 0.55 + (surgingTickers.length * 0.1)
+        confidence = 0.65
+    } else if (solBullish || surgingTickers.includes('SOL')) {
+        sentimentDirection = 'bullish'
+        confidence = 0.50
     } else if (solBearish && mnt?.sentimentDirection === 'bearish') {
         sentimentDirection = 'bearish'
         confidence = 0.60
-    } else if (solBearish || mntBullish) {
-        sentimentDirection = 'neutral'
-        confidence = 0.35
+    } else if (solBearish) {
+        sentimentDirection = 'bearish'
+        confidence = 0.45
+    } else if (mntBullish) {
+        sentimentDirection = 'bullish'
+        confidence = 0.40
     }
 
-    confidence = Math.min(0.9, confidence)
+    if (surgingTickers.length >= 2) confidence = Math.min(0.9, confidence + 0.10)
+    if (riskOffSignal)               confidence = Math.min(0.9, confidence + 0.10)
 
     return {
         sentimentDirection,
         confidence,
-        smartMentionCount: totalMentions,
+        smartMentionCount:  totalMentions,
         surgingTickers,
+        collapsingTickers,
         riskOffSignal,
-        tickerBreakdown: tickerData,
-        source: 'elfa',
-        fetchedAt: new Date().toISOString(),
+        tickerBreakdown:    tickerData,
+        source:             'elfa',
+        fetchedAt:          new Date().toISOString(),
     }
 }
 
@@ -205,53 +226,52 @@ function deriveSignal(tickerData) {
 
 const NEUTRAL_SIGNAL = {
     sentimentDirection: 'neutral',
-    confidence: 0.3,
-    smartMentionCount: 0,
-    surgingTickers: [],
-    riskOffSignal: false,
-    source: 'elfa',
-    note: 'API unavailable — neutral fallback',
+    confidence:         0.3,
+    smartMentionCount:  0,
+    surgingTickers:     [],
+    riskOffSignal:      false,
+    source:             'elfa',
+    note:               'API unavailable — neutral fallback',
 }
 
-export async function getElfaSignal(tickers = TICKERS) {
+export async function getElfaSignal(tokens = TRACKED_TOKENS) {
     const cached = readCache()
     if (cached) {
-        console.log(`[elfa] Using cached signal (${Math.round((Date.now() - new Date(cached.cachedAt).getTime()) / 60000)}m old)`)
+        const ageMin = Math.round((Date.now() - new Date(cached.cachedAt).getTime()) / 60000)
+        console.log(`[elfa] Using cached signal (${ageMin}m old)`)
         return cached
     }
 
     const apiKey = process.env.ELFA_API_KEY
     if (!apiKey) {
         console.warn('[elfa] ELFA_API_KEY not set — returning neutral signal')
-        console.warn('[elfa] Get your free key at: https://elfa.ai')
+        console.warn('[elfa] Get your free key at: https://dev.elfa.ai')
         return NEUTRAL_SIGNAL
     }
 
     try {
-        console.log(`[elfa] Fetching smart mentions for: ${tickers.join(', ')}...`)
+        console.log(`[elfa] Fetching trending tokens (24h window, filtering for: ${tokens.join(', ')})...`)
 
-        const results = await Promise.allSettled(
-            tickers.map(ticker =>
-                elfaFetch(`/smart-mentions/${ticker}?window=24h`, apiKey)
-                    .then(raw => ({ ticker, raw }))
-            )
+        // Fetch trending tokens with a large page size to catch all tracked tokens
+        // Page size 200 covers the top trending tokens in a 24h window
+        const raw = await elfaFetch(
+            `/v2/aggregations/trending-tokens?timeWindow=24h&page=1&pageSize=200&minMentions=1`,
+            apiKey
         )
 
-        const tickerData = {}
-        for (const result of results) {
-            if (result.status === 'fulfilled' && result.value.raw) {
-                const { ticker, raw } = result.value
-                tickerData[ticker] = parseMentions(ticker, raw)
-                if (tickerData[ticker]) {
-                    console.log(`[elfa] ${ticker}: ${tickerData[ticker].smartMentions} smart mentions, sentiment: ${tickerData[ticker].sentimentDirection}, surging: ${tickerData[ticker].surging}`)
-                }
-            } else if (result.status === 'rejected') {
-                console.warn(`[elfa] Fetch failed: ${result.reason?.message}`)
-            }
+        if (!raw?.success) {
+            const msg = raw?.error ?? raw?.message ?? 'Unknown Elfa error'
+            console.warn(`[elfa] API returned success=false: ${msg}`)
+            return { ...NEUTRAL_SIGNAL, note: msg }
         }
 
-        if (!Object.keys(tickerData).length) {
-            return { ...NEUTRAL_SIGNAL, note: 'No ticker data returned' }
+        const tickerData = parseTrendingTokens(raw, tokens)
+
+        // If our tokens didn't appear in the trending list, they're low-activity
+        const found = Object.keys(tickerData)
+        const missing = tokens.filter(t => !found.includes(t))
+        if (missing.length > 0) {
+            console.log(`[elfa] Tokens not in trending list (low activity): ${missing.join(', ')}`)
         }
 
         const signal = deriveSignal(tickerData)
@@ -273,9 +293,9 @@ export async function getElfaSignal(tickers = TICKERS) {
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     const args = process.argv.slice(2)
     const tickerIdx = args.indexOf('--ticker')
-    const tickers = tickerIdx !== -1 ? [args[tickerIdx + 1]] : TICKERS
+    const tokens = tickerIdx !== -1 ? [args[tickerIdx + 1].toUpperCase()] : TRACKED_TOKENS
 
-    const signal = await getElfaSignal(tickers)
+    const signal = await getElfaSignal(tokens)
     console.log('\n--- Elfa Signal ---')
     console.log(JSON.stringify(signal, null, 2))
 }
