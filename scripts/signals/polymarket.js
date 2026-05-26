@@ -6,17 +6,21 @@
  * that is uncorrelated with Twitter sentiment and impossible to fake.
  * Probabilities reflect genuine beliefs with capital at risk.
  *
- * This queries Polymarket's public API for SOL/Solana-related markets,
- * extracts implied directional bias from current probabilities, and flags
- * sharp probability moves as directional signals.
+ * API: gamma-api.polymarket.com/events (NOT /markets — that endpoint
+ * doesn't filter by tag reliably; events nests markets within each event)
+ *
+ * Strategy:
+ *   1. Fetch active crypto events, filter for Solana/SOL keywords
+ *   2. Price-target markets (SOL above $X): low Yes% = bearish, high = bullish
+ *   3. ATH timing markets: high probability = bullish
+ *   4. Risk-off: any exploit/hack/outage market with >15% probability
  *
  * Signal weight in fusion: 15%
  *
- * No API key needed — Polymarket's Gamma API is public.
+ * No API key needed — Polymarket Gamma API is public.
  *
  * Usage:
- *   node scripts/signals/polymarket.js          # prints signal
- *   node scripts/signals/polymarket.js --dry-run
+ *   node scripts/signals/polymarket.js
  *
  * Mantle Turing Test Hackathon 2026 — Sasha Coin
  */
@@ -29,12 +33,12 @@ import { fileURLToPath, pathToFileURL } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '../..')
 
-const CACHE_TTL_MS = 5 * 60 * 1000  // 5 minutes
+const CACHE_TTL_MS = 15 * 60 * 1000  // 15 minutes (prediction markets move slowly)
 const CACHE_PATH   = path.join(WORKSPACE, 'state', 'cache-polymarket.json')
 
-// Keywords to match SOL/Solana markets
-const SOL_KEYWORDS = ['solana', 'sol', '$sol', 'sol price', 'sol above', 'sol below']
-const RISK_KEYWORDS = ['hack', 'exploit', 'outage', 'halt', 'crash', 'failure', 'attack', 'drain']
+// Must match "solana" or "$sol" as whole-word (not "sol" alone — too many false positives)
+const SOL_STRICT   = ['solana', '$sol']
+const RISK_KEYWORDS = ['hack', 'exploit', 'outage', 'halt', 'crash', 'failure', 'attack', 'drain', 'insolvency']
 
 // ---------------------------------------------------------------------------
 // Cache
@@ -58,154 +62,179 @@ function writeCache(data) {
 }
 
 // ---------------------------------------------------------------------------
-// Fetch from Polymarket Gamma API
+// HTTP fetch
 // ---------------------------------------------------------------------------
 
-function polymarketFetch(params = {}) {
+function fetchJSON(path, timeout = 15000) {
     return new Promise((resolve, reject) => {
-        const queryStr = new URLSearchParams({
-            active: 'true',
-            closed: 'false',
-            limit: '50',
-            ...params,
-        }).toString()
-
         const options = {
             hostname: 'gamma-api.polymarket.com',
-            path: `/markets?${queryStr}`,
+            path,
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
-                'User-Agent': 'sasha-coin-agent/1.0',
+                'Accept':     'application/json',
+                'User-Agent': 'SashaSignalAgent/1.0 (autonomous trading agent; github.com/gogrowth-co/sasha-coin)',
             },
         }
-
         const req = https.request(options, (res) => {
             let data = ''
             res.on('data', c => { data += c })
             res.on('end', () => {
                 if (res.statusCode === 200) {
                     try { resolve(JSON.parse(data)) }
-                    catch (e) { reject(new Error(`Polymarket JSON parse error: ${data.slice(0, 100)}`)) }
+                    catch (e) { reject(new Error(`JSON parse error: ${data.slice(0, 100)}`)) }
                 } else {
                     reject(new Error(`Polymarket API ${res.statusCode}: ${data.slice(0, 150)}`))
                 }
             })
         })
         req.on('error', reject)
-        req.setTimeout(15000, () => { req.destroy(); reject(new Error('Polymarket request timeout')) })
+        req.setTimeout(timeout, () => { req.destroy(); reject(new Error('Polymarket request timeout')) })
         req.end()
     })
 }
 
 // ---------------------------------------------------------------------------
-// Filter and analyze markets
+// Fetch events and extract all nested markets
 // ---------------------------------------------------------------------------
 
-function isSOLMarket(market) {
-    const text = `${market.question || ''} ${market.description || ''} ${(market.tags || []).join(' ')}`.toLowerCase()
-    return SOL_KEYWORDS.some(kw => text.includes(kw))
-}
+async function fetchSolanaMarkets() {
+    // Primary: events endpoint with crypto tag — parse nested markets
+    const raw = await fetchJSON('/events?active=true&closed=false&limit=100&tag_slug=crypto')
+    const events = Array.isArray(raw) ? raw : (raw?.data ?? raw?.events ?? [])
 
-function isRiskEvent(market) {
-    const text = `${market.question || ''} ${market.description || ''}`.toLowerCase()
-    return RISK_KEYWORDS.some(kw => text.includes(kw))
-}
+    // Filter events mentioning solana or $sol
+    const solEvents = events.filter(ev => {
+        const text = `${ev.title || ''} ${ev.description || ''}`.toLowerCase()
+        return SOL_STRICT.some(kw => text.includes(kw))
+    })
 
-function extractProbability(market) {
-    // Polymarket outcome probabilities are stored as outcomePrices (stringified array)
-    // e.g., outcomePrices: '["0.82", "0.18"]' with outcomes: '["Yes", "No"]'
-    try {
-        const prices = JSON.parse(market.outcomePrices || '[]')
-        const outcomes = JSON.parse(market.outcomes || '[]')
-
-        if (!prices.length || !outcomes.length) return null
-
-        // Find "Yes" probability
-        const yesIdx = outcomes.findIndex(o => String(o).toLowerCase() === 'yes')
-        if (yesIdx !== -1) return parseFloat(prices[yesIdx])
-
-        // If no Yes/No, return the first outcome probability
-        return parseFloat(prices[0])
-    } catch { return null }
-}
-
-function analyzeMarkets(markets) {
-    const solMarkets = markets.filter(isSOLMarket)
-    const riskMarkets = markets.filter(m => isSOLMarket(m) && isRiskEvent(m))
-
-    if (!solMarkets.length) {
-        return {
-            solMarketsFound: 0,
-            directionalBias: 'neutral',
-            riskOffSignal: false,
-            impliedBullishProb: null,
-            riskEventProb: null,
-            topMarkets: [],
+    // Flatten all markets from matching events
+    const markets = []
+    for (const ev of solEvents) {
+        for (const m of (ev.markets || [])) {
+            markets.push({ ...m, _eventTitle: ev.title })
         }
     }
 
-    // Categorize markets as bullish (SOL above X, SOL hits ATH, etc.) or bearish
-    const bullishMarkets = solMarkets.filter(m => {
-        const q = (m.question || '').toLowerCase()
-        return q.includes('above') || q.includes('reach') || q.includes('ath') || q.includes('high')
+    return markets
+}
+
+// ---------------------------------------------------------------------------
+// Extract Yes probability from a binary market
+// ---------------------------------------------------------------------------
+
+function extractYesProb(market) {
+    try {
+        const prices   = JSON.parse(market.outcomePrices || '[]')
+        const outcomes = JSON.parse(market.outcomes      || '[]')
+        if (!prices.length) return null
+
+        const yesIdx = outcomes.findIndex(o => String(o).toLowerCase() === 'yes')
+        if (yesIdx !== -1) {
+            const v = parseFloat(prices[yesIdx])
+            return isNaN(v) ? null : v
+        }
+        // Binary market with no Yes/No labels — first outcome is "Up" or positive
+        const v = parseFloat(prices[0])
+        return isNaN(v) ? null : v
+    } catch { return null }
+}
+
+// ---------------------------------------------------------------------------
+// Classify market type from question text
+// ---------------------------------------------------------------------------
+
+function classifyMarket(market) {
+    const q = (market.question || '').toLowerCase()
+    if (q.includes('above') || q.includes('reach') || q.includes('hit') || q.includes('ath')) return 'bullish_target'
+    if (q.includes('below') || q.includes('drop') || q.includes('crash') || q.includes('fall')) return 'bearish_target'
+    if (RISK_KEYWORDS.some(kw => q.includes(kw))) return 'risk_event'
+    if (q.includes('up or down') || q.includes('up/down')) return 'direction'
+    return 'other'
+}
+
+// ---------------------------------------------------------------------------
+// Derive aggregate signal from SOL markets
+// ---------------------------------------------------------------------------
+
+function analyzeMarkets(markets) {
+    // Filter to markets with actual price data
+    const live = markets.filter(m => {
+        const p = extractYesProb(m)
+        return p !== null && p > 0 && p < 1
     })
 
-    const bearishMarkets = solMarkets.filter(m => {
-        const q = (m.question || '').toLowerCase()
-        return q.includes('below') || q.includes('drop') || q.includes('crash') || q.includes('fall')
-    })
+    if (!live.length) {
+        return { found: markets.length, live: 0, directionalBias: 'neutral', confidence: 0.30, riskOffSignal: false, topMarkets: [] }
+    }
 
-    // Average implied probability for bullish markets
-    const bullishProbs = bullishMarkets.map(extractProbability).filter(p => p !== null)
-    const impliedBullishProb = bullishProbs.length > 0
+    const bullishMarkets  = live.filter(m => classifyMarket(m) === 'bullish_target')
+    const riskMarkets     = live.filter(m => classifyMarket(m) === 'risk_event')
+    const directionMarkets = live.filter(m => classifyMarket(m) === 'direction')
+
+    // Average implied probability for bullish targets (e.g. "SOL above $X")
+    const bullishProbs = bullishMarkets.map(extractYesProb).filter(p => p !== null)
+    const avgBullish   = bullishProbs.length > 0
         ? bullishProbs.reduce((a, b) => a + b, 0) / bullishProbs.length
         : null
 
-    // Risk event probability (any active exploit/hack market)
-    const riskProbs = riskMarkets.map(extractProbability).filter(p => p !== null)
-    const riskEventProb = riskProbs.length > 0
-        ? Math.max(...riskProbs)  // use worst-case risk probability
+    // Worst-case risk event probability
+    const riskProbs   = riskMarkets.map(extractYesProb).filter(p => p !== null)
+    const maxRiskProb = riskProbs.length > 0 ? Math.max(...riskProbs) : null
+
+    // Direction markets (Up or Down)
+    const dirProbs = directionMarkets.map(extractYesProb).filter(p => p !== null)
+    const avgDir   = dirProbs.length > 0
+        ? dirProbs.reduce((a, b) => a + b, 0) / dirProbs.length
         : null
 
-    // Detect sharp moves (proxy: high volume + extreme probability)
-    const hasSharpMove = solMarkets.some(m =>
-        (m.volumeNum || m.volume || 0) > 50000 &&
-        (() => {
-            const p = extractProbability(m)
-            return p !== null && (p > 0.85 || p < 0.15)
-        })()
-    )
-
-    // Risk-off: any active risk event market with >15% probability
-    const riskOffSignal = riskEventProb !== null && riskEventProb > 0.15
+    // Risk-off trigger
+    const riskOffSignal = maxRiskProb !== null && maxRiskProb > 0.15
 
     // Directional bias
-    let directionalBias = 'neutral'
-    if (!riskOffSignal && impliedBullishProb !== null) {
-        if (impliedBullishProb > 0.6) directionalBias = 'bullish'
-        else if (impliedBullishProb < 0.4) directionalBias = 'bearish'
-    }
-    if (riskOffSignal) directionalBias = 'bearish'
+    // Use avgBullish as primary (price target markets are most informative)
+    // avgDir as secondary (direct up/down markets)
+    const impliedBullishProb = avgBullish ?? avgDir
 
-    // Top markets for context
-    const topMarkets = [...solMarkets]
-        .sort((a, b) => (b.volumeNum || b.volume || 0) - (a.volumeNum || a.volume || 0))
-        .slice(0, 3)
+    let directionalBias = 'neutral'
+    let confidence = 0.35
+    if (!riskOffSignal && impliedBullishProb !== null) {
+        if (impliedBullishProb > 0.50) {
+            directionalBias = 'bullish'
+            confidence = 0.50 + Math.min(0.25, (impliedBullishProb - 0.50) * 2)
+        } else if (impliedBullishProb < 0.25) {
+            directionalBias = 'bearish'
+            confidence = 0.40 + Math.min(0.20, (0.25 - impliedBullishProb) * 2)
+        } else {
+            // 0.25–0.50 = neutral/weak bearish
+            directionalBias = 'neutral'
+            confidence = 0.35
+        }
+    }
+    if (riskOffSignal) {
+        directionalBias = 'bearish'
+        confidence = Math.min(0.90, 0.55 + (maxRiskProb - 0.15) * 2)
+    }
+
+    const topMarkets = [...live]
+        .sort((a, b) => (parseFloat(b.volume || 0)) - (parseFloat(a.volume || 0)))
+        .slice(0, 4)
         .map(m => ({
-            question: m.question,
-            impliedProb: extractProbability(m),
-            volume: m.volumeNum || m.volume,
-            isRisk: isRiskEvent(m),
+            question:    m.question,
+            type:        classifyMarket(m),
+            yesProb:     extractYesProb(m),
+            eventTitle:  m._eventTitle,
         }))
 
     return {
-        solMarketsFound: solMarkets.length,
+        found:             markets.length,
+        live:              live.length,
         directionalBias,
+        confidence,
         riskOffSignal,
-        hasSharpMove,
         impliedBullishProb,
-        riskEventProb,
+        riskEventProb:     maxRiskProb,
         topMarkets,
     }
 }
@@ -215,52 +244,57 @@ function analyzeMarkets(markets) {
 // ---------------------------------------------------------------------------
 
 const NEUTRAL_SIGNAL = {
-    directionalBias: 'neutral',
-    confidence: 0.35,
-    riskOffSignal: false,
-    solMarketsFound: 0,
+    directionalBias:   'neutral',
+    confidence:        0.30,
+    riskOffSignal:     false,
+    solMarketsFound:   0,
     impliedBullishProb: null,
-    riskEventProb: null,
-    topMarkets: [],
-    source: 'polymarket',
-    note: 'API unavailable — neutral fallback',
+    riskEventProb:     null,
+    topMarkets:        [],
+    source:            'polymarket',
+    note:              'API unavailable — neutral fallback',
 }
 
 export async function getPolymarketSignal() {
     const cached = readCache()
     if (cached) {
-        console.log(`[polymarket] Using cached signal (${Math.round((Date.now() - new Date(cached.cachedAt).getTime()) / 60000)}m old)`)
+        const ageMin = Math.round((Date.now() - new Date(cached.cachedAt).getTime()) / 60000)
+        console.log(`[polymarket] Using cached signal (${ageMin}m old)`)
         return cached
     }
 
     try {
-        console.log('[polymarket] Fetching Solana markets from Polymarket...')
+        console.log('[polymarket] Fetching Solana markets from Polymarket events...')
+        const markets = await fetchSolanaMarkets()
 
-        // Fetch active crypto markets — no auth required
-        const markets = await polymarketFetch({ tag_slug: 'crypto' })
-
-        const analysis = analyzeMarkets(Array.isArray(markets) ? markets : (markets.data || markets.markets || []))
-
-        // Confidence based on market data quality
-        let confidence = 0.4
-        if (analysis.solMarketsFound > 5) confidence = 0.55
-        if (analysis.solMarketsFound > 10) confidence = 0.65
-        if (analysis.riskOffSignal) confidence = Math.min(0.85, confidence + 0.2)  // Risk events are high-confidence
-
-        const signal = {
-            directionalBias: analysis.directionalBias,
-            confidence,
-            riskOffSignal: analysis.riskOffSignal,
-            hasSharpMove: analysis.hasSharpMove || false,
-            solMarketsFound: analysis.solMarketsFound,
-            impliedBullishProb: analysis.impliedBullishProb,
-            riskEventProb: analysis.riskEventProb,
-            topMarkets: analysis.topMarkets,
-            source: 'polymarket',
-            fetchedAt: new Date().toISOString(),
+        if (!markets.length) {
+            console.log('[polymarket] No Solana markets found in active crypto events')
+            const signal = { ...NEUTRAL_SIGNAL, note: 'No active SOL markets on Polymarket', fetchedAt: new Date().toISOString() }
+            writeCache(signal)
+            return signal
         }
 
-        console.log(`[polymarket] ${analysis.solMarketsFound} SOL markets, bias: ${analysis.directionalBias}, risk-off: ${analysis.riskOffSignal}`)
+        const analysis = analyzeMarkets(markets)
+
+        const signal = {
+            directionalBias:   analysis.directionalBias,
+            confidence:        analysis.confidence,
+            riskOffSignal:     analysis.riskOffSignal,
+            solMarketsFound:   analysis.found,
+            liveMarketsCount:  analysis.live,
+            impliedBullishProb: analysis.impliedBullishProb,
+            riskEventProb:     analysis.riskEventProb,
+            topMarkets:        analysis.topMarkets,
+            source:            'polymarket',
+            fetchedAt:         new Date().toISOString(),
+        }
+
+        console.log(`[polymarket] ${analysis.found} SOL markets (${analysis.live} live), bias: ${analysis.directionalBias} (${analysis.confidence.toFixed(2)}), risk-off: ${analysis.riskOffSignal}`)
+        if (analysis.topMarkets.length) {
+            for (const m of analysis.topMarkets) {
+                console.log(`[polymarket]   "${m.question?.slice(0, 70)}" → Yes: ${m.yesProb !== null ? (m.yesProb * 100).toFixed(1) + '%' : 'N/A'}`)
+            }
+        }
 
         writeCache(signal)
         return signal
