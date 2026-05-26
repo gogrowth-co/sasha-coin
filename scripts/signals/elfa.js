@@ -252,10 +252,10 @@ export async function getElfaSignal(tokens = TRACKED_TOKENS) {
     try {
         console.log(`[elfa] Fetching trending tokens (24h window, filtering for: ${tokens.join(', ')})...`)
 
-        // Fetch trending tokens with a large page size to catch all tracked tokens
-        // Page size 200 covers the top trending tokens in a 24h window
+        // Fetch trending tokens — max pageSize is 100 (API enforces this)
+        // 100 covers the top trending tokens in a 24h window
         const raw = await elfaFetch(
-            `/v2/aggregations/trending-tokens?timeWindow=24h&page=1&pageSize=200&minMentions=1`,
+            `/v2/aggregations/trending-tokens?timeWindow=24h&page=1&pageSize=100&minMentions=1`,
             apiKey
         )
 
