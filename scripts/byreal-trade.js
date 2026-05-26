@@ -318,7 +318,11 @@ function executeLPPosition(r) {
         throw new Error(`byreal-cli positions open failed (exit ${result.status}): ${errMsg}`)
     }
 
-    const output = JSON.parse(result.stdout || '{}')
+    // byreal-cli may prefix output with status lines like [CONFIRM] — extract the JSON object
+    const rawOut = result.stdout || '{}'
+    const jsonStart = rawOut.indexOf('{')
+    const jsonStr = jsonStart !== -1 ? rawOut.slice(jsonStart) : rawOut
+    const output = JSON.parse(jsonStr)
     return {
         type: 'lp_open',
         pool: r.poolAddress,
