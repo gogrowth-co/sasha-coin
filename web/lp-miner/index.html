@@ -36,7 +36,7 @@
   .hero h1{font-family:var(--font-display);font-size:36px;font-weight:600;letter-spacing:-.02em;line-height:1.08;max-width:720px}
   .hero p{color:var(--text-secondary);font-size:15px;margin-top:10px;max-width:640px}
   .banner{display:none;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warning);font-size:13px;padding:10px 16px;border-radius:8px;margin-top:16px}
-  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0 8px}
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:18px 0 8px}
   .kpi{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:12px;padding:16px 18px}
   .kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary)}
   .kpi .val{font-family:var(--font-mono);font-size:24px;font-weight:500;margin-top:8px}
@@ -111,8 +111,8 @@
     <div class="section">
       <div class="eyebrow">Positions · live-vs-state reconciled <span class="ts" id="pos-ts"></span></div>
       <div style="overflow-x:auto"><table id="postable"><thead><tr>
-        <th>Pair</th><th>Chain</th><th>Status</th><th>Deployed</th><th>On-chain</th><th>Range</th><th>Fees</th>
-      </tr></thead><tbody id="posbody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody></table></div>
+        <th>Pair</th><th>Chain</th><th>Status</th><th>Deployed</th><th>On-chain</th><th>Range</th><th>Hedge</th><th>Fees</th>
+      </tr></thead><tbody id="posbody"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody></table></div>
     </div>
 
     <div class="section">
@@ -161,10 +161,13 @@ function renderStrip(d){
   const book=d.book||{}
   const total=book.totalUsd!=null?book.totalUsd:book.deployedUsd
   const sub=book.idleUsd!=null?('deployed '+fmtUsd(book.deployedUsd)+' + idle '+fmtUsd(book.idleUsd)):'deployed in LP'
+  const hedge=d.hedge||{}, hedgeActive=hedge.active, hl=(hedge.legs||[])[0]
+  const hedgeSub=hedgeActive?(hl?('short '+hl.size+' '+(hl.perp||'')+(hl.fundingAnnPct!=null?' · fund '+(hl.fundingAnnPct>=0?'+':'')+hl.fundingAnnPct+'%':'')):'active on HL'):'naked'
   $('strip').innerHTML=`
     <div class="kpi"><div class="lbl">LP book value</div><div class="val">${fmtUsd(total)}</div><div class="sub">${sub}</div></div>
     <div class="kpi"><div class="lbl">Open positions</div><div class="val">${open}</div><div class="sub">reconciled on-chain</div></div>
     <div class="kpi ${unf>0?'alert':'ok'}"><div class="lbl">Unfunded</div><div class="val">${unf}</div><div class="sub">${unf>0?'state ≠ chain':'all funded'}</div></div>
+    <div class="kpi ${hedgeActive?'ok':''}"><div class="lbl">Delta-neutral</div><div class="val">${hedgeActive?'✓':'—'}</div><div class="sub">${hedgeSub}</div></div>
     <div class="kpi"><div class="lbl">Kill-switches armed</div><div class="val">${d.killSwitch?.armed?.length||0}</div><div class="sub">pending actions</div></div>`
 }
 
@@ -172,7 +175,7 @@ function renderPositions(d){
   $('pos-ts').textContent=d.positions?.reconciledAt?'verified '+relTime(d.positions.reconciledAt):''
   const items=d.positions?.items||[]
   const b=$('posbody')
-  if(!items.length){ b.innerHTML='<tr><td colspan="7" class="empty">No open positions.</td></tr>'; return }
+  if(!items.length){ b.innerHTML='<tr><td colspan="8" class="empty">No open positions.</td></tr>'; return }
   b.innerHTML=items.map(p=>{
     const m=CHIP[p.chain]||{c:'#444',t:'?',col:'#fff'}
     let fundedTag
@@ -182,6 +185,10 @@ function renderPositions(d){
     else fundedTag='<span class="stat unverified">'+esc(p.status)+'</span>'
     const range=p.inRange===true?'<span class="stat inrange">in range</span>':p.inRange===false?'<span class="stat oor">out of range</span>':'<span class="num" style="color:var(--text-quaternary)">—</span>'
     const proof=p.liveLiquidity?`<div class="proof">L=${p.liveLiquidity}</div>`:''
+    let hedgeCell
+    if(p.deltaNeutral) hedgeCell='<span class="stat inrange">Δ-neutral</span><div class="proof">short '+p.hedgeSize+' '+esc(p.hedgePerp||'')+(p.hedgeNotionalUsd!=null?' · '+fmtUsd(p.hedgeNotionalUsd):'')+'</div>'
+    else if(p.chain==='base') hedgeCell='<span class="stat oor">naked</span>'
+    else hedgeCell='<span class="num" style="color:var(--text-quaternary)">—</span>'
     return `<tr>
       <td><span class="chip"><span class="cdot" style="background:${m.c};color:${m.col}">${m.t}</span> ${esc(p.symbol)}</span><div class="proof">${esc(p.project||p.feeTier||'')}</div></td>
       <td class="num" style="color:var(--text-tertiary)">${esc(p.chain)}</td>
@@ -189,6 +196,7 @@ function renderPositions(d){
       <td class="num">${fmtUsd(p.deployedUsd)}</td>
       <td>${p.funded===true?'<span class="num" style="color:var(--positive)">confirmed</span>':p.divergence==='UNFUNDED'?'<span class="num" style="color:var(--negative)">$0</span>':'<span class="num" style="color:var(--text-tertiary)">—</span>'}${proof}</td>
       <td>${range}</td>
+      <td>${hedgeCell}</td>
       <td class="num">${fmtUsd(p.pendingFeesUsd)}</td>
     </tr>`
   }).join('')

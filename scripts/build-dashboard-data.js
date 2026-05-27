@@ -366,6 +366,11 @@ function buildLpMiner() {
         lowerPrice: p.lowerPrice ?? null, upperPrice: p.upperPrice ?? null,
         pendingFeesUsd: round(p.pendingFeesUsd, 4),
         hedgeSize: p.hedgeSize ?? 0,
+        hedgePerp: p.hedgePerp ?? null,
+        hedgeNotionalUsd: p.hedgeNotionalUsd ?? null,
+        hedgeFundingAnnPct: p.hedgeFundingAnnPct ?? null,
+        hedgeUpdatedAt: p.hedgeUpdatedAt ?? null,
+        deltaNeutral: (p.hedgeSize ?? 0) > 0,
         morphoHf: p.morpho?.healthFactor ?? null,
         ilPct: p.ilPct ?? null, netPnlPct: p.pnlPct ?? null,
         openedAt: p.openedAt || null,
@@ -413,6 +418,20 @@ function buildLpMiner() {
 
     const bl = Array.isArray(blacklist?.pools) ? blacklist.pools : Array.isArray(blacklist) ? blacklist : []
 
+    // Hedge summary (Phase 3) — delta-neutral legs on Hyperliquid
+    const hedgedLegs = open.filter(p => (p.hedgeSize ?? 0) > 0)
+    const hedge = {
+        active: hedgedLegs.length > 0,
+        venue: 'Hyperliquid',
+        driftThresholdPct: 5,
+        fundingKillAnnualizedPct: -54.75,
+        legs: hedgedLegs.map(p => ({
+            symbol: p.symbol, perp: p.hedgePerp || null, size: p.hedgeSize,
+            notionalUsd: p.hedgeNotionalUsd ?? null, fundingAnnPct: p.hedgeFundingAnnPct ?? null,
+            updatedAt: p.hedgeUpdatedAt || null,
+        })),
+    }
+
     return {
         asOf: new Date().toISOString(),
         generatedBy: 'build-dashboard-data.js',
@@ -426,6 +445,7 @@ function buildLpMiner() {
         },
         capital: { chains },        // per-chain deployed; idle merged by reconcile
         positions: { openCount: open.length, closedCount: closed.length, items: positions },
+        hedge,
         killSwitch,
         venues,
         blacklist: bl.slice(0, 10).map(b => ({ name: b.name || b.symbol || b.pool, reason: b.reason, at: b.blacklistedAt || b.at })),
