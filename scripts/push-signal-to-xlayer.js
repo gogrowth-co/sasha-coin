@@ -43,6 +43,9 @@ const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..'
 const args     = process.argv.slice(2)
 const DRY_RUN  = args.includes('--dry-run')
 const FORCE    = args.includes('--force')
+// --risk <risk-off|neutral|risk-on> overrides the signal-derived risk level.
+// Use for mechanism-demonstration pushes (prove the hook sets all three fee tiers on-chain).
+const RISK_ARG = (() => { const i = args.indexOf('--risk'); return i !== -1 ? args[i + 1] : null })()
 
 // ─── Chain config ─────────────────────────────────────────────────────────────
 
@@ -129,7 +132,10 @@ async function main() {
     const signal = loadSignal()
     if (!signal) { process.exit(0) }
 
-    const riskLevel = extractRiskLevel(signal)
+    // --risk override (mechanism demo) wins over the signal-derived level
+    const riskLevel = (RISK_ARG && RISK_TO_FEE[RISK_ARG] !== undefined) ? RISK_ARG : extractRiskLevel(signal)
+    if (RISK_ARG && RISK_TO_FEE[RISK_ARG] === undefined) { warn(`--risk "${RISK_ARG}" invalid (use risk-off|neutral|risk-on)`); process.exit(0) }
+    if (RISK_ARG) log(`risk OVERRIDE via --risk: ${riskLevel}`)
     const fee       = RISK_TO_FEE[riskLevel]
     const signalAge = signal.generatedAt
         ? Math.round((Date.now() - new Date(signal.generatedAt).getTime()) / 60000)

@@ -128,6 +128,11 @@
     </div>
 
     <div class="section">
+      <div class="eyebrow">Fee over time <span class="ts">every step is an on-chain push</span></div>
+      <div id="feechart"></div>
+    </div>
+
+    <div class="section">
       <div class="grid2">
         <div>
           <div class="eyebrow">Oracle pushes <span class="ts" id="push-ts"></span></div>
@@ -194,6 +199,28 @@ function renderMapping(d){
   }).join('')
 }
 
+function renderFeeChart(d){
+  const el=$('feechart')
+  const ps=(d.recentPushes||[]).slice().reverse()   // chronological
+  if(ps.length<2){ el.innerHTML='<div style="color:var(--text-quaternary);font-size:12px;font-family:var(--font-mono)">building fee history…</div>'; return }
+  const W=900,H=140,padL=44,padR=16,padT=14,padB=22
+  // three discrete fee tiers -> three y-levels
+  const yFor=bps=> bps>=10000 ? padT : bps>=3000 ? (H/2) : (H-padB)
+  const colFor=bps=> bps>=10000?'var(--negative)':bps>=3000?'var(--neutral)':'var(--positive)'
+  const dx=(W-padL-padR)/(ps.length-1)
+  let path='', dots='', segs=''
+  ps.forEach((p,i)=>{
+    const x=padL+i*dx, y=yFor(p.fee)
+    if(i===0){ path=`M ${x} ${y}` }
+    else { const px=padL+(i-1)*dx, py=yFor(ps[i-1].fee); segs+=`<path d="M ${px} ${py} L ${x} ${py}" stroke="${colFor(ps[i-1].fee)}" stroke-width="2" fill="none"/><path d="M ${x} ${py} L ${x} ${y}" stroke="${colFor(p.fee)}" stroke-width="2" fill="none"/>` }
+    dots+=`<circle cx="${x}" cy="${y}" r="3" fill="${colFor(p.fee)}"/>`
+  })
+  const yl=(lbl,bps)=>`<text x="6" y="${yFor(bps)+3}" fill="var(--text-tertiary)" font-size="10" font-family="monospace">${lbl}</text><line x1="${padL}" y1="${yFor(bps)}" x2="${W-padR}" y2="${yFor(bps)}" stroke="var(--border-subtle)" stroke-width="1" stroke-dasharray="2 4"/>`
+  el.innerHTML=`<svg width="100%" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="max-height:160px">
+    ${yl('1.0%',10000)}${yl('0.3%',3000)}${yl('0.05%',500)}${segs}${dots}</svg>
+    <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px">${ps.length} on-chain pushes · risk-off raises the fee, risk-on lowers it</div>`
+}
+
 function renderPushes(d){
   $('push-ts').textContent=d.asOf?'as of '+relTime(d.asOf):''
   const ps=d.recentPushes||[]
@@ -232,7 +259,7 @@ async function load(){
     if(!res.ok) throw new Error('HTTP '+res.status)
     const d=await res.json()
     $('errbanner').style.display='none'
-    renderHeartbeat(d.oracle); renderLoop(d.oracle); renderVerify(d); renderMapping(d); renderPushes(d); renderPool(d)
+    renderHeartbeat(d.oracle); renderLoop(d.oracle); renderVerify(d); renderMapping(d); renderFeeChart(d); renderPushes(d); renderPool(d)
     $('foot-asof').textContent='data as of '+relTime(d.asOf)
   }catch(e){
     const b=$('errbanner'); b.style.display='block'; b.textContent='Live data unavailable ('+e.message+').'
