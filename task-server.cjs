@@ -1707,7 +1707,7 @@ function markdownToHtml(md) {
   }).filter(Boolean).join('\n');
 }
 
-server.listen(PORT, () => {
+server.listen(PORT, '127.0.0.1', () => {
   console.log(`MangaOS Task Board running at http://localhost:${PORT}`);
   console.log(`  Sasha:    http://localhost:${PORT}/sasha`);
 });
