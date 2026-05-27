@@ -54,6 +54,8 @@ const NPM_ABI = ['function positions(uint256) view returns (uint96 nonce,address
 
 // LP miner's Base wallet (same EOA used on Base; idle balance = undeployed LP capital).
 const LP_BASE_WALLET = process.env.LP_BASE_WALLET || '0x21AF273dA03e695ead9d72B221Bd394f04D8A9A9'
+// Hyperliquid hedge wallet (public address; clearinghouseState is a read-only query, no key).
+const HL_WALLET = process.env.HL_WALLET_ADDRESS || '0xFAef67C0ee18dD89eaAA91a3d485e48949F7Ed04'
 const BASE_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 const BASE_CBBTC = '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf'
 const ERC20_ABI = ['function balanceOf(address) view returns (uint256)']
@@ -125,6 +127,37 @@ async function reconcileBasePosition(provider, position) {
     }
 }
 
+// Live Hyperliquid hedge position(s) — read-only clearinghouseState (no key needed).
+async function reconcileHedge() {
+    try {
+        const { InfoClient, HttpTransport } = await import('@nktkas/hyperliquid')
+        const info = new InfoClient({ transport: new HttpTransport({ isTestnet: false, timeout: 30000 }) })
+        const [meta, ctxs] = await info.metaAndAssetCtxs()
+        const st = await info.clearinghouseState({ user: HL_WALLET })
+        const accountValueUsd = Math.round(parseFloat(st.crossMarginSummary?.accountValue || '0') * 100) / 100
+        const legs = (st.assetPositions || [])
+            .filter(a => a.position && parseFloat(a.position.szi) !== 0)
+            .map(a => {
+                const p = a.position
+                const idx = meta.universe.findIndex(u => u.name === p.coin)
+                const funding8h = idx >= 0 ? parseFloat(ctxs[idx].funding) : 0
+                return {
+                    perp: p.coin,
+                    side: parseFloat(p.szi) < 0 ? 'short' : 'long',
+                    size: Math.abs(parseFloat(p.szi)),
+                    entryPx: Math.round(parseFloat(p.entryPx) * 100) / 100,
+                    markPx: idx >= 0 ? Math.round(parseFloat(ctxs[idx].markPx) * 100) / 100 : null,
+                    notionalUsd: Math.round(Math.abs(parseFloat(p.positionValue)) * 100) / 100,
+                    uPnlUsd: Math.round(parseFloat(p.unrealizedPnl) * 100) / 100,
+                    liquidationPx: p.liquidationPx ? Math.round(parseFloat(p.liquidationPx)) : null,
+                    marginUsedUsd: Math.round(parseFloat(p.marginUsed || '0') * 100) / 100,
+                    fundingAnnPct: Math.round(funding8h * 3 * 365 * 100 * 10) / 10,
+                }
+            })
+        return { accountValueUsd, legs, venue: 'Hyperliquid', wallet: HL_WALLET, checkedAt: new Date().toISOString() }
+    } catch (e) { warn(`HL hedge read failed (non-blocking): ${e.message}`); return null }
+}
+
 async function main() {
     log(`mode: ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
@@ -182,6 +215,21 @@ async function main() {
         dash.book.idleUsd = wallet.idleUsd
         dash.book.totalUsd = Math.round((deployed + wallet.idleUsd) * 100) / 100
         log(`LP wallet ${LP_BASE_WALLET.slice(0,8)}: idle $${wallet.idleUsd} → book total $${dash.book.totalUsd}`)
+    }
+
+    // Live Hyperliquid hedge position detail → first-class hedge panel
+    const hedgeLive = await reconcileHedge()
+    if (hedgeLive) {
+        dash.hedge = dash.hedge || {}
+        dash.hedge.active = hedgeLive.legs.length > 0
+        dash.hedge.venue = 'Hyperliquid'
+        dash.hedge.accountValueUsd = hedgeLive.accountValueUsd
+        dash.hedge.wallet = hedgeLive.wallet
+        dash.hedge.position = hedgeLive.legs[0] || null
+        dash.hedge.legs = hedgeLive.legs
+        dash.hedge.reconciledAt = hedgeLive.checkedAt
+        const lg = hedgeLive.legs[0]
+        log(`HL hedge: ${hedgeLive.legs.length} leg(s)${lg ? ` — ${lg.side} ${lg.size} ${lg.perp} @ $${lg.entryPx}, uPnL $${lg.uPnlUsd}, liq $${lg.liquidationPx}` : ''}, acct $${hedgeLive.accountValueUsd}`)
     }
 
     if (DRY_RUN) {

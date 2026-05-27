@@ -116,6 +116,11 @@
     </div>
 
     <div class="section">
+      <div class="eyebrow">Hedge position · Hyperliquid <span class="ts" id="hedge-ts"></span></div>
+      <div id="hedge"></div>
+    </div>
+
+    <div class="section">
       <div class="grid2">
         <div class="card">
           <div class="eyebrow">LP capital by chain <span class="ts" id="cap-ts"></span></div>
@@ -202,6 +207,24 @@ function renderPositions(d){
   }).join('')
 }
 
+function renderHedge(d){
+  const h=d.hedge||{}, p=h.position
+  if($('hedge-ts')) $('hedge-ts').textContent=h.reconciledAt?('verified '+relTime(h.reconciledAt)):''
+  const el=$('hedge')
+  if(!h.active||!p){ el.innerHTML='<div class="empty">No hedge open — position is directional.</div>'; return }
+  const fmtPx=v=>'$'+Number(v||0).toLocaleString('en-US')
+  const pnlC=p.uPnlUsd>=0?'var(--positive)':'var(--negative)'
+  const fndC=(p.fundingAnnPct||0)>=0?'var(--positive)':'var(--negative)'
+  el.innerHTML=`<div class="strip">
+    <div class="kpi"><div class="lbl">Position</div><div class="val" style="font-size:20px">${p.side==='short'?'SHORT':'LONG'} ${esc(p.perp)}</div><div class="sub">${p.size} ${esc(p.perp)} · ${fmtUsd(p.notionalUsd)}</div></div>
+    <div class="kpi"><div class="lbl">Entry / Mark</div><div class="val" style="font-size:20px">${fmtPx(p.entryPx)}</div><div class="sub">mark ${fmtPx(p.markPx)}</div></div>
+    <div class="kpi"><div class="lbl">Unrealized PnL</div><div class="val" style="font-size:20px;color:${pnlC}">${fmtUsd(p.uPnlUsd)}</div><div class="sub">on the short leg</div></div>
+    <div class="kpi"><div class="lbl">Liquidation</div><div class="val" style="font-size:20px">${fmtPx(p.liquidationPx)}</div><div class="sub">margin ${fmtUsd(p.marginUsedUsd)}</div></div>
+    <div class="kpi ${(p.fundingAnnPct||0)>=0?'ok':''}"><div class="lbl">Funding (ann)</div><div class="val" style="font-size:20px;color:${fndC}">${p.fundingAnnPct>=0?'+':''}${p.fundingAnnPct}%</div><div class="sub">${(p.fundingAnnPct||0)>=0?'we receive':'we pay'}</div></div>
+  </div>
+  <div style="margin-top:8px;font-size:11px;color:var(--text-tertiary)">Hyperliquid · account value ${fmtUsd(h.accountValueUsd)} · neutralizes the cbBTC leg of the LP → market-neutral carry. Funding kill-switch at ${h.fundingKillAnnualizedPct||-54.75}% ann · rehedge at ${h.driftThresholdPct||5}% drift.</div>`
+}
+
 function renderCapital(d){
   const cap=d.capital, book=d.book||{}, w=d.lpWallet
   $('cap-ts').textContent=d.positions?.reconciledAt?'verified '+relTime(d.positions.reconciledAt):''
@@ -264,7 +287,7 @@ async function load(){
     const hb=d.positions?.reconciledAt?'live':'stale'
     $('hbdot').className='dot '+hb
     $('hbtext').textContent=(hb==='live'?'Live':'Stale')+(d.asOf?' · '+relTime(d.asOf):'')
-    renderStrip(d); renderPositions(d); renderCapital(d); renderKillSwitch(d); renderChains(d); renderActivity(d)
+    renderStrip(d); renderPositions(d); renderHedge(d); renderCapital(d); renderKillSwitch(d); renderChains(d); renderActivity(d)
     $('foot-asof').textContent='data as of '+relTime(d.asOf)
   }catch(e){
     const b=$('errbanner'); b.style.display='block'; b.textContent='Live data unavailable ('+e.message+').'
