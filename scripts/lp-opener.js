@@ -653,6 +653,7 @@ async function main() {
 
     log(`Found ${pending.length} pending position(s) to open`)
 
+    let openedAny = false
     for (const position of pending) {
         if (position.chain !== 'base') {
             warn(`Position ${position.id} is on ${position.chain} — lp-opener only handles Base. Skipping.`)
@@ -675,8 +676,24 @@ async function main() {
             store.updatedAt = new Date().toISOString()
             saveJson(POSITIONS_PATH, store)
             log(`Updated state/lp-positions.json: ${position.id} → open (tokenId: ${result.tokenId})`)
+            openedAny = true
         } else if (!result.success) {
             warn(`Failed to open ${position.id}: ${result.error}`)
+        }
+    }
+
+    // Delta-neutral by default: a volatile-leg LP must not run naked. Reconcile the
+    // hedge immediately after opening. hedge-executor self-gates (HEDGE_LIVE_OK + HL
+    // margin) and reconciles ALL open Base positions to their target short, so a fresh
+    // position is hedged at once; if it can't execute it stages a pending-hedge alert.
+    if (EXECUTE && openedAny) {
+        try {
+            log('Reconciling delta-neutral hedge for newly opened position(s)...')
+            const out = execSync('node scripts/hedge-executor.js --execute', { cwd: WORKSPACE, encoding: 'utf8', timeout: 120000 })
+            out.split('\n').filter(Boolean).forEach(l => log(`[hedge] ${l}`))
+        } catch (e) {
+            warn(`Hedge reconciliation step failed (position is OPEN but UNHEDGED): ${e.message}`)
+            sendTelegram(`⚠️ [LP_OPENER] Position opened but hedge step failed — position is running NAKED. Run hedge-executor manually. ${e.message}`)
         }
     }
 

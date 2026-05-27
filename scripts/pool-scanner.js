@@ -118,17 +118,29 @@ function emissionDependency(pool) {
 function scorePool(pool, tier) {
     const feeApr        = pool.apyBase || 0
     const totalApy      = pool.apy || 0
+    const rewardApr     = pool.apyReward || Math.max(0, totalApy - feeApr)
     const tvl           = pool.tvlUsd || 0
     const emDep         = emissionDependency(pool)
     const organicFactor = 1 - emDep * 0.5
     const tvlWeight     = Math.min(1, Math.log10(tvl / 100_000) / 3)
-    const tierPenalty   = [1.0, 0.85, 0.60][tier - 1]
-    const score         = feeApr * organicFactor * tvlWeight * tierPenalty
+
+    // Risk-adjusted NET CARRY (Phase-0 sim finding): a delta-neutral LP is a short-gamma
+    // carry — it earns fees+rewards and PAYS the pair's IL/LVR. Rank by carry that
+    // survives convexity cost, not raw fee APR. ilDragApr is an annualized LVR proxy by
+    // volatility class; a high-fee Tier-3 pool can now score BELOW a modest Tier-1 once
+    // its IL is netted out. That is the point — it stops the scorer chasing yield into IL.
+    const ilDragApr   = [0, 12, 35][tier - 1]              // stable/stable ~0, stable/bluechip, alt/bluechip
+    const execRisk    = [1.00, 0.92, 0.78][tier - 1]       // depeg / rug / thin-liquidity haircut
+    const grossCarry  = (feeApr + rewardApr) * organicFactor
+    const netCarryApr = grossCarry - ilDragApr
+    const score       = Math.max(0, netCarryApr) * execRisk * tvlWeight
 
     return {
         score:        Math.round(score * 100) / 100,
         feeApr:       Math.round(feeApr * 10) / 10,
         totalApy:     Math.round(totalApy * 10) / 10,
+        netCarryApr:  Math.round(netCarryApr * 10) / 10,
+        ilDragApr,
         emissionDep:  Math.round(emDep * 100),
         tvlUsd:       Math.round(tvl),
         organicFactor: Math.round(organicFactor * 100) / 100,
@@ -151,6 +163,10 @@ async function scanPools() {
         if ((p.tvlUsd || 0) < CONFIG.minTvlUsd) return false
         if ((p.apyBase || 0) < CONFIG.minFeeApr) return false
         if ((p.apy || 0) <= 0) return false
+        // Emission-mirage filter (execution-spec §7): fee APR must be >= 10% of total APY.
+        // Kills pure-emission micro-cap pools whose 4-digit APY is a reward subsidy that
+        // collapses (this is what produced the Goblin/USDC -15% loss). No fee base = no edge.
+        if ((p.apyBase || 0) / (p.apy || 1) < 0.10) return false
         return true
     })
 
@@ -180,6 +196,10 @@ async function scanPools() {
 
 function formatOutput(topPools) {
     const flat = [...topPools[1], ...topPools[2], ...topPools[3]]
+    // bestOverall drives the default recommendation — constrain to Tier 1-2 only.
+    // Tier 3 (alt/bluechip) is $0 in v1 per execution-spec §5.2; never auto-recommend it,
+    // even when its raw score is high (micro-cap "fee APR" is usually a point-in-time mirage).
+    const tradeable = [...topPools[1], ...topPools[2]].sort((a, b) => b.score - a.score)
     return {
         generatedAt: new Date().toISOString(),
         scanConfig: { chains: CHAIN_ARG, minTvlUsd: CONFIG.minTvlUsd, minFeeApr: CONFIG.minFeeApr, topNPerTier: TOP_N },
@@ -187,7 +207,8 @@ function formatOutput(topPools) {
             tier1Count: topPools[1].length,
             tier2Count: topPools[2].length,
             tier3Count: topPools[3].length,
-            bestOverall: flat.sort((a, b) => b.score - a.score)[0] || null,
+            bestOverall: tradeable[0] || null,
+            note: 'bestOverall is Tier 1-2 only; Tier 3 listed for awareness, not auto-traded (spec §5.2).',
         },
         tier1: topPools[1],
         tier2: topPools[2],
