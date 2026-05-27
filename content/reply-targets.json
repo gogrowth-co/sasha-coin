@@ -3,7 +3,8 @@
   "description": "Reply target list for twitter-reply-gal skill. Tier-1 are ecosystem-core (always scrape). Tier-2 are high-value educators and analysts. Tier-3 are AI-agent peers. Refresh tier-2/3 weekly based on engagement. search_terms runs a separate keyword scrape pass in addition to handles.",
   "selection_rules": {
     "max_replies_per_run": 8,
-    "daily_reply_cap": 6,
+    "daily_reply_cap": 8,
+    "feed_size": 15,
     "tweet_age_max_hours": 4,
     "min_signals": "5+ likes OR 2+ replies",
     "skip_if_already_replied": true,

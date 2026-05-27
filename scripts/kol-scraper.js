@@ -235,16 +235,37 @@ const dedupedCandidates = allCandidates.filter(c => {
   return true;
 });
 
-// Tier 1 handles get a 1.5x engagement bonus in ranking
-const tier1handles = new Set(targets.filter(t => t.tier === 1).map(t => t.handle.toLowerCase()));
-dedupedCandidates.sort((a, b) => {
-  const aScore = (a.likes + a.replies * 3) * (tier1handles.has(a.handle.toLowerCase()) ? 1.5 : 1);
-  const bScore = (b.likes + b.replies * 3) * (tier1handles.has(b.handle.toLowerCase()) ? 1.5 : 1);
-  return bScore - aScore;
-});
+// One candidate per handle. Once Sasha replies to a handle it goes on a 12h
+// cooldown, so a second tweet from the same handle can never be used the same
+// day — keeping duplicates just wastes feed slots and starves the afternoon.
+// Keep the highest-engagement tweet per handle.
+const bestByHandle = new Map();
+for (const c of dedupedCandidates) {
+  const key = c.handle.toLowerCase();
+  const score = c.likes + c.replies * 3;
+  const cur = bestByHandle.get(key);
+  if (!cur || score > (cur.likes + cur.replies * 3)) bestByHandle.set(key, c);
+}
+const uniqueHandleCands = [...bestByHandle.values()];
 
+// KOL-first, search fills gaps (Gabriel, 2026-05-26). Rank handle-sourced KOL
+// tweets first (1.5x tier-1 engagement bonus), then append search-sourced tweets.
+// Search tweets come from diverse authors, so they supply the distinct fresh
+// handles the afternoon slots need once the KOL handles are on 12h cooldown.
+const tier1handles = new Set(targets.filter(t => t.tier === 1).map(t => t.handle.toLowerCase()));
+const engScore = c => (c.likes + c.replies * 3) * (tier1handles.has(c.handle.toLowerCase()) ? 1.5 : 1);
+const isSearch = c => String(c.source || '').startsWith('search');
+const handleTier = uniqueHandleCands.filter(c => !isSearch(c)).sort((a, b) => engScore(b) - engScore(a));
+const searchTier = uniqueHandleCands.filter(isSearch).sort((a, b) => engScore(b) - engScore(a));
+const ranked = [...handleTier, ...searchTier];
+
+// Feed depth is decoupled from the daily reply cap: the pool holds many more
+// distinct handles than we post, so every one of the 7 launchd slots finds a
+// fresh target. Actual posting is capped by the slots (1 reply each, MAX_POSTS_PER_RUN=1)
+// and the daily_reply_cap guard above — not by feed size.
+const feedSize = selection_rules.feed_size ?? 15;
 const remainingCap = dailyCap - repliedToday;
-const feed = dedupedCandidates.slice(0, Math.min(selection_rules.max_replies_per_run ?? 2, remainingCap));
+const feed = ranked.slice(0, feedSize);
 
 // ── Write feed ───────────────────────────────────────────────────────────────
 const feedPath = join(ROOT, 'content/kol-feed.json');

@@ -62,6 +62,16 @@ Replies are the primary growth lever. They must come before original posts.
 2. Draft each reply using `web3-twitter-post-writer` skill. Max 220 characters per reply (leave room for the original handle).
 3. Flag any reply that references token price, project performance, or competitor positioning for human review before posting.
 
+**Reply-feed invariants — ENFORCE on every change to the scraper or selection rules.**
+
+The reply engine posts one reply per scheduled slot, and each handle goes on a per-handle cooldown (Sasha: 12h) after a reply. The candidate feed is scraped once per day and cached across all slots. This creates a starvation trap: if the feed is too shallow or handle-duplicated, the morning slots burn through the handles and every afternoon slot finds only cooldown-blocked candidates and posts nothing. To keep all daily slots productive, the feed builder MUST hold to these invariants (Sasha's live in `scripts/kol-scraper.js` + `content/reply-targets.json`):
+
+1. **Distinct handles ≥ daily slots.** The feed must contain at least as many *distinct* handles as there are posting slots (Sasha: 7). Dedupe candidates to one per handle (keep highest engagement) — a second tweet from an already-replied handle is dead weight once that handle is on cooldown.
+2. **Feed depth is decoupled from the daily cap.** Never slice the candidate pool to the daily reply cap. The pool (`feed_size`, Sasha: 15) should hold far more distinct handles than you'll post; the daily volume is capped by the slots and the `daily_reply_cap` guard, not by starving the pool.
+3. **Diversify sources — no single ranking bias may monopolize the feed.** KOL/handle-sourced tweets and search-sourced tweets are ranked into the feed so the smaller, diverse search-sourced handles (which never collide on the handle cooldown) fill the slots the recurring KOLs can't cover. Sasha's policy (set by Gabriel 2026-05-26): **KOL-first, search fills gaps** — tier-1 KOLs ranked first (1.5x engagement bonus), search appended. Do not let the engagement sort alone select the whole feed, or it collapses back to the same ~5 KOLs and ~4 replies/day.
+4. **Verify after any change.** Run the scraper and confirm `distinctHandles` in the feed ≥ slot count and that search-sourced candidates are present. Do not trust the count in the daily log — check the written feed (see [[feedback_verify_external_ground_truth]]).
+5. **Commit immediately.** These pipeline files run live from the local working tree. Uncommitted edits get wiped by other sessions' git operations (this exact fix was lost once, 2026-05-27). Commit + push every scraper/config/SOP change in the same session you make it.
+
 ### Original posts (1-2 per day)
 
 **Post types (rotate, do not repeat the same type two days in a row):**
