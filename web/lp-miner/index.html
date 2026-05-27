@@ -36,6 +36,13 @@
   .hero h1{font-family:var(--font-display);font-size:36px;font-weight:600;letter-spacing:-.02em;line-height:1.08;max-width:720px}
   .hero p{color:var(--text-secondary);font-size:15px;margin-top:10px;max-width:640px}
   .banner{display:none;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warning);font-size:13px;padding:10px 16px;border-radius:8px;margin-top:16px}
+  .overall{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px;margin-top:18px;padding:18px 22px;border:1px solid var(--border-default);border-radius:12px;background:linear-gradient(180deg,var(--surface-raised),var(--surface-sunken))}
+  .overall .nav{font-family:var(--font-mono);font-size:32px;font-weight:600;color:var(--text-primary);line-height:1.1}
+  .overall .pnl{font-family:var(--font-mono);font-size:18px;font-weight:500}
+  .overall .meta{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);margin-bottom:4px}
+  .overall .ovbadge{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:4px 11px;border-radius:999px;background:rgba(52,211,153,.14);color:var(--positive);align-self:center}
+  .overall .ovbadge.warn{background:rgba(248,113,113,.16);color:var(--negative)}
+  .overall .break{flex-basis:100%;font-size:12px;color:var(--text-tertiary);margin-top:4px;font-family:var(--font-mono)}
   .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:18px 0 8px}
   .kpi{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:12px;padding:16px 18px}
   .kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary)}
@@ -105,6 +112,7 @@
       <h1>Sasha runs a multi-chain LP book. Autonomously.</h1>
       <p>Real liquidity across Base, Solana and X Layer, with on-chain kill-switches. Every position is reconciled against the chain, not just a state file. Read-only.</p>
       <div class="banner" id="errbanner"></div>
+      <div class="overall" id="overall"></div>
       <div class="strip" id="strip"></div>
     </div>
 
@@ -159,6 +167,18 @@ function relTime(iso){if(!iso)return '';const s=(Date.now()-new Date(iso).getTim
 const CHIP={solana:{c:'#9945FF',t:'◎',col:'#fff'},base:{c:'#0052FF',t:'B',col:'#fff'},mantle:{c:'#65B3AE',t:'M',col:'#000'}}
 
 if(new URLSearchParams(location.search).get('ops')==='1') document.body.classList.add('ops-on')
+
+function renderOverall(d){
+  const o=d.overall; const el=$('overall'); if(!el) return
+  if(!o){ el.innerHTML=''; return }
+  const up=(o.netPnlUsd||0)>=0, pnlC=up?'var(--positive)':'var(--negative)', b=o.breakdown||{}
+  const badge=o.killArmed>0?'<span class="ovbadge warn">⚠ action needed</span>':`<span class="ovbadge">● ${esc(o.status||'')}</span>`
+  el.innerHTML=`
+    <div><div class="meta">Capital in the miner (NAV)</div><div class="nav">${fmtUsd(o.navUsd)}</div></div>
+    <div><div class="meta">Net P&amp;L since start</div><div class="pnl" style="color:${pnlC}">${up?'+':''}${fmtUsd(o.netPnlUsd)} <span style="font-size:13px">(${up?'+':''}${o.netPnlPct}%)</span></div></div>
+    <div style="flex:1"></div>${badge}
+    <div class="break">LP ${fmtUsd(b.lpDeployedUsd)} · idle ${fmtUsd(b.idleUsd)} · hedge margin ${fmtUsd(b.hedgeAccountUsd)} &nbsp;|&nbsp; fees earned ${fmtUsd(o.feesEarnedUsd)} · funding ${(o.fundingAnnPct||0)>=0?'+':''}${o.fundingAnnPct}%/yr · hedge PnL ${fmtUsd(o.hedgeUPnlUsd)}</div>`
+}
 
 function renderStrip(d){
   const unf=d.positions?.unfundedCount||0
@@ -287,7 +307,7 @@ async function load(){
     const hb=d.positions?.reconciledAt?'live':'stale'
     $('hbdot').className='dot '+hb
     $('hbtext').textContent=(hb==='live'?'Live':'Stale')+(d.asOf?' · '+relTime(d.asOf):'')
-    renderStrip(d); renderPositions(d); renderHedge(d); renderCapital(d); renderKillSwitch(d); renderChains(d); renderActivity(d)
+    renderOverall(d); renderStrip(d); renderPositions(d); renderHedge(d); renderCapital(d); renderKillSwitch(d); renderChains(d); renderActivity(d)
     $('foot-asof').textContent='data as of '+relTime(d.asOf)
   }catch(e){
     const b=$('errbanner'); b.style.display='block'; b.textContent='Live data unavailable ('+e.message+').'

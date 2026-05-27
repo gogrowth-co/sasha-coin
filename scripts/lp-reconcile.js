@@ -62,6 +62,7 @@ const ERC20_ABI = ['function balanceOf(address) view returns (uint256)']
 
 function log(m) { console.log(`[lp-reconcile] ${m}`) }
 function warn(m) { console.warn(`[lp-reconcile] ⚠  ${m}`) }
+const round2 = n => n == null ? null : Math.round(n * 100) / 100
 
 function loadJson(p) {
     try { return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : null }
@@ -231,6 +232,42 @@ async function main() {
         const lg = hedgeLive.legs[0]
         log(`HL hedge: ${hedgeLive.legs.length} leg(s)${lg ? ` — ${lg.side} ${lg.size} ${lg.perp} @ $${lg.entryPx}, uPnL $${lg.uPnlUsd}, liq $${lg.liquidationPx}` : ''}, acct $${hedgeLive.accountValueUsd}`)
     }
+
+    // ── Overall NAV + P&L (the at-a-glance: how much, up or down, working?) ──────
+    // NAV = LP deployed (basis; in-range ≈ flat) + idle wallet + Hyperliquid account.
+    // The HL account ($ on Hyperliquid) was previously invisible — this is the real total.
+    const lpUsd = round2(dash.book?.deployedUsd || 0)
+    const idleUsd = round2(dash.book?.idleUsd || 0)
+    const hlAcctUsd = round2(dash.hedge?.accountValueUsd || 0)
+    const navUsd = round2(lpUsd + idleUsd + hlAcctUsd)
+    // Inception baseline — recorded once, so P&L is honest going forward.
+    const BASELINE = path.join(SRC, 'state', 'miner-baseline.json')
+    let baseline = loadJson(BASELINE)
+    if (!baseline) {
+        baseline = { navUsd, at: new Date().toISOString(), note: 'NAV at the moment hedging went live; P&L tracked from here' }
+        if (!DRY_RUN) { try { fs.writeFileSync(BASELINE, JSON.stringify(baseline, null, 2)) } catch {} }
+    }
+    const feesEarnedUsd = round2(positions.reduce((s, p) => s + (Number(p.pendingFeesUsd) || 0), 0))
+    const hedgeUPnlUsd = dash.hedge?.position?.uPnlUsd ?? 0
+    const netPnlUsd = round2(navUsd - (baseline.navUsd || navUsd))
+    const netPnlPct = baseline.navUsd ? Math.round((netPnlUsd / baseline.navUsd) * 10000) / 100 : 0
+    const killArmed = dash.killSwitch?.armed?.length || 0
+    const deltaNeutral = !!dash.hedge?.active
+    let status
+    if (killArmed > 0) status = 'action-needed'
+    else if (deltaNeutral) status = 'delta-neutral · carry accruing'
+    else status = 'directional (unhedged)'
+    dash.overall = {
+        navUsd,
+        breakdown: { lpDeployedUsd: lpUsd, idleUsd, hedgeAccountUsd: hlAcctUsd },
+        baselineNavUsd: baseline.navUsd, baselineAt: baseline.at,
+        netPnlUsd, netPnlPct,
+        feesEarnedUsd, hedgeUPnlUsd,
+        fundingAnnPct: dash.hedge?.position?.fundingAnnPct ?? null,
+        deltaNeutral, killArmed, status,
+        note: 'LP valued at deployed basis (in-range ≈ flat); precise IL accounting pending the ledger',
+    }
+    log(`overall: NAV $${navUsd} (LP $${lpUsd} + idle $${idleUsd} + HL $${hlAcctUsd}) | P&L $${netPnlUsd} (${netPnlPct}%) | ${status}`)
 
     if (DRY_RUN) {
         log('verdicts:'); console.log(JSON.stringify(verdicts, null, 2))
