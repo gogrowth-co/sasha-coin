@@ -159,6 +159,7 @@ function filterTweet(tw, targetMeta, minLikes = 3, minReplies = 1) {
     tweetUrl,
     handle,
     text: tw.text || tw.full_text || '',
+    lang: tw.lang || tw.language || null,   // ISO 639-1 code from Apify ('en', 'pt', 'fr', …)
     likes,
     replies,
     createdAt: new Date(createdAt).toISOString(),

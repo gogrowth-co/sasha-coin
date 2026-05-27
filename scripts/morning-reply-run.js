@@ -20,6 +20,7 @@ import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import https from 'node:https';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -41,6 +42,31 @@ function loadEnv() {
 }
 loadEnv();
 
+// ── Telegram notifications ────────────────────────────────────────────────────
+// Re-uses the TERMUX_BRIDGE_TOKEN + COMMANDER_CHAT_ID already in .env (same bot
+// the phone bridge uses). Falls back to dedicated TELEGRAM_BOT_TOKEN /
+// TELEGRAM_CHAT_ID if those are ever separated.
+// Fire-and-forget: errors are silently swallowed so a Telegram outage never
+// blocks or kills a run.
+function notify(msg) {
+  const token  = process.env.TERMUX_BRIDGE_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.COMMANDER_CHAT_ID   || process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+  const body = JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' });
+  const opts = {
+    hostname: 'api.telegram.org',
+    path: `/bot${token}/sendMessage`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+  };
+  try {
+    const req = https.request(opts, () => {});
+    req.on('error', () => {});
+    req.write(body);
+    req.end();
+  } catch { /* never throw */ }
+}
+
 const DRY_RUN = process.argv.includes('--dry-run');
 const SKIP_SCRAPE = process.argv.includes('--skip-scrape');
 const args = process.argv.slice(2);
@@ -57,6 +83,7 @@ if (!DRY_RUN) {
   console.log(`  ${out}`);
   if (!out.includes('connected') && !out.includes('already connected')) {
     console.error('  ADB reconnect failed — aborting. Check phone WiFi and wireless debugging.');
+    notify(`❌ <b>Sasha reply — ADB offline</b>\nCould not connect to ${DEVICE}. No reply posted this slot.\nCheck phone WiFi + wireless debugging.`);
     process.exit(1);
   }
 }
@@ -145,8 +172,24 @@ const repliedIds = existsSync(REPLIED_PATH)
   : new Set();
 const unreplied = feed.candidates.filter(c => !c.replied && !repliedIds.has(c.tweetId));
 
-if (!unreplied.length) {
-  console.log('No unread candidates in feed. Done.');
+// ── Phase 4: English-only filter ─────────────────────────────────────────────
+// Skip any tweet where lang is explicitly non-English.
+// Tweets with lang=null/undefined are treated as English (unknown = keep).
+// Rationale: political/brand-safety blocklist is English-only; non-English tweets
+// bypass it silently. A French tweet about immigration or a Portuguese political
+// thread would pass all filters and generate a reply — filter at source instead.
+const engOnlyPool = unreplied.filter(c => {
+  if (!c.lang || c.lang === 'en') return true;
+  console.log(`  Skipping @${c.handle} — non-English tweet (lang: ${c.lang})`);
+  return false;
+});
+
+if (!engOnlyPool.length) {
+  const reason = unreplied.length > 0
+    ? `All ${unreplied.length} candidate(s) filtered out (non-English).`
+    : 'No unread candidates in feed.';
+  console.log(`${reason} Done.`);
+  if (!DRY_RUN) notify(`⚠️ <b>Sasha reply — 0 candidates</b>\n${reason}\nFeed generated: ${feed.generatedAt || 'unknown'}`);
   process.exit(0);
 }
 
@@ -158,7 +201,7 @@ if (existsSync(LOG_PATH)) {
   posted.filter(e => e.posted_at && new Date(e.posted_at).getTime() > cutoff)
         .forEach(e => recentHandles.add(e.target_handle));
 }
-const filtered = unreplied.filter(c => {
+const filtered = engOnlyPool.filter(c => {
   if (recentHandles.has(c.handle)) {
     console.log(`  Skipping @${c.handle} — replied in last 12h`);
     return false;
@@ -167,6 +210,7 @@ const filtered = unreplied.filter(c => {
 });
 if (!filtered.length) {
   console.log('All candidates on cooldown (12h handle limit). Done.');
+  if (!DRY_RUN) notify(`⚠️ <b>Sasha reply — all on cooldown</b>\n${engOnlyPool.length} English candidate(s) available but all handles replied in last 12h. No post this slot.`);
   process.exit(0);
 }
 
@@ -268,23 +312,35 @@ Bad reply (generic): "This is huge! Crypto is finally getting the recognition it
 
 Reply only with the tweet text, nothing else.`;
 
-  const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': GEMINI_API_KEY,
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        // thinkingBudget tokens count toward maxOutputTokens in Gemini 2.5
-        // 1024 for thinking + ~100 for visible reply = 1500 safe margin
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 1024 } },
-      }),
-    }
-  );
-  const data = await resp.json();
+  const model = process.env.GEMINI_REPLY_MODEL || 'gemini-2.5-flash';
+  let resp, data;
+  try {
+    resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': GEMINI_API_KEY,
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          // thinkingBudget tokens count toward maxOutputTokens in Gemini 2.5
+          // 1024 for thinking + ~100 for visible reply = 1500 safe margin
+          generationConfig: { temperature: 0.7, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 1024 } },
+        }),
+      }
+    );
+    data = await resp.json();
+  } catch (e) {
+    notify(`❌ <b>Sasha reply — Gemini API error</b>\nModel: ${model}\nError: ${e.message}\nReply for @${tweet.handle} skipped.`);
+    return null;
+  }
+  if (!resp.ok || data.error) {
+    const errMsg = data.error?.message || `HTTP ${resp.status}`;
+    notify(`❌ <b>Sasha reply — Gemini API error</b>\nModel: ${model}\n${errMsg}\nReply for @${tweet.handle} skipped.`);
+    return null;
+  }
   // Filter out thinking parts (thought: true) — only return visible output
   const parts = data.candidates?.[0]?.content?.parts || [];
   return parts.filter(p => !p.thought).map(p => p.text).join('').trim() || null;
@@ -301,8 +357,9 @@ for (const tweet of candidates) {
     continue;
   }
   // Hard enforce 238 chars — prompt instruction alone is not reliable
+  // Word-boundary truncation: don't cut mid-word (slice then strip trailing partial word)
   if (reply.length > 238) {
-    reply = reply.slice(0, 238).trimEnd();
+    reply = reply.slice(0, 238).trimEnd().replace(/\s\S*$/, '').trimEnd();
     console.log(`  Truncated to ${reply.length} chars`);
   }
   console.log(`  Reply (${reply.length} chars): "${reply}"`);
@@ -365,7 +422,22 @@ for (const tweet of candidates) {
 
   // Persist the instant the reply confirms — before engagement sync or anything
   // else that could be interrupted. This is the atomic guard against double-replies.
-  if (!DRY_RUN && ok) persistReply(tweet);
+  if (!DRY_RUN && ok) {
+    persistReply(tweet);
+    // Count today's posts (from the freshly-written log) for the summary line
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayCount = (() => {
+      try {
+        const entries = JSON.parse(readFileSync(LOG_PATH, 'utf8'));
+        return entries.filter(e => e.source === 'reply' && (e.posted_at || '').startsWith(todayStr)).length;
+      } catch { return '?'; }
+    })();
+    const previewReply = reply.length > 80 ? reply.slice(0, 80) + '…' : reply;
+    notify(`✅ <b>Sasha replied</b>\n@${tweet.handle} · ${todayCount}/8 today\n"${previewReply}"`);
+  }
+  if (!DRY_RUN && !ok) {
+    notify(`❌ <b>Sasha reply — ADB post failed</b>\n@${tweet.handle}\nStatus: ${postResult.status || 'unknown'}\nTweet ID already deduped — will NOT retry.`);
+  }
 }
 
 // ── Step 5: Write back feed + logs ────────────────────────────────────────────
