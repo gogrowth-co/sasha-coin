@@ -15,7 +15,7 @@
  *   node scripts/sync-reply-engagement.js --skip-apify   (topics-only backfill)
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { apifyFetch } from './lib/apify-rotate.js';
@@ -127,9 +127,15 @@ if (!SKIP_APIFY) {
   console.log(`Engagement updated: ${engPatched} entries`);
 }
 
-// ── Save ──────────────────────────────────────────────────────────────────────
+// ── Save (atomic write) ───────────────────────────────────────────────────────
+// sync holds the full log in memory for 30-120s during the Apify call. A plain
+// writeFileSync at the end would overwrite any entry that persistReply() appended
+// during that window (requires concurrent slots — possible after reboot catch-up).
+// Atomic rename: write to a temp file, then rename(2) which is atomic on same-fs.
 if (!DRY_RUN) {
-  writeFileSync(LOG_PATH, JSON.stringify(log, null, 2));
+  const tmp = LOG_PATH + '.tmp.' + process.pid;
+  writeFileSync(tmp, JSON.stringify(log, null, 2));
+  renameSync(tmp, LOG_PATH);
   console.log('Saved to state/posted-log.json');
 } else {
   console.log('DRY RUN — nothing written');

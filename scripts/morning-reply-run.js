@@ -16,7 +16,7 @@
  *   node scripts/morning-reply-run.js --device 192.168.0.6:46185
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -62,11 +62,23 @@ if (!DRY_RUN) {
 }
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-// One reply per 90-minute slot — keeps the cadence human-like across the day
-const MAX_POSTS_PER_RUN = parseInt(getArg('--max-posts') || '1');
+// Hard cap at 1 — in-memory repliedIds is rebuilt each run, so multi-post
+// would require each post to re-read disk. Until that is wired, cap=1 is safe.
+const MAX_POSTS_PER_RUN = Math.min(parseInt(getArg('--max-posts') || '1'), 1);
 const FEED_PATH = join(ROOT, 'content/kol-feed.json');
 const REPLIED_PATH = join(ROOT, 'state/replied-tweets.json');
 const LOG_PATH = join(ROOT, 'state/posted-log.json');
+
+// ── Atomic write helper ───────────────────────────────────────────────────────
+// writeFileSync is NOT atomic on macOS — two concurrent processes writing the
+// same file produce last-writer-wins (one process's data silently lost).
+// rename(2) IS atomic on the same filesystem. Write to a temp file, then rename.
+// This makes every state write crash-safe and concurrent-safe.
+function atomicWrite(filePath, content) {
+  const tmp = `${filePath}.tmp.${process.pid}`;
+  writeFileSync(tmp, content);
+  renameSync(tmp, filePath);
+}
 
 // Persist a confirmed reply to dedup state IMMEDIATELY (per-post), not at end of run.
 // Why: a reply lands on X inside the loop, but if the process is killed before the
@@ -79,7 +91,7 @@ function persistReply(tweet) {
     ? new Set(JSON.parse(readFileSync(REPLIED_PATH, 'utf8')))
     : new Set();
   replied.add(tweet.tweetId);
-  writeFileSync(REPLIED_PATH, JSON.stringify([...replied], null, 2));
+  atomicWrite(REPLIED_PATH, JSON.stringify([...replied], null, 2));
 
   const log = existsSync(LOG_PATH) ? JSON.parse(readFileSync(LOG_PATH, 'utf8')) : [];
   const id = `reply-${tweet.tweetId}`;
@@ -102,7 +114,7 @@ function persistReply(tweet) {
       likes_24h: null,
       replies_24h: null,
     });
-    writeFileSync(LOG_PATH, JSON.stringify(log, null, 2));
+    atomicWrite(LOG_PATH, JSON.stringify(log, null, 2));
   }
 }
 
@@ -310,19 +322,26 @@ for (const tweet of candidates) {
   // still unreplied and posts again → double reply.
   // Risk: if ADB truly fails (network down, device offline), we waste a feed slot.
   // That is vastly preferable to double-replying.
+  // Pre-write: atomically add tweet ID to replied-tweets BEFORE ADB fires.
+  // Also update the in-memory repliedIds Set so any future loop iteration
+  // (at MAX_POSTS_PER_RUN > 1) immediately sees this tweet as done.
   {
     const preReplied = existsSync(REPLIED_PATH)
       ? new Set(JSON.parse(readFileSync(REPLIED_PATH, 'utf8')))
       : new Set();
     preReplied.add(tweet.tweetId);
-    writeFileSync(REPLIED_PATH, JSON.stringify([...preReplied], null, 2));
+    atomicWrite(REPLIED_PATH, JSON.stringify([...preReplied], null, 2));
+    repliedIds.add(tweet.tweetId); // keep in-memory Set in sync (P5)
   }
 
   console.log('  Posting via ADB...');
+  // Timeout 180s: step 5 (find Reply button, 3 retries × screenshot + uiDump)
+  // can take up to 126s on a slow phone. 60s killed the subprocess mid-attempt,
+  // the reply may have already posted, but we got exit-null → ok=false → no log entry.
   const post = spawnSync(
     process.execPath,
     [join(__dirname, 'adb-reply.js'), '--url', tweet.tweetUrl, '--text', reply, '--device', DEVICE],
-    { encoding: 'utf8', env: { ...process.env }, timeout: 60000 }
+    { encoding: 'utf8', env: { ...process.env }, timeout: 180000 }
   );
 
   let postResult = {};
@@ -330,11 +349,7 @@ for (const tweet of candidates) {
 
   if (postResult.status === 'subscribers_only') {
     console.log('  Subscribers-only tweet — adding to skip list, not counting as post');
-    const skipped = existsSync(REPLIED_PATH)
-      ? new Set(JSON.parse(readFileSync(REPLIED_PATH, 'utf8')))
-      : new Set();
-    skipped.add(tweet.tweetId);
-    writeFileSync(REPLIED_PATH, JSON.stringify([...skipped], null, 2));
+    // Pre-write already added tweetId to replied-tweets. Just update the feed.
     results.push({ ...tweet, status: 'subscribers_only', replied: false });
     continue;
   }
