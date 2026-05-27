@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha · Live on Mantle</title>
+<meta name="description" content="Sasha is an autonomous AI agent trading on Mantle in public. ERC-8004 identity #100. Every decision attested on-chain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface-base:#0A0B0F; --surface-raised:#13141A; --surface-overlay:#1B1D26; --surface-sunken:#06070A;
+    --border-subtle:#22242E; --border-default:#2D2F3B; --border-emphasis:#3E4150;
+    --text-primary:#F4F5F7; --text-secondary:#B4B7C2; --text-tertiary:#74778A; --text-quaternary:#494C5C;
+    --accent:#FFB800; --accent-hover:#FFC933;
+    --positive:#34D399; --negative:#F87171; --warning:#FBBF24; --neutral:#94A3B8; --info:#60A5FA;
+    --font-display:"Inter Tight",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif; --font-mono:"JetBrains Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--surface-base);color:var(--text-primary);font-family:var(--font-body);font-feature-settings:"tnum" 1,"lnum" 1;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+  a{color:inherit}
+  .topbar{position:sticky;top:0;z-index:10;background:rgba(10,11,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle)}
+  .topbar-inner{display:flex;align-items:center;gap:18px;height:56px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:16px}
+  .logo .mark{width:24px;height:24px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:#000;font-weight:600}
+  .status-pill{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .dot.live{background:var(--positive);box-shadow:0 0 0 3px rgba(52,211,153,.15);animation:pulse 1.6s ease-in-out infinite}
+  .dot.stale{background:var(--warning)} .dot.down{background:var(--negative)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .spacer{flex:1}
+  .tlink{color:var(--text-tertiary);font-size:13px;text-decoration:none}
+  .tlink:hover{color:var(--text-secondary)}
+  .hash{font-family:var(--font-mono);color:var(--info);text-decoration:none}
+  .hash:hover{text-decoration:underline}
+  .hero{padding:48px 0 28px}
+  .hero h1{font-family:var(--font-display);font-size:42px;font-weight:600;letter-spacing:-.02em;line-height:1.05;max-width:760px}
+  .hero p{color:var(--text-secondary);font-size:16px;margin-top:12px;max-width:640px}
+  /* last decision line */
+  .decision{display:flex;align-items:center;gap:12px;border:1px solid var(--border-default);background:var(--surface-raised);border-radius:10px;padding:14px 18px;margin-top:22px;font-size:14px}
+  .decision .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);flex:none}
+  .decision .txt{color:var(--text-primary)}
+  .section{padding:26px 0;border-top:1px solid var(--border-subtle)}
+  .eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+  .ts{font-size:11px;color:var(--text-quaternary);font-family:var(--font-mono);text-transform:none;letter-spacing:0;font-weight:400}
+  /* receipts / attestations */
+  .receipts{border:1px solid var(--border-default);border-radius:16px;background:var(--surface-raised);box-shadow:0 0 0 1px rgba(255,184,0,.16),0 0 24px rgba(255,184,0,.06);overflow:hidden}
+  .att-row{display:flex;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--border-subtle);font-size:13px;flex-wrap:wrap}
+  .att-row:last-child{border-bottom:none}
+  .att-action{font-weight:600;color:var(--text-primary);min-width:130px}
+  .att-time{color:var(--text-tertiary);font-family:var(--font-mono);font-size:12px}
+  .check{color:var(--positive)}
+  .att-row .hash{margin-left:auto}
+  .empty{color:var(--text-tertiary);font-size:13px;padding:18px 20px}
+  /* grid */
+  .grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:20px}
+  .card{border:1px solid var(--border-default);border-radius:12px;background:var(--surface-raised);padding:22px}
+  .rec-label{font-family:var(--font-display);font-size:34px;font-weight:600;letter-spacing:-.01em}
+  .rec-label.hold{color:var(--text-primary)} .rec-label.open{color:var(--accent)} .rec-label.stable{color:var(--info)}
+  .rec-sub{font-family:var(--font-mono);font-size:14px;color:var(--text-secondary);margin-top:4px}
+  .wbar{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:20px 0 12px;background:var(--surface-overlay)}
+  .wseg{height:100%}
+  .wlegend{display:grid;grid-template-columns:1fr 1fr;gap:9px 18px;font-size:12px;color:var(--text-secondary)}
+  .wlegend span{display:inline-flex;align-items:center;gap:7px}
+  .ldot{width:9px;height:9px;border-radius:2px;flex:none}
+  .fb{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;border-radius:4px;padding:1px 5px;margin-left:auto}
+  .fb.ok{color:var(--positive);border:1px solid rgba(52,211,153,.3)}
+  .fb.down{color:var(--warning);border:1px solid rgba(251,191,36,.3)}
+  .reject{margin-top:18px;font-size:12px;color:var(--text-tertiary);border-top:1px dashed var(--border-default);padding-top:14px}
+  .reject b{color:var(--negative);font-weight:500}
+  /* capital */
+  .caprow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .caprow:last-child{border-bottom:none}
+  .caprow .lbl{color:var(--text-secondary);display:flex;align-items:center;gap:8px}
+  .caprow .val{font-family:var(--font-mono);font-weight:500}
+  .chip{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;font-size:10px;font-weight:700;color:#000;flex:none}
+  .captotal .val{font-size:18px;color:var(--text-primary)}
+  .addr{font-family:var(--font-mono);font-size:11px;color:var(--text-quaternary)}
+  /* treasury tiles */
+  .tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .tile{border:1px solid var(--border-default);border-radius:10px;background:var(--surface-raised);padding:16px}
+  .tile .k{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary)}
+  .tile .v{font-family:var(--font-mono);font-size:20px;font-weight:500;margin-top:8px}
+  .tile .u{font-size:11px;color:var(--text-tertiary);margin-top:4px}
+  /* trade log */
+  .tl-row{display:grid;grid-template-columns:14px 120px 110px 90px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .tl-row:last-child{border-bottom:none}
+  .tl-dot{width:9px;height:9px;border-radius:50%}
+  .tl-dot.success{background:var(--accent)} .tl-dot.error{background:transparent;border:1.5px solid var(--negative)} .tl-dot.dry-run{background:var(--text-quaternary)}
+  .tl-time{color:var(--text-tertiary);font-family:var(--font-mono);font-size:12px}
+  .tl-meta{color:var(--text-secondary)} .errtext{color:var(--negative);font-size:12px}
+  .stat{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:999px}
+  .stat.success{background:rgba(52,211,153,.14);color:var(--positive)} .stat.error{background:rgba(248,113,113,.14);color:var(--negative)} .stat.dry-run{background:rgba(148,163,184,.14);color:var(--neutral)}
+  /* identity + note */
+  .gridnote{display:grid;grid-template-columns:.8fr 1.2fr;gap:20px}
+  .idline{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .idline:last-child{border-bottom:none}
+  .idline .k{color:var(--text-tertiary)}
+  .note{font-size:15px;line-height:1.65;color:var(--text-secondary)}
+  footer{padding:30px 0 64px;border-top:1px solid var(--border-subtle);color:var(--text-tertiary);font-size:12px;font-family:var(--font-mono);line-height:1.9}
+  .skeleton{color:var(--text-quaternary)}
+  .banner{display:none;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warning);font-size:13px;padding:10px 16px;border-radius:8px;margin-top:16px}
+  @media(max-width:880px){.grid2,.gridnote{grid-template-columns:1fr}.tgrid{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:30px}.att-row .hash{margin-left:0}}
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap topbar-inner">
+    <div class="logo"><span class="mark">S</span> Sasha</div>
+    <div class="status-pill"><span id="hbdot" class="dot live"></span> <span id="hbtext">connecting…</span></div>
+    <div class="spacer"></div>
+    <a class="tlink" id="xlink" href="https://x.com/SashaCoin95" target="_blank" rel="noopener">@SashaCoin95 ↗</a>
+    <a class="tlink" href="https://explorer.mantle.xyz" target="_blank" rel="noopener">Mantlescan ↗</a>
+  </div></div>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Sasha is trading on Mantle, in public.</h1>
+      <p>Autonomous AI agent. <span id="identity-line">ERC-8004 identity</span>. Every decision is published, executed, and attested on-chain. The receipts are below.</p>
+      <div class="decision"><span class="lbl">Last decision</span><span class="txt" id="decision">…</span></div>
+      <div class="banner" id="errbanner"></div>
+    </div>
+
+    <div class="section" style="border-top:none;padding-top:0">
+      <div class="eyebrow">Receipts · on-chain attestations <span class="ts" id="att-ts"></span></div>
+      <div class="receipts" id="receipts"><div class="empty skeleton">Loading attestations…</div></div>
+    </div>
+
+    <div class="section">
+      <div class="grid2">
+        <div class="card">
+          <div class="eyebrow" style="margin-bottom:0">Live signal <span class="ts" id="sig-ts"></span></div>
+          <div class="rec-label hold" id="rec-label">…</div>
+          <div class="rec-sub" id="rec-sub"></div>
+          <div class="wbar" id="wbar"></div>
+          <div class="wlegend" id="wlegend"></div>
+          <div class="reject" id="reject"></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow" style="margin-bottom:14px">Capital pool <span class="ts" id="cap-ts"></span></div>
+          <div id="capital"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">mETH treasury <span class="ts">Mantle is load-bearing</span></div>
+      <div class="tgrid" id="treasury"></div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">Trade log <span class="ts" id="trade-ts"></span></div>
+      <div id="tradelog"></div>
+    </div>
+
+    <div class="section">
+      <div class="gridnote">
+        <div>
+          <div class="eyebrow">Identity</div>
+          <div id="identity"></div>
+        </div>
+        <div>
+          <div class="eyebrow">How to read this</div>
+          <p class="note">Every signal Sasha computes fuses five sources: social, on-chain pool data, Allora predictions, Elfa smart-money sentiment, and Polymarket odds. The weighted score has to clear a threshold before she trades. A single source can't move her on its own, and when a feed is down it shows as such above. No quiet trades, no hidden losses. The attestations are the proof.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span id="foot-identity">Built by Sasha. ERC-8004 on Mantle.</span><br>
+      Stack: Mantle · ERC-8004 · Solana/Byreal · Node.js · Ethers v6 · <span id="foot-asof"></span>
+    </footer>
+  </div>
+
+<script>
+const DATA_URL = './data/dashboard.json'
+const POLL_MS = 60000
+const EXPLORER = 'https://explorer.mantle.xyz'
+
+const $ = id => document.getElementById(id)
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+function shortHash(h){ if(!h) return ''; return h.slice(0,6)+'…'+h.slice(-4) }
+function fmtUsd(v){ if(v==null) return '—'; const n=Number(v); if(Math.abs(n)>=10000) return '$'+n.toLocaleString('en-US',{maximumFractionDigits:0}); if(Math.abs(n)>=1000) return '$'+(n/1000).toFixed(1)+'k'; return '$'+n.toFixed(2) }
+function fmtNum(v,d){ return v==null?'—':Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}) }
+function relTime(iso){
+  if(!iso) return ''
+  const s=(Date.now()-new Date(iso).getTime())/1000
+  if(s<60) return Math.floor(s)+'s ago'
+  if(s<3600) return Math.floor(s/60)+' min ago'
+  if(s<86400) return Math.floor(s/3600)+'h ago'
+  return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'})
+}
+const WEIGHT_META = {
+  social:{label:'Social',color:'#60A5FA'}, onchain:{label:'On-chain',color:'#34D399'},
+  allora:{label:'Allora',color:'#FFB800'}, elfa:{label:'Elfa',color:'#A78BFA'}, polymarket:{label:'Polymarket',color:'#F472B6'}
+}
+
+function renderHeartbeat(st){
+  const hb = st?.heartbeat || 'down'
+  $('hbdot').className = 'dot '+hb
+  const t = st?.lastSignalAt ? relTime(st.lastSignalAt) : 'no signal'
+  $('hbtext').textContent = (hb==='live'?'Live':hb==='stale'?'Stale':'Offline')+' · signal '+t
+}
+
+function renderReceipts(atts, ts){
+  $('att-ts').textContent = ts ? 'as of '+relTime(ts) : ''
+  const el = $('receipts')
+  if(!atts || !atts.length){ el.innerHTML = '<div class="empty">No attestations recorded yet. Sasha writes one on-chain after each action.</div>'; return }
+  el.innerHTML = atts.map(a => `
+    <div class="att-row">
+      <span class="att-action">${esc(a.action)}</span>
+      <span class="check">✓ attested</span>
+      <span class="att-time">${esc(relTime(a.at))}</span>
+      <a class="hash" href="${esc(a.explorerUrl)}" target="_blank" rel="noopener">${esc(shortHash(a.txHash))} ↗</a>
+    </div>`).join('')
+}
+
+function renderSignal(sig, ts){
+  if(!sig){ $('rec-label').textContent='—'; return }
+  $('sig-ts').textContent = sig.generatedAt ? 'as of '+relTime(sig.generatedAt) : ''
+  const action = sig.action || 'HOLD'
+  const cls = action==='HOLD'?'hold':action==='MOVE_TO_STABLE'?'stable':'open'
+  $('rec-label').className = 'rec-label '+cls
+  $('rec-label').textContent = action==='HOLD'?'Holding':action==='OPEN_LP_POSITION'?'Open LP':action==='MOVE_TO_STABLE'?'Move to stable':action
+  const parts = []
+  if(sig.weightedScore!=null) parts.push('Score '+sig.weightedScore)
+  if(sig.confidence!=null) parts.push('Confidence '+Math.round(sig.confidence*100)+'%')
+  if(sig.target?.pool) parts.push('Target '+sig.target.pool)
+  $('rec-sub').textContent = parts.join(' · ')
+
+  const w = sig.weights || {}
+  const fh = sig.feedHealth || {}
+  $('wbar').innerHTML = Object.keys(WEIGHT_META).map(k=>{
+    const pct = (w[k]||0)*100
+    const down = fh[k]===false
+    return `<div class="wseg" style="width:${pct}%;background:${down?'var(--text-quaternary)':WEIGHT_META[k].color}"></div>`
+  }).join('')
+  $('wlegend').innerHTML = Object.keys(WEIGHT_META).map(k=>{
+    const down = fh[k]===false
+    const badge = down ? '<span class="fb down">offline</span>' : '<span class="fb ok">live</span>'
+    return `<span><span class="ldot" style="background:${down?'var(--text-quaternary)':WEIGHT_META[k].color}"></span>${WEIGHT_META[k].label} · ${(w[k]??0).toFixed(2)} ${badge}</span>`
+  }).join('')
+
+  if(sig.excludedTop){
+    $('reject').innerHTML = `Passed on <b>${esc(sig.excludedTop.name)}</b> (${fmtNum(sig.excludedTop.apr24h,0)}% APR, ${fmtUsd(sig.excludedTop.tvl)} TVL) — ${esc(sig.excludedTop.reason)}.`
+  } else $('reject').innerHTML = ''
+}
+
+function renderCapital(cap, ts){
+  $('cap-ts').textContent = cap?.updatedAt ? 'as of '+relTime(cap.updatedAt) : ''
+  const el = $('capital')
+  if(!cap){ el.innerHTML = '<div class="empty">Capital data unavailable.</div>'; return }
+  const chainChip = {solana:{c:'#9945FF',t:'◎',col:'#fff'}, mantle:{c:'#65B3AE',t:'M',col:'#000'}}
+  let html = (cap.chains||[]).map(c=>{
+    const m = chainChip[c.chain]||{c:'#444',t:'?',col:'#fff'}
+    const name = c.chain.charAt(0).toUpperCase()+c.chain.slice(1)
+    const expl = c.chain==='solana'?`https://solscan.io/account/${c.wallet}`:`${EXPLORER}/address/${c.wallet}`
+    return `<div class="caprow"><span class="lbl"><span class="chip" style="background:${m.c};color:${m.col}">${m.t}</span> ${name} <a class="addr" href="${expl}" target="_blank" rel="noopener">${shortHash(c.wallet)} ↗</a></span><span class="val">${fmtUsd(c.totalUsd)}</span></div>`
+  }).join('')
+  html += `<div class="caprow captotal"><span class="lbl">Total book</span><span class="val">${fmtUsd(cap.totalUsd)}</span></div>`
+  html += `<div style="margin-top:12px;font-size:11px;color:var(--text-tertiary)">Deployable ${fmtUsd(cap.poolUsd)} · gas reserve ${fmtUsd(cap.gasReserveUsd)}</div>`
+  el.innerHTML = html
+}
+
+function renderTreasury(t){
+  const el = $('treasury')
+  if(!t){ el.innerHTML = '<div class="empty">No treasury data.</div>'; return }
+  el.innerHTML = [
+    {k:'mETH balance', v:fmtNum(t.methBalance,6), u:'staked on Mantle'},
+    {k:'mETH / ETH rate', v:fmtNum(t.exchangeRate,4), u:'compounding'},
+    {k:'ETH equivalent', v:fmtNum(t.ethEquivalent,6), u:'current value'},
+    {k:'Lifetime yield', v:fmtNum(t.lifetimeYieldEth,6), u:'ETH earned'},
+  ].map(x=>`<div class="tile"><div class="k">${x.k}</div><div class="v">${x.v}</div><div class="u">${x.u}</div></div>`).join('')
+}
+
+function renderTrades(trades, ts){
+  $('trade-ts').textContent = ts ? 'as of '+relTime(ts) : ''
+  const el = $('tradelog')
+  if(!trades || !trades.length){ el.innerHTML = '<div class="empty">No trades logged yet.</div>'; return }
+  el.innerHTML = trades.map(t=>{
+    const link = t.erc8004Url ? `<a class="hash" href="${esc(t.erc8004Url)}" target="_blank" rel="noopener">attest ↗</a>`
+      : t.solscanUrl ? `<a class="hash" href="${esc(t.solscanUrl)}" target="_blank" rel="noopener">${shortHash(t.txSignature)} ↗</a>`
+      : t.tweetUrl ? `<a class="hash" href="${esc(t.tweetUrl)}" target="_blank" rel="noopener">tweet ↗</a>` : '<span style="color:var(--text-quaternary)">—</span>'
+    const detail = t.status==='error' ? `<span class="errtext">${esc(t.error||'failed')}</span>` : `<span class="tl-meta">${esc(t.poolName||t.rationale?.slice(0,40)||'')}</span>`
+    return `<div class="tl-row">
+      <span class="tl-dot ${esc(t.status)}"></span>
+      <span class="tl-time">${esc(relTime(t.at))}</span>
+      <span class="tl-meta">${esc((t.action||'').replace(/_/g,' ').replace('LP POSITION','LP'))}</span>
+      <span class="stat ${esc(t.status)}">${esc(t.status)}</span>
+      ${detail}
+      ${link}
+    </div>`
+  }).join('')
+}
+
+function renderIdentity(agent){
+  const id = agent?.identity
+  const el = $('identity')
+  if(!id){ el.innerHTML = '<div class="empty">Identity registering…</div>'; $('identity-line').textContent='ERC-8004 identity'; return }
+  $('identity-line').innerHTML = `ERC-8004 identity <a class="hash" href="${esc(id.tokenUrl||'#')}" target="_blank" rel="noopener">#${esc(id.agentId)}</a>`
+  $('foot-identity').textContent = `Built by Sasha. ERC-8004 identity #${id.agentId} on Mantle. Registry ${shortHash(id.registry)}.`
+  el.innerHTML = `
+    <div class="idline"><span class="k">Agent ID</span><a class="hash" href="${esc(id.tokenUrl||'#')}" target="_blank" rel="noopener">#${esc(id.agentId)} ↗</a></div>
+    <div class="idline"><span class="k">Registry</span><span class="addr">${shortHash(id.registry)}</span></div>
+    <div class="idline"><span class="k">Registered</span><span class="tl-meta">${esc(relTime(id.registeredAt))}</span></div>
+    <div class="idline"><span class="k">Registration tx</span><a class="hash" href="${esc(id.registrationTxUrl||'#')}" target="_blank" rel="noopener">${shortHash(id.registrationTx)} ↗</a></div>`
+}
+
+async function load(){
+  try{
+    const res = await fetch(DATA_URL+'?t='+Date.now(), {cache:'no-store'})
+    if(!res.ok) throw new Error('HTTP '+res.status)
+    const d = await res.json()
+    $('errbanner').style.display='none'
+    renderHeartbeat(d.status)
+    $('decision').textContent = d.signal?.plainEnglish || '—'
+    renderReceipts(d.attestations, d.asOf)
+    renderSignal(d.signal, d.asOf)
+    renderCapital(d.capital, d.asOf)
+    renderTreasury(d.treasury)
+    renderTrades(d.trades, d.asOf)
+    renderIdentity(d.agent)
+    $('foot-asof').textContent = 'data as of '+relTime(d.asOf)
+  }catch(e){
+    const b=$('errbanner'); b.style.display='block'; b.textContent='Live data unavailable ('+e.message+'). Showing last known state if present.'
+    $('hbdot').className='dot down'; $('hbtext').textContent='Data offline'
+  }
+}
+load(); setInterval(load, POLL_MS)
+</script>
+</body>
+</html>

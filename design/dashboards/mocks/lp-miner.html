@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha LP · Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface-base:#0A0B0F; --surface-raised:#13141A; --surface-overlay:#1B1D26; --surface-sunken:#06070A;
+    --border-subtle:#22242E; --border-default:#2D2F3B; --border-emphasis:#3E4150;
+    --text-primary:#F4F5F7; --text-secondary:#B4B7C2; --text-tertiary:#74778A; --text-quaternary:#494C5C;
+    --accent:#FFB800; --positive:#34D399; --negative:#F87171; --warning:#FBBF24; --neutral:#94A3B8; --info:#60A5FA;
+    --font-display:"Inter Tight",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif; --font-mono:"JetBrains Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--surface-base);color:var(--text-primary);font-family:var(--font-body);font-feature-settings:"tnum" 1,"lnum" 1;-webkit-font-smoothing:antialiased;display:flex;min-height:100vh}
+  /* sidebar */
+  .sidebar{width:220px;flex:none;border-right:1px solid var(--border-subtle);background:var(--surface-sunken);padding:18px 12px;position:sticky;top:0;height:100vh}
+  .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:15px;padding:6px 10px 18px}
+  .logo .mark{width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:#000;font-weight:600;font-size:12px}
+  .navsec{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-quaternary);padding:14px 10px 6px}
+  .navitem{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;font-size:13px;color:var(--text-secondary);text-decoration:none;cursor:pointer}
+  .navitem:hover{background:var(--surface-raised);color:var(--text-primary)}
+  .navitem.active{background:rgba(255,184,0,.08);color:var(--accent);font-weight:500}
+  .navitem .ic{width:16px;text-align:center;opacity:.8}
+  .navbadge{margin-left:auto;background:var(--accent);color:#000;font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px}
+  /* main */
+  .main{flex:1;min-width:0}
+  .topbar{display:flex;align-items:center;gap:16px;height:52px;padding:0 24px;border-bottom:1px solid var(--border-subtle);font-size:13px;position:sticky;top:0;background:rgba(10,11,15,.85);backdrop-filter:blur(12px);z-index:5}
+  .crumb{font-weight:500}
+  .alert-pill{display:flex;align-items:center;gap:7px;color:var(--warning);background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:999px;padding:3px 11px;font-size:12px;font-weight:500}
+  .spacer{flex:1}
+  .meta{color:var(--text-tertiary);font-family:var(--font-mono);font-size:12px}
+  .kbd{border:1px solid var(--border-default);border-radius:5px;padding:2px 7px;font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary)}
+  .content{padding:24px}
+  /* truth strip */
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  .kpi{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:12px;padding:16px 18px}
+  .kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary)}
+  .kpi .val{font-family:var(--font-mono);font-size:26px;font-weight:500;margin-top:8px}
+  .kpi .sub{font-size:12px;margin-top:6px;display:flex;align-items:center;gap:8px}
+  .spark{font-family:var(--font-mono);color:var(--text-quaternary);letter-spacing:1px}
+  .delta-pos{color:var(--positive)} .delta-neg{color:var(--negative)}
+  .kpi.alert{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.05)}
+  .kpi.alert .val{color:var(--warning)}
+  /* alerts panel */
+  .panel{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:12px;padding:18px 20px;margin-bottom:20px}
+  .panel-h{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+  .seeall{color:var(--info);text-decoration:none;font-size:12px;text-transform:none;letter-spacing:0}
+  .alert-row{display:flex;align-items:center;gap:10px;padding:9px 0;font-size:13px;border-bottom:1px solid var(--border-subtle)}
+  .alert-row:last-child{border-bottom:none}
+  .ad{width:8px;height:8px;border-radius:50%}
+  .ad.warn{background:var(--warning)} .ad.crit{background:var(--negative)}
+  .alert-row .txt{color:var(--text-secondary)} .alert-row .lnk{margin-left:auto;color:var(--info);text-decoration:none;font-size:12px}
+  /* two col */
+  .grid{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+  /* positions table */
+  .ptable{width:100%;border-collapse:collapse;font-size:13px}
+  .ptable th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);font-weight:500;padding:0 0 10px}
+  .ptable td{padding:11px 0;border-top:1px solid var(--border-subtle)}
+  .ptable tr:hover td{background:var(--surface-sunken)}
+  .chip{display:inline-flex;align-items:center;gap:6px}
+  .cdot{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;font-size:9px;font-weight:700;color:#000;flex:none}
+  .stat{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px}
+  .stat.oor{background:rgba(248,113,113,.14);color:var(--negative)}
+  .stat.inr{background:rgba(52,211,153,.14);color:var(--positive)}
+  .stat.pend{background:rgba(251,191,36,.14);color:var(--warning)}
+  .num{font-family:var(--font-mono)}
+  /* range bar */
+  .rangebar{position:relative;height:8px;background:var(--surface-overlay);border-radius:4px;width:120px;margin-top:5px}
+  .rangefill{position:absolute;height:100%;background:rgba(52,211,153,.25);border-radius:4px}
+  .rangemark{position:absolute;top:-3px;width:2px;height:14px;background:var(--positive);border-radius:1px}
+  .rangemark.out{background:var(--negative)}
+  /* queue preview + capital */
+  .qrow{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .qrow:last-child{border-bottom:none}
+  .qtype{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;flex:none;margin-top:1px}
+  .qt-close{background:rgba(96,165,250,.14);color:var(--info)}
+  .qt-kill{background:rgba(248,113,113,.14);color:var(--negative)}
+  .qmeta{color:var(--text-secondary)} .qmeta b{color:var(--text-primary);font-weight:500}
+  .donut-wrap{display:flex;align-items:center;gap:20px}
+  .legend{font-size:12px}.legend div{display:flex;align-items:center;gap:8px;padding:4px 0}
+  .legend .ld{width:10px;height:10px;border-radius:3px}.legend .lv{margin-left:auto;font-family:var(--font-mono);color:var(--text-secondary)}
+  @media(max-width:980px){.strip{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.sidebar{display:none}}
+</style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><span class="mark">S</span> Sasha LP</div>
+    <a class="navitem active"><span class="ic">▣</span> Overview</a>
+    <a class="navitem"><span class="ic">▤</span> Positions</a>
+    <a class="navitem"><span class="ic">▦</span> Rebalance queue <span class="navbadge">2</span></a>
+    <a class="navitem"><span class="ic">◎</span> Pool scanner</a>
+    <a class="navitem"><span class="ic">⚖</span> Hedge book</a>
+    <a class="navitem"><span class="ic">▲</span> Performance</a>
+    <div class="navsec">System</div>
+    <a class="navitem"><span class="ic">⚙</span> Settings</a>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="crumb">Overview</span>
+      <span class="alert-pill">⚠ 2 need attention</span>
+      <div class="spacer"></div>
+      <span class="meta">$20.28 total</span>
+      <span class="meta">synced 30s ago</span>
+      <span class="meta">↻</span>
+      <span class="kbd">⌘K</span>
+    </div>
+
+    <div class="content">
+      <!-- TRUTH STRIP -->
+      <div class="strip">
+        <div class="kpi"><div class="lbl">Total capital</div><div class="val">$20.28</div><div class="sub"><span class="spark">▁▂▃▄▅▆▇</span><span class="delta-pos">+$0.41</span></div></div>
+        <div class="kpi"><div class="lbl">Fees earned</div><div class="val" style="color:var(--positive)">$1.51</div><div class="sub"><span class="spark">▁▁▂▃▄▅▆</span><span class="delta-pos">+$0.31</span></div></div>
+        <div class="kpi"><div class="lbl">Net PnL</div><div class="val delta-pos">+2.1%</div><div class="sub"><span class="spark">▂▃▄▃▄▅▆</span><span class="text-tertiary" style="color:var(--text-tertiary)">after IL + funding</span></div></div>
+        <div class="kpi alert"><div class="lbl">Alerts</div><div class="val">2</div><div class="sub"><span style="color:var(--warning)">1 close-reopen · 1 kill risk</span></div></div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="panel">
+        <div class="panel-h"><span>⚠ Alerts</span></div>
+        <div class="alert-row"><span class="ad warn"></span><span class="txt"><b style="color:var(--text-primary)">USDC/cbBTC</b> approaching upper bound · review rebalance</span><a class="lnk">queue ↗</a></div>
+        <div class="alert-row"><span class="ad crit"></span><span class="txt"><b style="color:var(--text-primary)">SOL/USD1</b> funding −48% annualized, kill threshold −54.75%</span><a class="lnk">hedge book ↗</a></div>
+      </div>
+
+      <div class="grid">
+        <!-- POSITIONS -->
+        <div class="panel">
+          <div class="panel-h"><span>Positions</span><a class="seeall">see all ↗</a></div>
+          <table class="ptable">
+            <thead><tr><th>Pool</th><th>Chain</th><th>Status</th><th>Range</th><th>Capital</th><th>Fees</th><th>PnL</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="chip"><span class="cdot" style="background:#0052FF;color:#fff">B</span> USDC/cbBTC</span><div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;margin-left:22px">Aerodrome CL2000</div></td>
+                <td><span class="num" style="color:var(--text-tertiary)">Base</span></td>
+                <td><span class="stat pend">pending open</span></td>
+                <td><div class="rangebar"><div class="rangefill" style="left:8%;width:84%"></div><div class="rangemark" style="left:62%"></div></div><div style="font-size:10px;color:var(--text-tertiary);margin-top:4px" class="num">65k–88k</div></td>
+                <td class="num">$45.00</td><td class="num" style="color:var(--positive)">$0.00</td><td class="num">—</td>
+              </tr>
+              <tr>
+                <td><span class="chip"><span class="cdot" style="background:#9945FF;color:#fff">◎</span> SOL/USD1</span><div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;margin-left:22px">Byreal CLMM</div></td>
+                <td><span class="num" style="color:var(--text-tertiary)">Solana</span></td>
+                <td><span class="stat inr">in range</span></td>
+                <td><div class="rangebar"><div class="rangefill" style="left:10%;width:80%"></div><div class="rangemark" style="left:48%"></div></div><div style="font-size:10px;color:var(--text-tertiary);margin-top:4px" class="num">19% to edge</div></td>
+                <td class="num">$5.00</td><td class="num" style="color:var(--positive)">$0.31</td><td class="num delta-pos">+1.8%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- CAPITAL + QUEUE -->
+        <div>
+          <div class="panel" style="margin-bottom:20px">
+            <div class="panel-h"><span>Capital allocation</span></div>
+            <div class="donut-wrap">
+              <svg width="96" height="96" viewBox="0 0 42 42">
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--surface-overlay)" stroke-width="6"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="#0052FF" stroke-width="6" stroke-dasharray="0 100" transform="rotate(-90 21 21)"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="#9945FF" stroke-width="6" stroke-dasharray="25 75" stroke-dashoffset="0" transform="rotate(-90 21 21)"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--text-quaternary)" stroke-width="6" stroke-dasharray="75 25" stroke-dashoffset="-25" transform="rotate(-90 21 21)"/>
+                <text x="21" y="20" text-anchor="middle" font-size="6" fill="var(--text-primary)" font-family="monospace" font-weight="600">$20.28</text>
+                <text x="21" y="26" text-anchor="middle" font-size="3" fill="var(--text-tertiary)" font-family="monospace">total</text>
+              </svg>
+              <div class="legend" style="flex:1">
+                <div><span class="ld" style="background:#9945FF"></span> Solana LP <span class="lv">$5.00</span></div>
+                <div><span class="ld" style="background:#0052FF"></span> Base LP <span class="lv">$0.00*</span></div>
+                <div><span class="ld" style="background:var(--text-quaternary)"></span> Idle <span class="lv">$15.28</span></div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:12px">* Base position pending mint ($45 reserved)</div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-h"><span>Rebalance queue</span><a class="seeall">see all ↗</a></div>
+            <div class="qrow"><span class="qtype qt-close">CLOSE_REOPEN</span><span class="qmeta"><b>USDC/cbBTC</b> · price near upper bound. Reopen around new range.</span></div>
+            <div class="qrow"><span class="qtype qt-kill">KILL</span><span class="qmeta"><b>SOL/USD1</b> · funding kill risk at −48% annualized.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

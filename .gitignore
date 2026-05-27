@@ -62,3 +62,5 @@ build/
 # !.claude/
 # !tasks.html
 # !task-server.js
+# Dev-only VPS state snapshot (raw internal state — never deploy/commit)
+_devdata/

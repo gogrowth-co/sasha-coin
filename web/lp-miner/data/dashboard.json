@@ -1,0 +1,113 @@
+{
+  "asOf": "2026-05-27T02:46:02.234Z",
+  "generatedBy": "build-dashboard-data.js",
+  "scope": "liquidity-miner-only",
+  "agent": {
+    "name": "Sasha LP",
+    "xHandle": "SashaCoin95",
+    "xUrl": "https://x.com/SashaCoin95"
+  },
+  "book": {
+    "deployedUsd": 45,
+    "idleUsd": 3.08,
+    "totalUsd": 48.08,
+    "note": "deployedUsd = capital basis in open LP positions; idle/total filled by live wallet read"
+  },
+  "capital": {
+    "chains": [
+      {
+        "chain": "base",
+        "deployedUsd": 45
+      }
+    ]
+  },
+  "positions": {
+    "openCount": 1,
+    "closedCount": 0,
+    "items": [
+      {
+        "id": "aerodrome-usdc-cbbtc-cl2000-001",
+        "symbol": "USDC/cbBTC",
+        "chain": "base",
+        "project": "aerodrome-slipstream",
+        "status": "open",
+        "deployedUsd": 45,
+        "nftTokenId": "71397771",
+        "feeTier": "CL2000-0.0338%",
+        "lowerPrice": 65000,
+        "upperPrice": 88000,
+        "pendingFeesUsd": 0.0441,
+        "hedgeSize": 0,
+        "morphoHf": null,
+        "ilPct": null,
+        "netPnlPct": null,
+        "openedAt": "2026-05-26T15:52:24.192Z",
+        "openTxUrl": "https://basescan.org/tx/0xd176d5da1cbd869ecb76989584d16c03ad0cff4250b17224c3b282fa4f437e0e",
+        "stakeTxUrl": "https://basescan.org/tx/0xe8dd7f99be932c3dd39bf142dbcf37823fa3e3c81e22efd8eaa004cb2afb3c10",
+        "funded": true,
+        "liveLiquidity": "8559866",
+        "inRange": true,
+        "divergence": null,
+        "reconciledAt": "2026-05-27T02:46:02.982Z"
+      }
+    ],
+    "reconciledAt": "2026-05-27T02:46:02.983Z",
+    "unfundedCount": 0
+  },
+  "killSwitch": {
+    "oorTimeoutMinutes": 240,
+    "hedgeDriftPct": 5,
+    "hfDeleverage": 1.2,
+    "hfEmergency": 1.05,
+    "fundingKillAnnualizedPct": -54.75,
+    "armed": []
+  },
+  "venues": [
+    {
+      "name": "Base / Aerodrome",
+      "chain": "base",
+      "status": "live",
+      "explorer": "https://basescan.org"
+    },
+    {
+      "name": "Solana / Byreal",
+      "chain": "solana",
+      "status": "idle",
+      "explorer": "https://solscan.io"
+    },
+    {
+      "name": "X Layer / Uniswap v4",
+      "chain": "xlayer",
+      "status": "live",
+      "explorer": "https://www.oklink.com/x-layer",
+      "poolId": "0x4d3946dfb8ac9f3145e41b67e55eb2ffb02bf0c027c24ca8ffb3e55381f617cc"
+    }
+  ],
+  "blacklist": [],
+  "activity": [
+    {
+      "at": "2026-05-26T15:57:43.079Z",
+      "action": "STAKE_GAUGE",
+      "symbol": "USDC/cbBTC",
+      "chain": "base",
+      "status": "success",
+      "txUrl": "https://basescan.org/tx/0xe8dd7f99be932c3dd39bf142dbcf37823fa3e3c81e22efd8eaa004cb2afb3c10"
+    },
+    {
+      "at": "2026-05-26T15:52:24.192Z",
+      "action": "OPEN_LP",
+      "symbol": "USDC/cbBTC",
+      "chain": "base",
+      "status": "success",
+      "txUrl": "https://basescan.org/tx/0xd176d5da1cbd869ecb76989584d16c03ad0cff4250b17224c3b282fa4f437e0e"
+    }
+  ],
+  "lpWallet": {
+    "address": "0x21AF273dA03e695ead9d72B221Bd394f04D8A9A9",
+    "chain": "base",
+    "usdc": 0.372131,
+    "cbbtc": 0,
+    "eth": 0.001311842461121011,
+    "idleUsd": 3.08
+  }
+}

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha LP · Multi-chain liquidity book</title>
+<meta name="description" content="An autonomous AI agent runs a real multi-chain LP book with its own kill-switches. Live on-chain reconciliation. Read-only.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface-base:#0A0B0F; --surface-raised:#13141A; --surface-overlay:#1B1D26; --surface-sunken:#06070A;
+    --border-subtle:#22242E; --border-default:#2D2F3B; --border-emphasis:#3E4150;
+    --text-primary:#F4F5F7; --text-secondary:#B4B7C2; --text-tertiary:#74778A; --text-quaternary:#494C5C;
+    --accent:#FFB800; --positive:#34D399; --negative:#F87171; --warning:#FBBF24; --neutral:#94A3B8; --info:#60A5FA;
+    --font-display:"Inter Tight",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif; --font-mono:"JetBrains Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--surface-base);color:var(--text-primary);font-family:var(--font-body);font-feature-settings:"tnum" 1,"lnum" 1;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+  a{color:inherit}
+  .topbar{position:sticky;top:0;z-index:10;background:rgba(10,11,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle)}
+  .topbar-inner{display:flex;align-items:center;gap:16px;height:56px;font-size:13px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:16px}
+  .logo .mark{width:24px;height:24px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:#000;font-weight:600}
+  .status-pill{display:flex;align-items:center;gap:8px;color:var(--text-secondary)}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .dot.live{background:var(--positive);box-shadow:0 0 0 3px rgba(52,211,153,.15);animation:pulse 1.6s infinite} .dot.stale{background:var(--warning)} .dot.down{background:var(--negative)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .spacer{flex:1}
+  .tlink{color:var(--text-tertiary);text-decoration:none}.tlink:hover{color:var(--text-secondary)}
+  .opsbtn{font-size:12px;color:var(--text-tertiary);border:1px solid var(--border-default);border-radius:6px;padding:3px 9px;cursor:pointer;text-decoration:none}
+  .hash{font-family:var(--font-mono);color:var(--info);text-decoration:none}.hash:hover{text-decoration:underline}
+  .hero{padding:40px 0 24px}
+  .hero h1{font-family:var(--font-display);font-size:36px;font-weight:600;letter-spacing:-.02em;line-height:1.08;max-width:720px}
+  .hero p{color:var(--text-secondary);font-size:15px;margin-top:10px;max-width:640px}
+  .banner{display:none;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warning);font-size:13px;padding:10px 16px;border-radius:8px;margin-top:16px}
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0 8px}
+  .kpi{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:12px;padding:16px 18px}
+  .kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary)}
+  .kpi .val{font-family:var(--font-mono);font-size:24px;font-weight:500;margin-top:8px}
+  .kpi .sub{font-size:12px;margin-top:6px;color:var(--text-tertiary)}
+  .kpi.alert{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.05)} .kpi.alert .val{color:var(--negative)}
+  .kpi.ok .val{color:var(--positive)}
+  .section{padding:24px 0;border-top:1px solid var(--border-subtle)}
+  .eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:14px;display:flex;gap:10px;align-items:center}
+  .ts{font-size:11px;color:var(--text-quaternary);font-family:var(--font-mono);text-transform:none;letter-spacing:0;font-weight:400}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary);font-weight:500;padding:0 12px 10px 0}
+  td{padding:12px 12px 12px 0;border-top:1px solid var(--border-subtle);vertical-align:top}
+  .chip{display:inline-flex;align-items:center;gap:6px}
+  .cdot{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;font-size:9px;font-weight:700;flex:none}
+  .num{font-family:var(--font-mono)}
+  .stat{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:2px 8px;border-radius:999px}
+  .stat.funded{background:rgba(52,211,153,.14);color:var(--positive)}
+  .stat.unfunded{background:rgba(248,113,113,.18);color:var(--negative)}
+  .stat.unverified{background:rgba(148,163,184,.14);color:var(--neutral)}
+  .stat.inrange{background:rgba(52,211,153,.14);color:var(--positive)}
+  .stat.oor{background:rgba(248,113,113,.14);color:var(--negative)}
+  .proof{font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);margin-top:3px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .card{border:1px solid var(--border-default);border-radius:12px;background:var(--surface-raised);padding:20px}
+  .caprow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .caprow:last-child{border-bottom:none}
+  .caprow .lbl{color:var(--text-secondary);display:flex;gap:8px;align-items:center}
+  .caprow .val{font-family:var(--font-mono)}
+  .addr{font-family:var(--font-mono);font-size:11px;color:var(--text-quaternary)}
+  .ks-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .ks-row:last-child{border-bottom:none}
+  .ks-row .k{color:var(--text-secondary);flex:1}
+  .ks-row .v{font-family:var(--font-mono);color:var(--text-tertiary)}
+  .ks-armed{color:var(--negative);font-weight:600}
+  .chaincards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .chaincard{border:1px solid var(--border-default);border-radius:12px;background:var(--surface-raised);padding:16px}
+  .chaincard .nm{font-size:13px;font-weight:600}
+  .chaincard .st{font-size:11px;margin-top:8px;display:inline-flex;align-items:center;gap:6px}
+  .st-live{color:var(--positive)} .st-idle{color:var(--text-tertiary)}
+  .act-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .act-row:last-child{border-bottom:none}
+  .act-dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .act-dot.success{background:var(--positive)} .act-dot.error{background:var(--negative)} .act-dot.dry-run{background:var(--text-quaternary)}
+  .act-time{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);width:74px;flex:none}
+  .empty{color:var(--text-tertiary);font-size:13px;padding:6px 0}
+  .ops{display:none}
+  body.ops-on .ops{display:block}
+  .tile{border:1px solid var(--border-default);border-radius:10px;background:var(--surface-raised);padding:14px}
+  .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .tile .k{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary)} .tile .v{font-family:var(--font-mono);font-size:18px;margin-top:6px}
+  footer{padding:28px 0 64px;border-top:1px solid var(--border-subtle);color:var(--text-tertiary);font-size:12px;font-family:var(--font-mono);line-height:1.9}
+  @media(max-width:880px){.strip{grid-template-columns:repeat(2,1fr)}.grid2,.chaincards,.tgrid{grid-template-columns:1fr}.hero h1{font-size:26px}table{font-size:12px}}
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap topbar-inner">
+    <div class="logo"><span class="mark">S</span> Sasha LP</div>
+    <div class="status-pill"><span id="hbdot" class="dot live"></span> <span id="hbtext">connecting…</span></div>
+    <div class="spacer"></div>
+    <a class="tlink" href="https://x.com/SashaCoin95" target="_blank" rel="noopener">@SashaCoin95 ↗</a>
+    <a class="opsbtn" id="opstoggle" href="?ops=1">ops</a>
+  </div></div>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Sasha runs a multi-chain LP book. Autonomously.</h1>
+      <p>Real liquidity across Base, Solana and X Layer, with on-chain kill-switches. Every position is reconciled against the chain, not just a state file. Read-only.</p>
+      <div class="banner" id="errbanner"></div>
+      <div class="strip" id="strip"></div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">Positions · live-vs-state reconciled <span class="ts" id="pos-ts"></span></div>
+      <div style="overflow-x:auto"><table id="postable"><thead><tr>
+        <th>Pair</th><th>Chain</th><th>Status</th><th>Deployed</th><th>On-chain</th><th>Range</th><th>Fees</th>
+      </tr></thead><tbody id="posbody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody></table></div>
+    </div>
+
+    <div class="section">
+      <div class="grid2">
+        <div class="card">
+          <div class="eyebrow">LP capital by chain <span class="ts" id="cap-ts"></span></div>
+          <div id="capital"></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Kill-switches · distance to trigger</div>
+          <div id="killswitch"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">LP venues</div>
+      <div class="chaincards" id="chains"></div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">Activity <span class="ts">opens · closes · errors</span></div>
+      <div id="activity"></div>
+    </div>
+
+    <footer>
+      <span id="foot-note">Autonomous multi-chain LP. Live on-chain reconciliation.</span><br>
+      Stack: Base/Aerodrome · Solana/Byreal · X Layer/v4 · Mantle/ERC-8004 · <span id="foot-asof"></span>
+    </footer>
+  </div>
+
+<script>
+const DATA_URL='./data/dashboard.json', POLL_MS=60000
+const $=id=>document.getElementById(id)
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+const shortHash=h=>!h?'':h.slice(0,6)+'…'+h.slice(-4)
+function fmtUsd(v){if(v==null)return '—';const n=Number(v);if(Math.abs(n)>=10000)return '$'+n.toLocaleString('en-US',{maximumFractionDigits:0});if(Math.abs(n)>=1000)return '$'+(n/1000).toFixed(1)+'k';return '$'+n.toFixed(2)}
+function relTime(iso){if(!iso)return '';const s=(Date.now()-new Date(iso).getTime())/1000;if(s<60)return Math.floor(s)+'s ago';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+'h ago';return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+const CHIP={solana:{c:'#9945FF',t:'◎',col:'#fff'},base:{c:'#0052FF',t:'B',col:'#fff'},mantle:{c:'#65B3AE',t:'M',col:'#000'}}
+
+if(new URLSearchParams(location.search).get('ops')==='1') document.body.classList.add('ops-on')
+
+function renderStrip(d){
+  const unf=d.positions?.unfundedCount||0
+  const open=d.positions?.openCount||0
+  const book=d.book||{}
+  const total=book.totalUsd!=null?book.totalUsd:book.deployedUsd
+  const sub=book.idleUsd!=null?('deployed '+fmtUsd(book.deployedUsd)+' + idle '+fmtUsd(book.idleUsd)):'deployed in LP'
+  $('strip').innerHTML=`
+    <div class="kpi"><div class="lbl">LP book value</div><div class="val">${fmtUsd(total)}</div><div class="sub">${sub}</div></div>
+    <div class="kpi"><div class="lbl">Open positions</div><div class="val">${open}</div><div class="sub">reconciled on-chain</div></div>
+    <div class="kpi ${unf>0?'alert':'ok'}"><div class="lbl">Unfunded</div><div class="val">${unf}</div><div class="sub">${unf>0?'state ≠ chain':'all funded'}</div></div>
+    <div class="kpi"><div class="lbl">Kill-switches armed</div><div class="val">${d.killSwitch?.armed?.length||0}</div><div class="sub">pending actions</div></div>`
+}
+
+function renderPositions(d){
+  $('pos-ts').textContent=d.positions?.reconciledAt?'verified '+relTime(d.positions.reconciledAt):''
+  const items=d.positions?.items||[]
+  const b=$('posbody')
+  if(!items.length){ b.innerHTML='<tr><td colspan="7" class="empty">No open positions.</td></tr>'; return }
+  b.innerHTML=items.map(p=>{
+    const m=CHIP[p.chain]||{c:'#444',t:'?',col:'#fff'}
+    let fundedTag
+    if(p.divergence==='UNFUNDED') fundedTag='<span class="stat unfunded">⚠ unfunded</span>'
+    else if(p.funded===true) fundedTag='<span class="stat funded">funded</span>'
+    else if(p.funded===null||p.funded===undefined) fundedTag='<span class="stat unverified">unverified</span>'
+    else fundedTag='<span class="stat unverified">'+esc(p.status)+'</span>'
+    const range=p.inRange===true?'<span class="stat inrange">in range</span>':p.inRange===false?'<span class="stat oor">out of range</span>':'<span class="num" style="color:var(--text-quaternary)">—</span>'
+    const proof=p.liveLiquidity?`<div class="proof">L=${p.liveLiquidity}</div>`:''
+    return `<tr>
+      <td><span class="chip"><span class="cdot" style="background:${m.c};color:${m.col}">${m.t}</span> ${esc(p.symbol)}</span><div class="proof">${esc(p.project||p.feeTier||'')}</div></td>
+      <td class="num" style="color:var(--text-tertiary)">${esc(p.chain)}</td>
+      <td>${fundedTag}</td>
+      <td class="num">${fmtUsd(p.deployedUsd)}</td>
+      <td>${p.funded===true?'<span class="num" style="color:var(--positive)">confirmed</span>':p.divergence==='UNFUNDED'?'<span class="num" style="color:var(--negative)">$0</span>':'<span class="num" style="color:var(--text-tertiary)">—</span>'}${proof}</td>
+      <td>${range}</td>
+      <td class="num">${fmtUsd(p.pendingFeesUsd)}</td>
+    </tr>`
+  }).join('')
+}
+
+function renderCapital(d){
+  const cap=d.capital, book=d.book||{}, w=d.lpWallet
+  $('cap-ts').textContent=d.positions?.reconciledAt?'verified '+relTime(d.positions.reconciledAt):''
+  let html=(cap?.chains||[]).map(c=>{
+    const m=CHIP[c.chain]||{c:'#444',t:'?',col:'#fff'}
+    return `<div class="caprow"><span class="lbl"><span class="cdot" style="background:${m.c};color:${m.col}">${m.t}</span> ${c.chain.charAt(0).toUpperCase()+c.chain.slice(1)} deployed</span><span class="val">${fmtUsd(c.deployedUsd)}</span></div>`
+  }).join('')
+  if(!html) html='<div class="empty">No LP capital deployed.</div>'
+  if(w){
+    html+=`<div class="caprow"><span class="lbl"><span class="cdot" style="background:#0052FF;color:#fff">B</span> Idle <span class="addr">${shortHash(w.address)}</span></span><span class="val">${fmtUsd(w.idleUsd)}</span></div>`
+  }
+  if(book.totalUsd!=null) html+=`<div class="caprow"><span class="lbl">LP book total</span><span class="val" style="font-size:16px">${fmtUsd(book.totalUsd)}</span></div>`
+  if(w) html+=`<div style="margin-top:10px;font-size:11px;color:var(--text-tertiary)">Idle wallet: ${w.usdc?.toFixed(2)} USDC · ${w.cbbtc} cbBTC · ${w.eth?.toFixed(4)} ETH</div>`
+  $('capital').innerHTML=html
+}
+
+function renderKillSwitch(d){
+  const ks=d.killSwitch||{}
+  const rows=[
+    ['OOR timeout', ks.oorTimeoutMinutes+' min'],
+    ['Hedge drift', ks.hedgeDriftPct+'%'],
+    ['Morpho HF deleverage', '< '+ks.hfDeleverage],
+    ['Morpho HF emergency', '< '+ks.hfEmergency],
+    ['Funding kill (annualized)', ks.fundingKillAnnualizedPct+'%'],
+  ]
+  let html=rows.map(([k,v])=>`<div class="ks-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')
+  if(ks.armed&&ks.armed.length){
+    html=`<div class="ks-row"><span class="ks-armed">⚠ ${ks.armed.length} armed: ${ks.armed.map(a=>esc(a.type)+' '+esc(a.symbol)).join(', ')}</span></div>`+html
+  } else {
+    html=`<div class="ks-row"><span class="k" style="color:var(--positive)">● No kill-switch armed</span></div>`+html
+  }
+  $('killswitch').innerHTML=html
+}
+
+function renderChains(d){
+  $('chains').innerHTML=(d.venues||[]).map(c=>`
+    <div class="chaincard"><div class="nm">${esc(c.name)}</div>
+    <div class="st ${c.status==='live'?'st-live':'st-idle'}">● ${esc(c.status)}</div>
+    <div style="margin-top:10px"><a class="hash" href="${esc(c.explorer)}" target="_blank" rel="noopener">explorer ↗</a></div></div>`).join('')
+}
+
+function renderActivity(d){
+  const a=d.activity||[]
+  if(!a.length){ $('activity').innerHTML='<div class="empty">No activity logged.</div>'; return }
+  $('activity').innerHTML=a.map(e=>`
+    <div class="act-row"><span class="act-dot ${esc(e.status)}"></span>
+      <span class="act-time">${esc(relTime(e.at))}</span>
+      <span style="color:var(--text-secondary)">${esc((e.action||'').replace(/_/g,' '))}</span>
+      ${e.error?`<span style="color:var(--negative);font-size:12px">${esc(e.error)}</span>`:`<span style="color:var(--text-tertiary)">${esc(e.poolName||'')}</span>`}
+      ${e.txUrl?`<a class="hash" style="margin-left:auto" href="${esc(e.txUrl)}" target="_blank" rel="noopener">tx ↗</a>`:''}
+    </div>`).join('')
+}
+
+async function load(){
+  try{
+    const res=await fetch(DATA_URL+'?t='+Date.now(),{cache:'no-store'})
+    if(!res.ok) throw new Error('HTTP '+res.status)
+    const d=await res.json()
+    $('errbanner').style.display='none'
+    const hb=d.positions?.reconciledAt?'live':'stale'
+    $('hbdot').className='dot '+hb
+    $('hbtext').textContent=(hb==='live'?'Live':'Stale')+(d.asOf?' · '+relTime(d.asOf):'')
+    renderStrip(d); renderPositions(d); renderCapital(d); renderKillSwitch(d); renderChains(d); renderActivity(d)
+    $('foot-asof').textContent='data as of '+relTime(d.asOf)
+  }catch(e){
+    const b=$('errbanner'); b.style.display='block'; b.textContent='Live data unavailable ('+e.message+').'
+    $('hbdot').className='dot down'; $('hbtext').textContent='Data offline'
+  }
+}
+load(); setInterval(load,POLL_MS)
+</script>
+</body>
+</html>

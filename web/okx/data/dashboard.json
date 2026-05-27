@@ -1,0 +1,69 @@
+{
+  "asOf": "2026-05-27T02:46:02.233Z",
+  "generatedBy": "build-dashboard-data.js",
+  "chainId": 196,
+  "status": "LIVE",
+  "oracle": {
+    "address": "0xfE538FF6ec697B32ADBd215d690b1949d7Ed5c74",
+    "currentFee": 3000,
+    "currentFeePct": 0.3,
+    "riskLevel": "neutral",
+    "updatedAt": "2026-05-26T15:50:59.000Z",
+    "ageMinutes": 653,
+    "isStale": true,
+    "updateCount": 1,
+    "explorerUrl": "https://www.oklink.com/x-layer/address/0xfE538FF6ec697B32ADBd215d690b1949d7Ed5c74"
+  },
+  "hook": {
+    "address": "0xe1aeF51eF6B801De34AA4a70FCf2027c0a6d9080",
+    "explorerUrl": "https://www.oklink.com/x-layer/address/0xe1aeF51eF6B801De34AA4a70FCf2027c0a6d9080"
+  },
+  "pool": {
+    "poolId": "0x4d3946dfb8ac9f3145e41b67e55eb2ffb02bf0c027c24ca8ffb3e55381f617cc",
+    "pair": "USDC.e / WOKB",
+    "tickSpacing": 60,
+    "liquidityRange": {
+      "tickLower": 223500,
+      "tickUpper": 235500,
+      "liquidity": 100000
+    },
+    "initTxUrl": "https://www.oklink.com/x-layer/tx/0x1f22055bb0f9b3ac4357116056d8524d6826d5160e95223d166c49ff3fa84e77",
+    "spotPrice": 108,
+    "spotLabel": "1 WOKB = 108 USDC.e",
+    "tvlUsd": 0,
+    "seedLiquidity": true,
+    "tick": 229500
+  },
+  "agent": {
+    "address": "0xe451278F3ce3f80d2F18ab292Ad2C3dAfE461d1f",
+    "okbBalance": 0.03796044850720679,
+    "wokbBalance": 0.006999997506175612,
+    "usdceBalance": 1.016303,
+    "holdingsUsd": 5.87,
+    "lowBalanceWarning": false,
+    "explorerUrl": "https://www.oklink.com/x-layer/address/0xe451278F3ce3f80d2F18ab292Ad2C3dAfE461d1f"
+  },
+  "feeMapping": {
+    "risk-off": 10000,
+    "neutral": 3000,
+    "risk-on": 500
+  },
+  "recentPushes": [
+    {
+      "at": "2026-05-26T15:50:58.076Z",
+      "fee": 3000,
+      "feePct": 0.3,
+      "riskLevel": "neutral",
+      "txHash": "0xe7f42cc429f027a1c44df8b97fc7225b3a9b2b1f021241526775448e5a07e5b5",
+      "txUrl": "https://www.oklink.com/x-layer/tx/0xe7f42cc429f027a1c44df8b97fc7225b3a9b2b1f021241526775448e5a07e5b5"
+    },
+    {
+      "at": "2026-05-26T11:22:16.482Z",
+      "fee": 3000,
+      "feePct": 0.3,
+      "riskLevel": "neutral",
+      "txHash": "0x356577f1ebdae65517adaed109e3cd8e589df2c638979106f0aadaffd562874a",
+      "txUrl": "https://www.oklink.com/x-layer/tx/0x356577f1ebdae65517adaed109e3cd8e589df2c638979106f0aadaffd562874a"
+    }
+  ]
+}

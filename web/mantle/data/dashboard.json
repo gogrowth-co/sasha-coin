@@ -1,0 +1,267 @@
+{
+  "asOf": "2026-05-27T02:46:02.222Z",
+  "generatedBy": "build-dashboard-data.js",
+  "agent": {
+    "name": "Sasha",
+    "xHandle": "SashaCoin95",
+    "xUrl": "https://x.com/SashaCoin95",
+    "identity": {
+      "agentId": 100,
+      "registry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+      "registrationTx": "0x3fc1703713ec7af0ea1cb3d390ad84cfcde527889b6ca9647e3878f8c13cc548",
+      "registrationTxUrl": "https://explorer.mantle.xyz/tx/0x3fc1703713ec7af0ea1cb3d390ad84cfcde527889b6ca9647e3878f8c13cc548",
+      "registeredAt": "2026-05-25T19:38:42.819Z",
+      "tokenUrl": "https://explorer.mantle.xyz/token/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432/instance/100"
+    }
+  },
+  "status": {
+    "lastSignalAt": "2026-05-26T21:00:11.517Z",
+    "lastActionAt": "2026-05-26T16:17:29.351Z",
+    "lastAction": "CLOSE_LP_POSITION",
+    "heartbeat": "live"
+  },
+  "signal": {
+    "generatedAt": "2026-05-26T21:00:11.517Z",
+    "action": "HOLD",
+    "riskLevel": "neutral",
+    "weightedScore": 0.178,
+    "confidence": 0.7,
+    "target": null,
+    "weights": {
+      "social": 0.25,
+      "onchain": 0.2,
+      "allora": 0.25,
+      "elfa": 0.15,
+      "polymarket": 0.15
+    },
+    "feedHealth": {
+      "social": true,
+      "onchain": true,
+      "allora": true,
+      "elfa": true,
+      "polymarket": true
+    },
+    "onchainOnly": false,
+    "sources": {
+      "social": {
+        "sentiment": "neutral",
+        "riskAppetite": "neutral",
+        "confidence": 0.7
+      },
+      "onchain": {
+        "topPool": "SOL/USD1",
+        "apr24h": 118.66,
+        "tvl": 337510,
+        "tier": 3,
+        "breakEvenD": 15.4
+      },
+      "allora": {
+        "direction": "long",
+        "confidence": 0.75
+      },
+      "elfa": {
+        "sentiment": "neutral",
+        "riskOff": false
+      },
+      "polymarket": {
+        "bias": "bearish",
+        "riskOff": false
+      }
+    },
+    "excludedTop": {
+      "name": "Goblin/USDC",
+      "apr24h": 1127.8,
+      "tvl": 1816,
+      "reason": "blacklisted (recent loss or known bad pool)"
+    },
+    "qualityFilter": {
+      "minTvl": 50000,
+      "minFeeApr": 2,
+      "minVolToTvl": 0.05,
+      "minVolToTvl3d": 0.05,
+      "maxEmDep": 0.5,
+      "maxBreakEvenD": 30,
+      "eligibleCount": 4,
+      "tierCounts": {
+        "t1": 0,
+        "t2": 1,
+        "t3": 3
+      },
+      "blacklistSize": 2
+    },
+    "rationale": "Weighted score: 0.178. Social: neutral (0.70). Allora: long (0.75) [disagrees — conviction reduced 40%]. Elfa: neutral, risk-off: no. Polymarket: bearish, implied bullish: 0.08.",
+    "plainEnglish": "2026-05-26 21:00 UTC — held. Weighted score 0.178."
+  },
+  "capital": {
+    "updatedAt": "2026-05-26T21:00:12.437Z",
+    "totalUsd": 21.1,
+    "poolUsd": 16.1,
+    "gasReserveUsd": 5,
+    "chains": [
+      {
+        "chain": "solana",
+        "wallet": "647TT6SWA48yrmH8Csb2QakeYMnCNh2oSFijLQpRksJw",
+        "totalUsd": 19.64,
+        "tokens": [
+          {
+            "symbol": "SOL",
+            "balance": 0.054377,
+            "usdValue": 4.56
+          },
+          {
+            "symbol": "USDC",
+            "balance": 15.039747,
+            "usdValue": 15.06
+          },
+          {
+            "symbol": "GOBLIN",
+            "balance": 2.476485,
+            "usdValue": 0.02
+          }
+        ]
+      },
+      {
+        "chain": "mantle",
+        "wallet": "0x21AF273dA03e695ead9d72B221Bd394f04D8A9A9",
+        "totalUsd": 1.46,
+        "mntBalance": 0.2764,
+        "methBalance": 0.000283
+      }
+    ]
+  },
+  "treasury": {
+    "methBalance": 0.000283,
+    "exchangeRate": 1.0957,
+    "ethEquivalent": 0.00031,
+    "reportedAt": "2026-05-26T19:29:01.752Z",
+    "lifetimeYieldEth": 0.000027
+  },
+  "attestations": [
+    {
+      "action": "ACQUIRE_METH",
+      "txHash": "0x2733483d994878f502376f114b48e2d3f7740dc80b54c3b078457e757a9bd502",
+      "at": "2026-05-26T19:27:45.815Z",
+      "explorerUrl": "https://explorer.mantle.xyz/tx/0x2733483d994878f502376f114b48e2d3f7740dc80b54c3b078457e757a9bd502"
+    },
+    {
+      "action": "REGISTER #100",
+      "txHash": "0x3fc1703713ec7af0ea1cb3d390ad84cfcde527889b6ca9647e3878f8c13cc548",
+      "at": "2026-05-25T19:38:42.819Z",
+      "explorerUrl": "https://explorer.mantle.xyz/tx/0x3fc1703713ec7af0ea1cb3d390ad84cfcde527889b6ca9647e3878f8c13cc548"
+    }
+  ],
+  "trades": [
+    {
+      "at": "2026-05-26T18:56:18.221Z",
+      "action": "OPEN_LP_POSITION",
+      "status": "dry-run",
+      "poolName": "SOL/USD1",
+      "riskLevel": null,
+      "tweetUrl": null,
+      "txSignature": null,
+      "solscanUrl": null,
+      "erc8004Tx": null,
+      "erc8004Url": null,
+      "error": null,
+      "rationale": "Weighted score: 0.200. Social: neutral (0.50). Allora: neutral (0.30). Elfa: neutral, risk-off: no. Polymarket: neutral, implied bullish: N/A. Target: SOL/USD1 at 123.9% APR."
+    },
+    {
+      "at": "2026-05-26T16:17:29.351Z",
+      "action": "CLOSE_LP_POSITION",
+      "status": "success",
+      "poolName": null,
+      "riskLevel": null,
+      "tweetUrl": null,
+      "txSignature": null,
+      "solscanUrl": "https://solscan.io/tx/5jsrQdMpbY9pSLyaVswTuSffZvCjcz64TLvucxfU3CrwKukQSvu9oGJe7pTKgA9pbfRdazgrAeQbMFvr9MaMSA5N",
+      "erc8004Tx": null,
+      "erc8004Url": null,
+      "error": null,
+      "rationale": "Same as above. Companion close to the first Goblin position."
+    },
+    {
+      "at": "2026-05-26T16:17:29.351Z",
+      "action": "CLOSE_LP_POSITION",
+      "status": "success",
+      "poolName": null,
+      "riskLevel": null,
+      "tweetUrl": null,
+      "txSignature": null,
+      "solscanUrl": "https://solscan.io/tx/5VhnJVSmcSGmJrVbJp9oSN5jWiqk39wrG45ZdHL1i9ic7FVXYteAAJx8HiEsr2wniNrf9gSq7wzkCLH7rqvUvafr",
+      "erc8004Tx": null,
+      "erc8004Url": null,
+      "error": null,
+      "rationale": "Stop-loss / blue-chip policy: Tier 3 meme pool, TVL bled from .9k to .9k since open. New filter would have rejected. Closed to align reality with policy."
+    },
+    {
+      "at": "2026-05-26T00:52:29Z",
+      "action": "OPEN_LP_POSITION",
+      "status": "success",
+      "poolName": null,
+      "riskLevel": null,
+      "tweetUrl": "https://x.com/SashaCoin95/status/2059070214021718310",
+      "txSignature": null,
+      "solscanUrl": null,
+      "erc8004Tx": null,
+      "erc8004Url": null,
+      "error": null,
+      "rationale": "Weighted score: 0.300. Social: bullish. Goblin/USDC at 705.82% APR. TVL 2.9k."
+    },
+    {
+      "at": "2026-05-26T00:45:31.119Z",
+      "action": "OPEN_LP_POSITION",
+      "status": "error",
+      "poolName": null,
+      "riskLevel": null,
+      "tweetUrl": "https://x.com/SashaCoin95/status/2059070214021718310",
+      "txSignature": null,
+      "solscanUrl": null,
+      "erc8004Tx": null,
+      "erc8004Url": null,
+      "error": "byreal-cli positions open failed (exit 1): {\n  \"success\": false,\n  \"error\": {\n    \"code\": \"API_ERROR\",\n    \"type\": \"NETW",
+      "rationale": "Weighted score: 0.300. Social: bullish (0.40). Allora: neutral (0.40). Elfa: neutral, risk-off: no. Polymarket: neutral, implied bullish: N/A. Target: Goblin/USDC at 704.1% APR."
+    },
+    {
+      "at": "2026-05-23T14:54:23.238Z",
+      "action": "OPEN_LP_POSITION",
+      "status": "dry-run",
+      "poolName": "SOL/USDC",
+      "riskLevel": null,
+      "tweetUrl": null,
+      "txSignature": null,
+      "solscanUrl": null,
+      "erc8004Tx": null,
+      "erc8004Url": null,
+      "error": null,
+      "rationale": "Risk-on sentiment plus SOL/USDC at 73.1% APR. Opening LP."
+    },
+    {
+      "at": "2026-05-23T14:52:22.874Z",
+      "action": "OPEN_LP_POSITION",
+      "status": "error",
+      "poolName": null,
+      "riskLevel": null,
+      "tweetUrl": null,
+      "txSignature": null,
+      "solscanUrl": null,
+      "erc8004Tx": null,
+      "erc8004Url": null,
+      "error": "byreal-cli positions open failed (exit 1): ",
+      "rationale": "Risk-on sentiment plus SOL/USDC at 73.1% APR. Opening LP."
+    },
+    {
+      "at": "2026-05-23T13:19:34.842Z",
+      "action": "OPEN_LP_POSITION",
+      "status": "error",
+      "poolName": null,
+      "riskLevel": null,
+      "tweetUrl": null,
+      "txSignature": null,
+      "solscanUrl": null,
+      "erc8004Tx": null,
+      "erc8004Url": null,
+      "error": "byreal-cli positions open failed (exit 1): ",
+      "rationale": "Risk-on sentiment plus SOL/USDC at 73.1% APR. Opening LP."
+    }
+  ]
+}

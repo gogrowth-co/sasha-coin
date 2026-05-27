@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha · Dynamic Fee Hook · X Layer</title>
+<meta name="description" content="An autonomous AI agent setting dynamic swap fees on a Uniswap v4 hook. X Layer mainnet.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface-base:#0A0B0F; --surface-raised:#13141A; --surface-overlay:#1B1D26; --surface-sunken:#06070A;
+    --border-subtle:#22242E; --border-default:#2D2F3B; --border-emphasis:#3E4150;
+    --text-primary:#F4F5F7; --text-secondary:#B4B7C2; --text-tertiary:#74778A; --text-quaternary:#494C5C;
+    --accent:#FFB800; --positive:#34D399; --negative:#F87171; --warning:#FBBF24; --neutral:#94A3B8; --info:#60A5FA;
+    --font-display:"Inter Tight",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif; --font-mono:"JetBrains Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--surface-base);color:var(--text-primary);font-family:var(--font-body);font-feature-settings:"tnum" 1,"lnum" 1;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  a{color:inherit}
+  .topbar{position:sticky;top:0;z-index:10;background:rgba(10,11,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle)}
+  .topbar-inner{display:flex;align-items:center;gap:16px;height:56px;font-size:13px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:16px}
+  .logo .mark{width:24px;height:24px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:#000;font-weight:600}
+  .chain-pill{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);border:1px solid var(--border-default);border-radius:999px;padding:4px 10px}
+  .status-pill{display:flex;align-items:center;gap:8px;color:var(--text-secondary)}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .dot.live{background:var(--positive);box-shadow:0 0 0 3px rgba(52,211,153,.15);animation:pulse 1.6s infinite} .dot.stale{background:var(--warning)} .dot.down{background:var(--negative)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .spacer{flex:1}
+  .tlink{color:var(--text-tertiary);text-decoration:none}.tlink:hover{color:var(--text-secondary)}
+  .hash{font-family:var(--font-mono);color:var(--info);text-decoration:none}.hash:hover{text-decoration:underline}
+  .hero{padding:46px 0 32px}
+  .hero h1{font-family:var(--font-display);font-size:40px;font-weight:600;letter-spacing:-.02em;line-height:1.05;max-width:720px}
+  .hero p{color:var(--text-secondary);font-size:16px;margin-top:12px}
+  .section{padding:26px 0;border-top:1px solid var(--border-subtle)}
+  .eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:16px;display:flex;gap:10px;align-items:center}
+  .ts{font-size:11px;color:var(--text-quaternary);font-family:var(--font-mono);text-transform:none;letter-spacing:0;font-weight:400}
+  .loop{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .lbox{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:10px;padding:14px 18px;min-width:118px}
+  .lbox .t{font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em}
+  .lbox .v{font-family:var(--font-mono);font-size:14px;margin-top:5px;color:var(--text-secondary)}
+  .larrow{color:var(--text-quaternary);font-size:12px;font-family:var(--font-mono);text-align:center;line-height:1.3}
+  .feebox{margin-left:auto;border:1px solid var(--accent);border-radius:14px;background:linear-gradient(180deg,rgba(255,184,0,.06),rgba(255,184,0,.02));padding:18px 28px;text-align:center;box-shadow:0 0 0 1px rgba(255,184,0,.18),0 0 24px rgba(255,184,0,.08)}
+  .feebox .t{font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em}
+  .feebox .big{font-family:var(--font-mono);font-size:50px;font-weight:500;line-height:1;margin:6px 0}
+  .feebox .bps{font-family:var(--font-mono);font-size:13px;color:var(--text-secondary)}
+  .feebox .by{font-size:11px;color:var(--text-tertiary);margin-top:8px}
+  .loopcap{font-size:14px;color:var(--text-secondary);margin-top:18px;max-width:560px;font-style:italic}
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .vc{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:12px;padding:18px}
+  .vc .name{font-size:13px;font-weight:600}
+  .vc .addr{font-family:var(--font-mono);font-size:13px;color:var(--info);margin-top:8px}
+  .vc .meta{font-size:12px;color:var(--text-tertiary);margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+  .verified{color:var(--positive);font-size:12px}
+  .oklink{color:var(--info);text-decoration:none;font-size:12px}
+  .maptable{border:1px solid var(--border-default);border-radius:12px;overflow:hidden}
+  .maprow{display:grid;grid-template-columns:18px 130px 100px 100px 1fr;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border-subtle);font-size:14px}
+  .maprow:last-child{border-bottom:none}
+  .maprow.live{background:rgba(255,184,0,.05);box-shadow:inset 2px 0 0 var(--accent)}
+  .sw{width:14px;height:14px;border-radius:4px}
+  .mpct,.mbps{font-family:var(--font-mono);color:var(--text-secondary)}
+  .livetag{color:var(--accent);font-size:12px;font-weight:600}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .push{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .push:last-child{border-bottom:none}
+  .push .pd{width:8px;height:8px;border-radius:50%;background:var(--neutral);flex:none}
+  .push .pt{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);width:92px}
+  .push .pl{color:var(--text-secondary)} .push .pf{font-family:var(--font-mono);color:var(--text-primary)}
+  .push .ph{margin-left:auto}
+  .sender{font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);margin-top:8px}
+  .agentlbl{color:var(--accent)}
+  .poolstrip{display:flex;gap:34px;align-items:baseline;flex-wrap:wrap;font-size:14px}
+  .poolstrip .ps{display:flex;flex-direction:column;gap:4px}
+  .poolstrip .k{font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em}
+  .poolstrip .v{font-family:var(--font-mono);color:var(--text-primary);font-size:15px}
+  .indexing{color:var(--text-tertiary);font-size:13px;margin-top:14px}
+  .empty{color:var(--text-tertiary);font-size:13px}
+  .banner{display:none;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warning);font-size:13px;padding:10px 16px;border-radius:8px;margin-top:16px}
+  footer{padding:30px 0 64px;border-top:1px solid var(--border-subtle);color:var(--text-tertiary);font-size:12px;font-family:var(--font-mono);line-height:1.9}
+  @media(max-width:880px){.cards3,.grid2{grid-template-columns:1fr}.hero h1{font-size:28px}.feebox{margin-left:0;width:100%}}
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap topbar-inner">
+    <div class="logo"><span class="mark">S</span> Sasha</div>
+    <span class="chain-pill">X Layer · chainId 196</span>
+    <div class="status-pill"><span id="hbdot" class="dot live"></span> <span id="hbtext">connecting…</span></div>
+    <div class="spacer"></div>
+    <a class="tlink" id="oklink" href="https://www.oklink.com/x-layer" target="_blank" rel="noopener">oklink ↗</a>
+  </div></div>
+
+  <div class="wrap">
+    <div class="hero">
+      <h1>Sasha prices this pool's risk. On-chain. Autonomously.</h1>
+      <p>An AI agent setting dynamic swap fees on a Uniswap v4 hook. X Layer mainnet.</p>
+      <div class="banner" id="errbanner"></div>
+    </div>
+
+    <div class="section" style="border-top:none;padding-top:0">
+      <div class="loop">
+        <div class="lbox"><div class="t">Signal</div><div class="v" id="loop-risk">…</div></div>
+        <div class="larrow">push<br>↗ TX</div>
+        <div class="lbox"><div class="t">SashaOracle</div><div class="v">on-chain</div></div>
+        <div class="larrow">read<br>→</div>
+        <div class="lbox"><div class="t">Hook</div><div class="v">getFee()</div></div>
+        <div class="larrow">beforeSwap<br>→</div>
+        <div class="feebox">
+          <div class="t">Current swap fee</div>
+          <div class="big" id="fee-big">…</div>
+          <div class="bps" id="fee-bps"></div>
+          <div class="by" id="fee-by"></div>
+        </div>
+      </div>
+      <p class="loopcap">"When I read risk, I make this pool more expensive to trade. When I read calm, I make it cheap."</p>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">Verify it <span class="ts">view-only, click through to oklink</span></div>
+      <div class="cards3" id="verify"></div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">How a signal becomes a fee</div>
+      <div class="maptable" id="maptable"></div>
+    </div>
+
+    <div class="section">
+      <div class="grid2">
+        <div>
+          <div class="eyebrow">Oracle pushes <span class="ts" id="push-ts"></span></div>
+          <div id="pushes"></div>
+          <div class="sender" id="sender"></div>
+        </div>
+        <div>
+          <div class="eyebrow">Pool</div>
+          <div class="poolstrip" id="poolstrip"></div>
+          <p class="indexing">Recent swaps: indexing. Verify directly on <a class="oklink" id="poolexpl" href="https://www.oklink.com/x-layer" target="_blank" rel="noopener">oklink ↗</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      First autonomous AI agent setting dynamic Uniswap v4 fees on X Layer.<br>
+      Stack: Uniswap v4 · X Layer · Solidity · Ethers v6 · <span id="foot-asof"></span>
+    </footer>
+  </div>
+
+<script>
+const DATA_URL='./data/dashboard.json', POLL_MS=60000, EXPL='https://www.oklink.com/x-layer'
+const $=id=>document.getElementById(id)
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+const shortHash=h=>!h?'':h.slice(0,6)+'…'+h.slice(-4)
+function relTime(iso){if(!iso)return '';const s=(Date.now()-new Date(iso).getTime())/1000;if(s<60)return Math.floor(s)+'s ago';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+'h ago';return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+const RISK_COLOR={'risk-off':'var(--negative)','neutral':'var(--neutral)','risk-on':'var(--positive)'}
+
+function renderHeartbeat(o){
+  const stale=o?.isStale, has=o?.currentFee!=null
+  const hb = !has?'down':stale?'stale':'live'
+  $('hbdot').className='dot '+hb
+  $('hbtext').textContent=(hb==='live'?'Oracle live':hb==='stale'?'Oracle stale':'Oracle offline')+(o?.updatedAt?' · pushed '+relTime(o.updatedAt):'')
+}
+
+function renderLoop(o){
+  if(o?.currentFeePct==null){ $('fee-big').textContent='—'; $('loop-risk').textContent='awaiting'; return }
+  $('loop-risk').textContent=o.riskLevel||'—'
+  $('loop-risk').style.color=RISK_COLOR[o.riskLevel]||'var(--text-secondary)'
+  $('fee-big').textContent=o.currentFeePct+'%'
+  $('fee-big').style.color=RISK_COLOR[o.riskLevel]||'var(--neutral)'
+  $('fee-bps').textContent=o.currentFee+' bps'
+  $('fee-by').textContent='set by signal: '+(o.riskLevel||'—')
+}
+
+function renderVerify(d){
+  const o=d.oracle||{}, h=d.hook||{}, p=d.pool||{}
+  $('verify').innerHTML=`
+    <div class="vc"><div class="name">SashaOracle</div><div class="addr">${shortHash(o.address)}</div>
+      <div class="meta"><span class="verified">✓ deployed</span><a class="oklink" href="${esc(o.explorerUrl||'#')}" target="_blank" rel="noopener">oklink ↗</a></div></div>
+    <div class="vc"><div class="name">SashaDynamicFeeHook</div><div class="addr">${shortHash(h.address)}</div>
+      <div class="meta"><span class="verified">✓ deployed</span><a class="oklink" href="${esc(h.explorerUrl||'#')}" target="_blank" rel="noopener">oklink ↗</a></div></div>
+    <div class="vc"><div class="name">Pool · ${esc(p.pair||'')}</div><div class="addr">${shortHash(p.poolId)}</div>
+      <div class="meta"><span style="color:var(--text-tertiary);font-size:12px">dynamic fee · ${esc(d.status||'')}</span><a class="oklink" href="${esc(p.initTxUrl||'#')}" target="_blank" rel="noopener">init tx ↗</a></div></div>`
+}
+
+function renderMapping(d){
+  const map=d.feeMapping||{}, live=d.oracle?.riskLevel
+  const rows=[['risk-off','var(--negative)'],['neutral','var(--neutral)'],['risk-on','var(--positive)']]
+  $('maptable').innerHTML=rows.map(([k,c])=>{
+    const bps=map[k], pct=(bps/10000).toFixed(2)
+    const isLive=k===live
+    return `<div class="maprow ${isLive?'live':''}"><span class="sw" style="background:${c}"></span><span style="font-weight:500">${k}</span><span class="mpct">${pct}%</span><span class="mbps">${bps} bps</span><span class="livetag">${isLive?'← live now':''}</span></div>`
+  }).join('')
+}
+
+function renderPushes(d){
+  $('push-ts').textContent=d.asOf?'as of '+relTime(d.asOf):''
+  const ps=d.recentPushes||[]
+  $('pushes').innerHTML = ps.length? ps.map(p=>`
+    <div class="push"><span class="pd"></span><span class="pt">${esc(relTime(p.at))}</span><span class="pl">${esc(p.riskLevel)}</span><span class="pf">${esc(p.fee)} bps</span>
+    <a class="hash ph" href="${esc(p.txUrl||'#')}" target="_blank" rel="noopener">${shortHash(p.txHash)} ↗</a></div>`).join('')
+    : '<div class="empty">No pushes yet.</div>'
+  const ag=d.agent||{}
+  let hold=''
+  if(ag.okbBalance!=null){
+    const parts=[Number(ag.okbBalance).toFixed(3)+' OKB'+(ag.lowBalanceWarning?' ⚠ low gas':'')]
+    if(ag.wokbBalance!=null) parts.push(Number(ag.wokbBalance).toFixed(4)+' WOKB')
+    if(ag.usdceBalance!=null) parts.push(Number(ag.usdceBalance).toFixed(2)+' USDC.e')
+    hold=' · holds '+parts.join(' · ')+(ag.holdingsUsd!=null?' (~$'+ag.holdingsUsd+')':'')
+  }
+  $('sender').innerHTML = ag.address? `sender: <span class="agentlbl">${shortHash(ag.address)} (agent)</span> · pushes on schedule, no human in the loop${hold}` : ''
+}
+
+function renderPool(d){
+  const p=d.pool||{}
+  const spot = p.spotLabel || (p.spotPrice!=null?('1 WOKB = '+p.spotPrice+' USDC.e'):'—')
+  const tvl = p.tvlUsd==null?'—':(p.seedLiquidity?'seed':(p.tvlUsd<1?'<$1':fmtUsd(p.tvlUsd)))
+  $('poolstrip').innerHTML=`
+    <div class="ps"><span class="k">Pair</span><span class="v">${esc(p.pair||'—')}</span></div>
+    <div class="ps"><span class="k">Fee</span><span class="v" style="color:var(--accent)">dynamic</span></div>
+    <div class="ps"><span class="k">Spot price</span><span class="v">${esc(spot)}</span></div>
+    <div class="ps"><span class="k">Liquidity</span><span class="v">${esc(tvl)}</span></div>
+    <div class="ps"><span class="k">Tick</span><span class="v">${p.tick!=null?p.tick:'—'}</span></div>`
+  if(p.initTxUrl) $('poolexpl').href=p.initTxUrl
+}
+function fmtUsd(v){if(v==null)return '—';const n=Number(v);if(Math.abs(n)>=1000)return '$'+(n/1000).toFixed(1)+'k';return '$'+n.toFixed(2)}
+
+async function load(){
+  try{
+    const res=await fetch(DATA_URL+'?t='+Date.now(),{cache:'no-store'})
+    if(!res.ok) throw new Error('HTTP '+res.status)
+    const d=await res.json()
+    $('errbanner').style.display='none'
+    renderHeartbeat(d.oracle); renderLoop(d.oracle); renderVerify(d); renderMapping(d); renderPushes(d); renderPool(d)
+    $('foot-asof').textContent='data as of '+relTime(d.asOf)
+  }catch(e){
+    const b=$('errbanner'); b.style.display='block'; b.textContent='Live data unavailable ('+e.message+').'
+    $('hbdot').className='dot down'; $('hbtext').textContent='Data offline'
+  }
+}
+load(); setInterval(load,POLL_MS)
+</script>
+</body>
+</html>

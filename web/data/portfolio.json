@@ -1,0 +1,71 @@
+{
+  "asOf": "2026-05-27T02:46:04.414Z",
+  "agent": {
+    "name": "Sasha",
+    "xHandle": "SashaCoin95",
+    "xUrl": "https://x.com/SashaCoin95"
+  },
+  "totalUsd": 75.05,
+  "pointCount": 1,
+  "experiments": [
+    {
+      "key": "lp",
+      "name": "LP Miner",
+      "thesis": "Multi-chain liquidity book with on-chain kill-switches",
+      "kind": "money",
+      "valueUsd": 48.08,
+      "deployedUsd": 45,
+      "idleUsd": 3.08,
+      "feesUsd": 0.04,
+      "positions": 1,
+      "unfunded": 0,
+      "status": "live",
+      "deepLink": "./lp-miner/",
+      "history": [
+        {
+          "at": "2026-05-27T02:43:45.290Z",
+          "v": 48.08
+        }
+      ],
+      "audience": "You are the judge here",
+      "earns": "LP fees"
+    },
+    {
+      "key": "mantle",
+      "name": "Mantle Trader",
+      "thesis": "Autonomous signal trader, every decision attested on-chain",
+      "kind": "money",
+      "valueUsd": 21.1,
+      "yieldEth": 0.000027,
+      "lastAction": "CLOSE_LP_POSITION",
+      "heartbeat": "live",
+      "identity": 100,
+      "status": "live",
+      "deepLink": "./mantle/",
+      "history": [
+        {
+          "at": "2026-05-27T02:43:45.290Z",
+          "v": 21.1
+        }
+      ],
+      "audience": "Judges: is this a real autonomous on-chain agent?",
+      "earns": "mETH yield + trades"
+    },
+    {
+      "key": "okx",
+      "name": "Dynamic Fee Hook",
+      "thesis": "AI agent pricing a Uniswap v4 pool’s risk on-chain",
+      "kind": "infra",
+      "valueUsd": 5.87,
+      "feePct": 0.3,
+      "riskLevel": "neutral",
+      "pushes": 2,
+      "oracleStale": true,
+      "status": "live",
+      "deepLink": "./okx/",
+      "history": [],
+      "audience": "Judges: first AI agent setting dynamic v4 fees",
+      "earns": "capability demo (not a P&L)"
+    }
+  ]
+}

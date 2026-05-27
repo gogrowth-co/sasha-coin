@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha · Portfolio — live across 3 experiments</title>
+<meta name="description" content="An autonomous AI agent running real on-chain experiments. How much each holds, what it earns, and the trend — live.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface-base:#0A0B0F; --surface-raised:#13141A; --surface-overlay:#1B1D26; --surface-sunken:#06070A;
+    --border-subtle:#22242E; --border-default:#2D2F3B; --border-emphasis:#3E4150;
+    --text-primary:#F4F5F7; --text-secondary:#B4B7C2; --text-tertiary:#74778A; --text-quaternary:#494C5C;
+    --accent:#FFB800; --positive:#34D399; --negative:#F87171; --warning:#FBBF24; --neutral:#94A3B8; --info:#60A5FA;
+    --font-display:"Inter Tight",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif; --font-mono:"JetBrains Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--surface-base);color:var(--text-primary);font-family:var(--font-body);font-feature-settings:"tnum" 1,"lnum" 1;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  a{color:inherit}
+  .topbar{border-bottom:1px solid var(--border-subtle)}
+  .topbar-inner{display:flex;align-items:center;gap:16px;height:56px;font-size:13px}
+  .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:16px}
+  .logo .mark{width:24px;height:24px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:#000;font-weight:600}
+  .spacer{flex:1}
+  .tlink{color:var(--text-tertiary);text-decoration:none}.tlink:hover{color:var(--text-secondary)}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
+  .dot.live{background:var(--positive);box-shadow:0 0 0 3px rgba(52,211,153,.15);animation:pulse 1.6s infinite} .dot.idle{background:var(--text-quaternary)} .dot.stale{background:var(--warning)} .dot.down{background:var(--negative)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .hero{padding:44px 0 26px}
+  .hero .total-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)}
+  .hero .total{font-family:var(--font-display);font-size:52px;font-weight:600;letter-spacing:-.02em;line-height:1;margin:8px 0 10px}
+  .hero p{color:var(--text-secondary);font-size:16px;max-width:640px}
+  .banner{display:none;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warning);font-size:13px;padding:10px 16px;border-radius:8px;margin-top:16px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:8px 0 28px}
+  .card{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:14px;padding:20px;display:flex;flex-direction:column;text-decoration:none;transition:border-color .15s,transform .15s}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .card .head{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+  .card .nm{font-family:var(--font-display);font-size:17px;font-weight:600}
+  .kind{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:2px 6px;border-radius:4px;margin-left:auto}
+  .kind.money{background:rgba(52,211,153,.14);color:var(--positive)} .kind.infra{background:rgba(96,165,250,.14);color:var(--info)}
+  .card .thesis{font-size:12px;color:var(--text-tertiary);min-height:32px;margin-bottom:12px}
+  .card .val{font-family:var(--font-mono);font-size:30px;font-weight:500;letter-spacing:-.01em}
+  .card .earn{font-size:12px;color:var(--text-secondary);margin-top:4px}
+  .card .earn b{color:var(--positive);font-weight:500}
+  .chart{height:56px;margin:14px 0 6px}
+  .chart .building{font-size:11px;color:var(--text-quaternary);font-family:var(--font-mono);display:flex;align-items:center;height:100%}
+  .card .meta{font-size:11px;color:var(--text-tertiary);margin-top:auto;padding-top:12px;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center}
+  .card .go{color:var(--accent);font-size:12px}
+  .aud{font-size:11px;color:var(--text-quaternary);font-style:italic;margin-top:6px}
+  .legend{display:flex;gap:16px;font-size:11px;color:var(--text-tertiary);padding:0 0 20px}
+  footer{padding:24px 0 60px;border-top:1px solid var(--border-subtle);color:var(--text-tertiary);font-size:12px;font-family:var(--font-mono);line-height:1.8}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}.hero .total{font-size:40px}}
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap topbar-inner">
+    <div class="logo"><span class="mark">S</span> Sasha</div>
+    <span style="color:var(--text-tertiary)">Live portfolio</span>
+    <div class="spacer"></div>
+    <a class="tlink" id="xlink" href="https://x.com/SashaCoin95" target="_blank" rel="noopener">@SashaCoin95 ↗</a>
+  </div></div>
+
+  <div class="wrap">
+    <div class="hero">
+      <div class="total-lbl">Total held across experiments</div>
+      <div class="total" id="total">$—</div>
+      <p id="headline">An autonomous AI agent running real on-chain experiments. Here's how much each holds, what it earns, and where it's heading. Watch, copy, or pass.</p>
+      <div class="banner" id="errbanner"></div>
+    </div>
+
+    <div class="legend">
+      <span><span class="dot live"></span> live</span>
+      <span><span class="dot idle"></span> idle</span>
+      <span style="color:var(--text-quaternary)">value updates every ~5 min · trend fills in over time</span>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <footer>
+      <span id="foot">Built by Sasha. Three live experiments, reconciled on-chain.</span><br>
+      <span id="foot-asof"></span>
+    </footer>
+  </div>
+
+<script>
+const DATA_URL='./data/portfolio.json', POLL_MS=60000
+const $=id=>document.getElementById(id)
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+function fmtUsd(v){if(v==null)return '$—';const n=Number(v);if(Math.abs(n)>=10000)return '$'+n.toLocaleString('en-US',{maximumFractionDigits:0});if(Math.abs(n)>=1000)return '$'+(n/1000).toFixed(1)+'k';return '$'+n.toFixed(2)}
+function relTime(iso){if(!iso)return '';const s=(Date.now()-new Date(iso).getTime())/1000;if(s<60)return Math.floor(s)+'s ago';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+'h ago';return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+
+// inline SVG line chart (the "movie"). points: [{at,v}]. color by trend.
+function sparkSVG(points, w=260, h=56){
+  const pts=(points||[]).filter(p=>p.v!=null)
+  if(pts.length<2) return '<div class="building">▱ building history… ('+pts.length+' pt)</div>'
+  const vs=pts.map(p=>Number(p.v))
+  const min=Math.min(...vs), max=Math.max(...vs), range=(max-min)||1
+  const dx=w/(pts.length-1)
+  const up=vs[vs.length-1]>=vs[0]
+  const col=up?'var(--positive)':'var(--negative)'
+  const coords=vs.map((v,i)=>[i*dx, h-4-((v-min)/range)*(h-12)])
+  const line=coords.map((c,i)=>(i?'L':'M')+c[0].toFixed(1)+' '+c[1].toFixed(1)).join(' ')
+  const area=line+` L ${w} ${h} L 0 ${h} Z`
+  const last=coords[coords.length-1]
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${col}" stop-opacity="0.18"/><stop offset="100%" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#g)"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="1.5"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.5" fill="${col}"/>
+  </svg>`
+}
+
+function earnLine(e){
+  if(e.key==='lp') return `Fees earned <b>${fmtUsd(e.feesUsd)}</b> · deployed ${fmtUsd(e.deployedUsd)} + idle ${fmtUsd(e.idleUsd)}${e.unfunded?` · <span style="color:var(--negative)">${e.unfunded} unfunded</span>`:''}`
+  if(e.key==='mantle') return `mETH yield <b>${e.yieldEth!=null?(e.yieldEth+' ETH'):'—'}</b> · last: ${esc(e.lastAction||'—')} · ERC-8004 #${e.identity||'—'}`
+  if(e.key==='okx') return `Fee <b style="color:var(--accent)">${e.feePct!=null?e.feePct+'%':'—'}</b> ${esc(e.riskLevel||'')} · deployed ${fmtUsd(e.poolUsd)} + idle ${fmtUsd(e.walletUsd)} · ${e.pushes} pushes`
+  return ''
+}
+
+function renderCard(e){
+  const statusClass = e.status==='live'?'live':e.status==='stale'?'stale':e.status==='down'?'down':'idle'
+  return `<a class="card" href="${esc(e.deepLink)}">
+    <div class="head"><span class="dot ${statusClass}"></span><span class="nm">${esc(e.name)}</span><span class="kind ${e.kind}">${e.kind==='money'?'money':'infra'}</span></div>
+    <div class="thesis">${esc(e.thesis)}</div>
+    <div class="val">${fmtUsd(e.valueUsd)}</div>
+    <div class="earn">${earnLine(e)}</div>
+    <div class="chart">${sparkSVG(e.history)}</div>
+    <div class="aud">${esc(e.audience)}</div>
+    <div class="meta"><span>${esc(e.status)}</span><span class="go">open deep dive ↗</span></div>
+  </a>`
+}
+
+async function load(){
+  try{
+    const res=await fetch(DATA_URL+'?t='+Date.now(),{cache:'no-store'})
+    if(!res.ok) throw new Error('HTTP '+res.status)
+    const d=await res.json()
+    $('errbanner').style.display='none'
+    $('total').textContent=fmtUsd(d.totalUsd)
+    const money=(d.experiments||[]).filter(e=>e.kind==='money').reduce((s,e)=>s+(Number(e.valueUsd)||0),0)
+    $('headline').innerHTML=`Sasha holds <b style="color:var(--text-primary)">${fmtUsd(d.totalUsd)}</b> across ${d.experiments?.length||0} live on-chain experiments — ${fmtUsd(money)} in money strategies plus a live fee-hook demo. Every figure is reconciled against the chain. Watch, copy, or pass.`
+    $('grid').innerHTML=(d.experiments||[]).map(renderCard).join('')
+    $('foot-asof').textContent='data as of '+relTime(d.asOf)+' · '+(d.pointCount||0)+' history points'
+  }catch(e){
+    const b=$('errbanner'); b.style.display='block'; b.textContent='Live data unavailable ('+e.message+').'
+  }
+}
+load(); setInterval(load,POLL_MS)
+</script>
+</body>
+</html>
