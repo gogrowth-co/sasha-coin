@@ -302,13 +302,15 @@ async function generateReply(tweet) {
 Tweet by @${tweet.handle}:
 "${tweet.text}"
 
-Sasha's angle for this person: ${tweet.sashaAngle}
-Topics of interest: ${tweet.topicsOfInterest.join(', ')}
-
 Before writing, think through:
-1. What is the tweet's actual claim or frustration? Be precise — don't paraphrase loosely.
-2. Is my reply logically consistent with that claim? Check for false assumptions.
-3. What's the one non-obvious angle that adds something the tweet didn't say?
+1. What is this tweet ACTUALLY about? Name the specific topic precisely (e.g. "institutional RWA tokenization", "retail UX friction", "protocol hack recovery"). Be literal — don't infer the author's general interests.
+2. Is my reply logically consistent with THAT specific topic? If the tweet is about institutional infrastructure, don't pivot to retail onboarding. If it's about a protocol hack, don't pivot to adoption metrics.
+3. What's the one non-obvious observation or question that adds something the tweet didn't say?
+
+Background context (use only if directly relevant to this tweet's specific topic):
+- Sasha's angle for this person: ${tweet.sashaAngle}
+- Topics of interest: ${tweet.topicsOfInterest.join(', ')}
+⚠️ These are this person's general interests — NOT instructions to force your reply into those topics. If this tweet is about something else, engage with the tweet's actual topic instead.
 
 Write a reply. Hard rules:
 - Max 240 characters
@@ -322,8 +324,9 @@ Write a reply. Hard rules:
 - No emojis unless the original tweet uses them
 - Banned words: revolutionary, to the moon, wen, fren, gm, gn, alpha, bullish, bearish, WAGMI, LFG, based, ser, anon, ngmi, degen (unless quoting someone), ecosystem, paradigm shift, space (as in "the crypto space")
 
-Good reply: "The regulatory clarity is real. What's interesting is most protocols I've tracked were already building for this — the bill accelerates timelines, it doesn't change direction."
-Bad reply (logic error): Tweet is about people who CAN'T access a private beta → reply talks about engagement dropping for people who CAN access it. Different population, different problem. Don't conflate access gating with product stickiness.
+Good reply (tweet about regulatory clarity): "The regulatory clarity is real. What's interesting is most protocols I've tracked were already building for this — the bill accelerates timelines, it doesn't change direction."
+Bad reply (topic drift): Tweet is about DTCC connecting to Stellar for institutional tokenization → reply pivots to retail wallet onboarding because that's the author's usual topic. Wrong. Engage with what the tweet says, not who wrote it.
+Bad reply (logic error): Tweet is about people who CAN'T access a private beta → reply talks about engagement dropping for people who CAN access it. Different population, different problem.
 Bad reply (generic): "This is huge! Crypto is finally getting the recognition it deserves. Bullish on what's next for the ecosystem!"
 
 Reply only with the tweet text, nothing else.`;
@@ -359,7 +362,10 @@ Reply only with the tweet text, nothing else.`;
   }
   // Filter out thinking parts (thought: true) — only return visible output
   const parts = data.candidates?.[0]?.content?.parts || [];
-  return parts.filter(p => !p.thought).map(p => p.text).join('').trim() || null;
+  // Gemini sometimes wraps its output in quotes despite "reply only with the tweet text" instruction.
+  // Strip any surrounding single or double quotes before returning.
+  const raw = parts.filter(p => !p.thought).map(p => p.text).join('').trim().replace(/^["']|["']$/g, '').trim();
+  return raw || null;
 }
 
 const results = [];
