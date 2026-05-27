@@ -29,6 +29,7 @@ import fs from 'fs'
 import path from 'path'
 import https from 'https'
 import { fileURLToPath } from 'url'
+import { sizeFromSignal, loadCapitalPool, SIZER_DEFAULTS } from './position-sizer.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..')
@@ -170,7 +171,7 @@ function executeTrade(signal) {
     const r = signal.recommendation
 
     if (r.action === 'OPEN_LP_POSITION') {
-        return executeLPPosition(r)
+        return executeLPPosition(r, signal)
     }
     if (r.action === 'SWAP_TO_SOL' || r.action === 'MOVE_TO_STABLE') {
         return executeSwap(r)
@@ -262,13 +263,65 @@ function getPoolCurrentPrice(poolAddress) {
     }
 }
 
-function executeLPPosition(r) {
+function getPoolBaseInfo(poolAddress) {
+    try {
+        const pi = spawnSync('byreal-cli', ['pools', 'info', poolAddress, '-o', 'json'], { encoding: 'utf8', timeout: 20000 })
+        if (pi.status !== 0 || !pi.stdout) return null
+        const pj = JSON.parse(pi.stdout); const d = pj.data || pj
+        const mints = [d.token_a || d.mintA, d.token_b || d.mintB].filter(Boolean)
+        const held = {}
+        const wbr = spawnSync('byreal-cli', ['wallet', 'balance', '-o', 'json'], { encoding: 'utf8', timeout: 20000 })
+        if (wbr.status === 0 && wbr.stdout) {
+            const wj = JSON.parse(wbr.stdout); const w = (wj.data || wj).balance || (wj.data || wj)
+            held['So11111111111111111111111111111111111111112'] = parseFloat((w.sol && w.sol.amount_sol) || 0)
+            for (const t of (w.tokens || [])) held[t.mint] = parseFloat(t.amount_ui || 0)
+        }
+        let best = null
+        for (const m of mints) {
+            const bal = held[m.mint] || 0
+            const usd = bal * (m.price_usd || 0)
+            if (usd > 0 && (!best || usd > best.usd)) best = { mint: m.mint, price: m.price_usd, decimals: m.decimals, usd: usd, symbol: m.symbol }
+        }
+        return best
+    } catch { return null }
+}
+
+function getRecentWalletSignature() {
+    try {
+        const wb = spawnSync('byreal-cli', ['wallet', 'balance', '-o', 'json'], { encoding: 'utf8', timeout: 15000 })
+        const wj = JSON.parse(wb.stdout); const addr = (wj.data || wj).address
+        if (!addr) return null
+        const rpc = process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com'
+        const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getSignaturesForAddress', params: [addr, { limit: 1 }] })
+        const cr = spawnSync('curl', ['-s', rpc, '-X', 'POST', '-H', 'Content-Type: application/json', '-d', body], { encoding: 'utf8', timeout: 15000 })
+        const j = JSON.parse(cr.stdout); return (j.result && j.result[0] && j.result[0].signature) || null
+    } catch { return null }
+}
+
+function executeLPPosition(r, signal) {
     if (!r.poolAddress) {
         throw new Error('No pool address in recommendation for LP position')
     }
 
     const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-    const DEMO_AMOUNT_USD = 10 // $10 USD for demo
+
+    // ─── Position sizing: signal conviction × tier × capital pool ────────────
+    // Replaces the old hardcoded $5/$10 demo amount with live wallet-aware sizing.
+    // Reads state/capital-pool.json (refreshed every 30 min by treasury-monitor.js).
+    // If the snapshot is missing/stale, falls back to $20 demo pool so the demo
+    // never blocks; the rationale will surface that fallback.
+    const pool = loadCapitalPool()
+    const poolUsd = pool?.poolUsd ?? parseFloat(process.env.FALLBACK_POOL_USD || '20')
+    const sized = sizeFromSignal(signal, poolUsd)
+
+    if (sized.reject) {
+        throw new Error(`Position sizer rejected: ${sized.reasoning}`)
+    }
+
+    const DEMO_AMOUNT_USD = sized.sizeUsd
+    console.log(`[trade] sized position: $${DEMO_AMOUNT_USD} (pool=$${poolUsd}, ${sized.reasoning})`)
+    if (!pool) console.warn('[trade] no capital pool snapshot — used fallback $' + poolUsd)
+    else if ((pool.ageMinutes ?? 0) > 60) console.warn(`[trade] capital pool snapshot ${pool.ageMinutes.toFixed(0)} min old`)
 
     // Fetch current pool price to set ±25% range (CLMM requires explicit bounds)
     // If we can't fetch the price, fall back to a wide range (0.001 to 10000)
@@ -285,14 +338,25 @@ function executeLPPosition(r) {
         console.log(`[trade] Could not fetch pool price — using wide range [${priceLower}, ${priceUpper}]`)
     }
 
+    const baseInfo = getPoolBaseInfo(r.poolAddress)
+    let baseMint = USDC_MINT, baseAmount = DEMO_AMOUNT_USD.toString()
+    if (baseInfo && baseInfo.price > 0) {
+        baseMint = baseInfo.mint
+        baseAmount = (DEMO_AMOUNT_USD / baseInfo.price).toFixed(6)
+        console.log('[trade] deposit ' + baseAmount + ' ' + baseInfo.symbol + ' (~' + DEMO_AMOUNT_USD + ' USD); wallet holds ' + baseInfo.usd.toFixed(2) + ' USD')
+    } else {
+        console.log('[trade] no held pool mint, using USDC base')
+    }
+
     const cmdArgs = [
         'positions', 'open',
         '--pool', r.poolAddress,
         '--price-lower', priceLower,
         '--price-upper', priceUpper,
-        '--base', USDC_MINT,
-        '--amount', DEMO_AMOUNT_USD.toString(),
+        '--base', baseMint,
+        '--amount', baseAmount,
         '--auto-swap',
+        '--slippage', '200',
         '-o', 'json',
     ]
 
@@ -332,6 +396,10 @@ function executeLPPosition(r) {
     const jsonStart = rawOut.indexOf('{')
     const jsonStr = jsonStart !== -1 ? rawOut.slice(jsonStart) : rawOut
     const output = JSON.parse(jsonStr)
+    const o = output.data || output
+    let txSignature = o.signature || o.txId || o.txSignature || o.tx || o.transaction || output.signature || null
+    let nftMint = o.nftMintAddress || o.nftMint || o.position_nft || output.nftMint || null
+    if (!txSignature) txSignature = getRecentWalletSignature()
     return {
         type: 'lp_open',
         pool: r.poolAddress,
@@ -339,8 +407,8 @@ function executeLPPosition(r) {
         amountUSD: DEMO_AMOUNT_USD,
         priceLower: parseFloat(priceLower),
         priceUpper: parseFloat(priceUpper),
-        txSignature: output.signature || output.txSignature || output.tx || null,
-        nftMint: output.nftMint || output.position_nft || null,
+        txSignature: txSignature,
+        nftMint: nftMint,
         raw: output,
     }
 }
@@ -507,7 +575,7 @@ async function main() {
     // Step 4: Wait 60 seconds (accountability window)
     if (!DRY_RUN) {
         console.log('[trade] Waiting 60s accountability window (tweet timestamp precedes trade)...')
-        await new Promise(resolve => setTimeout(resolve, 60_000))
+        await new Promise(resolve => setTimeout(resolve, 120_000))
     } else {
         console.log('[trade][dry-run] Skipping 60s wait')
     }

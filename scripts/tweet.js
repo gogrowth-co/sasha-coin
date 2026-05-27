@@ -31,7 +31,7 @@ if (!BUFFER_TOKEN || !BUFFER_CHANNEL) {
 const API_ENDPOINT = 'https://api.buffer.com'
 
 // Schedule for "now" — Buffer treats current/past timestamps as post-immediately
-const scheduledAt = new Date().toISOString()
+const scheduledAt = new Date(Date.now() + 30_000).toISOString()
 
 const QUERY = `
 mutation CreatePost($input: CreatePostInput!) {
