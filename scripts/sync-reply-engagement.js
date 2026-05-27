@@ -109,6 +109,17 @@ if (!SKIP_APIFY) {
     entry.replies_latest  = tw.replyCount  ?? 0;
     entry.views_latest    = tw.viewCount   ?? 0;
     entry.engagement_synced_at = new Date().toISOString();
+
+    // Mirror into the canonical schema fields the dashboard/reports read.
+    // Without this, likes_24h/replies_24h/engagement_checked stay null/false
+    // forever and every reply looks dead even though it is live and synced.
+    entry.likes_24h    = entry.likes_latest;
+    entry.replies_24h  = entry.replies_latest;
+    entry.views_24h    = entry.views_latest;
+    // Mark the 24h check done once we are past the scheduled due time.
+    if (entry.engagement_check_due && new Date(entry.engagement_check_due).getTime() <= Date.now()) {
+      entry.engagement_checked = true;
+    }
     engPatched++;
 
     console.log(`  ✅ @${entry.target_handle} → ♥${entry.likes_latest} 💬${entry.replies_latest} 👁${entry.views_latest}`);

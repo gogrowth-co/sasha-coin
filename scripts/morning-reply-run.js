@@ -68,6 +68,44 @@ const FEED_PATH = join(ROOT, 'content/kol-feed.json');
 const REPLIED_PATH = join(ROOT, 'state/replied-tweets.json');
 const LOG_PATH = join(ROOT, 'state/posted-log.json');
 
+// Persist a confirmed reply to dedup state IMMEDIATELY (per-post), not at end of run.
+// Why: a reply lands on X inside the loop, but if the process is killed before the
+// end-of-run write (Mac sleep, caffeinate timeout, next-slot lock), the reply is
+// orphaned — absent from replied-tweets.json — so the next fresh scrape re-picks the
+// same tweet and Sasha double-replies. Writing here makes that window zero.
+// Idempotent: replied-tweets is a Set; posted-log dedups on entry id.
+function persistReply(tweet) {
+  const replied = existsSync(REPLIED_PATH)
+    ? new Set(JSON.parse(readFileSync(REPLIED_PATH, 'utf8')))
+    : new Set();
+  replied.add(tweet.tweetId);
+  writeFileSync(REPLIED_PATH, JSON.stringify([...replied], null, 2));
+
+  const log = existsSync(LOG_PATH) ? JSON.parse(readFileSync(LOG_PATH, 'utf8')) : [];
+  const id = `reply-${tweet.tweetId}`;
+  if (!log.some(e => e.id === id)) {
+    log.push({
+      id,
+      source: 'reply',
+      method: 'adb',
+      target_handle: tweet.handle,
+      in_reply_to: tweet.tweetId,
+      tweet_url: tweet.tweetUrl,
+      original_text: tweet.text || null,
+      topics: tweet.topicsOfInterest || [],
+      sasha_angle: tweet.sashaAngle || null,
+      tweet_text: tweet.replyText,
+      posted_at: tweet.replyPostedAt,
+      status: tweet.status,
+      engagement_check_due: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      engagement_checked: false,
+      likes_24h: null,
+      replies_24h: null,
+    });
+    writeFileSync(LOG_PATH, JSON.stringify(log, null, 2));
+  }
+}
+
 // ── Step 1: Scrape ────────────────────────────────────────────────────────────
 if (!SKIP_SCRAPE) {
   console.log('─── Step 1: Scraping KOL tweets (fresh) ───');
@@ -292,7 +330,12 @@ for (const tweet of candidates) {
 
   tweet.replied = ok;
   tweet.replyPostedAt = ok ? new Date().toISOString() : null;
-  results.push({ ...tweet, status: postResult.status || (ok ? 'ok' : 'error') });
+  tweet.status = postResult.status || (ok ? 'ok' : 'error');
+  results.push({ ...tweet, status: tweet.status });
+
+  // Persist the instant the reply confirms — before engagement sync or anything
+  // else that could be interrupted. This is the atomic guard against double-replies.
+  if (!DRY_RUN && ok) persistReply(tweet);
 }
 
 // ── Step 5: Write back feed + logs ────────────────────────────────────────────
@@ -306,36 +349,9 @@ writeFileSync(FEED_PATH, JSON.stringify({
 }, null, 2));
 
 if (!DRY_RUN) {
-  // Append to replied-tweets.json
-  const replied = existsSync(REPLIED_PATH)
-    ? new Set(JSON.parse(readFileSync(REPLIED_PATH, 'utf8')))
-    : new Set();
-  for (const r of results.filter(r => r.replied)) replied.add(r.tweetId);
-  writeFileSync(REPLIED_PATH, JSON.stringify([...replied], null, 2));
-
-  // Append to posted-log.json
-  const log = existsSync(LOG_PATH) ? JSON.parse(readFileSync(LOG_PATH, 'utf8')) : [];
-  for (const r of results.filter(r => r.replied)) {
-    log.push({
-      id: `reply-${r.tweetId}`,
-      source: 'reply',
-      method: 'adb',
-      target_handle: r.handle,
-      in_reply_to: r.tweetId,
-      tweet_url: r.tweetUrl,
-      original_text: r.text || null,
-      topics: r.topicsOfInterest || [],
-      sasha_angle: r.sashaAngle || null,
-      tweet_text: r.replyText,
-      posted_at: r.replyPostedAt,
-      status: r.status,
-      engagement_check_due: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      engagement_checked: false,
-      likes_24h: null,
-      replies_24h: null,
-    });
-  }
-  writeFileSync(LOG_PATH, JSON.stringify(log, null, 2));
+  // NOTE: replied-tweets.json and posted-log.json are now written per-post inside
+  // the loop (persistReply) so a mid-run kill can't orphan a reply. Do not re-append
+  // here or entries would duplicate.
 
   // Sync engagement + topics in the background (non-blocking — don't fail the run if it errors)
   const syncScript = join(__dirname, 'sync-reply-engagement.js');
