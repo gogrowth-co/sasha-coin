@@ -75,15 +75,31 @@ const DEVICE = getArg('--device') || process.env.SASHA_PHONE_ADB || '192.168.0.6
 
 const ADB_PATH = process.env.ADB_PATH || `${process.env.HOME}/bin/adb`;
 
-// ── ADB reconnect ─────────────────────────────────────────────────────────────
+// ── ADB reconnect (3× retry, 5s apart) ────────────────────────────────────────
+// ADB wireless connections drop on network changes, phone reboots, and ~24h idle.
+// One connect attempt was enough 90% of the time, but a single dropped packet
+// on a fresh Mac wake would abort the slot immediately. Three retries adds <10s
+// to a worst-case run and eliminates almost all transient drop scenarios.
 if (!DRY_RUN) {
   console.log(`─── ADB: connecting to ${DEVICE} ───`);
-  const conn = spawnSync(ADB_PATH, ['connect', DEVICE], { encoding: 'utf8' });
-  const out = (conn.stdout || '').trim();
-  console.log(`  ${out}`);
-  if (!out.includes('connected') && !out.includes('already connected')) {
-    console.error('  ADB reconnect failed — aborting. Check phone WiFi and wireless debugging.');
-    notify(`❌ <b>Sasha reply — ADB offline</b>\nCould not connect to ${DEVICE}. No reply posted this slot.\nCheck phone WiFi + wireless debugging.`);
+  const ADB_RETRIES = 3;
+  let connected = false;
+  for (let attempt = 1; attempt <= ADB_RETRIES; attempt++) {
+    const conn = spawnSync(ADB_PATH, ['connect', DEVICE], { encoding: 'utf8' });
+    const out = (conn.stdout || '').trim();
+    console.log(`  [${attempt}/${ADB_RETRIES}] ${out}`);
+    if (out.includes('connected') || out.includes('already connected')) {
+      connected = true;
+      break;
+    }
+    if (attempt < ADB_RETRIES) {
+      console.log(`  Waiting 5s before retry...`);
+      spawnSync('sleep', ['5']);
+    }
+  }
+  if (!connected) {
+    console.error(`  ADB reconnect failed after ${ADB_RETRIES} attempts — aborting.`);
+    notify(`❌ <b>Sasha reply — ADB offline</b>\nFailed to connect to ${DEVICE} after ${ADB_RETRIES} attempts. No reply posted this slot.\nCheck phone WiFi + wireless debugging.`);
     process.exit(1);
   }
 }

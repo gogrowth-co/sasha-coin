@@ -4,7 +4,63 @@ set -euo pipefail
 ROOT="/Users/gabrielmangabeira/Documents/Gabriel Mangabeira/sasha-coin"
 LOG="$HOME/Library/Logs/sasha-replies.log"
 LOCKDIR="/tmp/sasha-reply.lockdir"
-NODE="/Users/gabrielmangabeira/.nvm/versions/node/v23.11.0/bin/node"
+
+# ── Resolve Node.js dynamically ───────────────────────────────────────────────
+# Old pattern: NODE="/…/.nvm/versions/node/v23.11.0/bin/node"
+# That breaks silently the moment nvm upgrades the default version.
+# New pattern: walk nvm alias chain → newest installed → PATH fallback.
+# Using a function avoids set -e misfires on intermediate commands.
+resolve_node() {
+  local nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+
+  # 1. Follow nvm 'default' alias (handles full versions, major shorthands, lts/* chains)
+  if [ -s "$nvm_dir/alias/default" ]; then
+    local ver
+    ver=$(cat "$nvm_dir/alias/default" | tr -d '[:space:]')
+
+    # Walk one level of alias indirection (e.g. 'lts/iron' → reads alias/lts/iron)
+    if [ -s "$nvm_dir/alias/$ver" ]; then
+      ver=$(cat "$nvm_dir/alias/$ver" | tr -d '[:space:]')
+    fi
+
+    # Exact directory match (e.g. "v23.11.0")
+    if [ -f "$nvm_dir/versions/node/$ver/bin/node" ]; then
+      echo "$nvm_dir/versions/node/$ver/bin/node"; return 0
+    fi
+    # 'v' prefix (e.g. "23.11.0" without leading v)
+    if [ -f "$nvm_dir/versions/node/v$ver/bin/node" ]; then
+      echo "$nvm_dir/versions/node/v$ver/bin/node"; return 0
+    fi
+    # Major-version shorthand (e.g. "23" → find highest v23.x.x installed)
+    local matched
+    matched=$(ls -1 "$nvm_dir/versions/node" 2>/dev/null \
+      | grep -E "^v?${ver}\." | sort -rV | head -1)
+    if [ -n "$matched" ] && [ -f "$nvm_dir/versions/node/$matched/bin/node" ]; then
+      echo "$nvm_dir/versions/node/$matched/bin/node"; return 0
+    fi
+  fi
+
+  # 2. Pick the newest installed Node version (sort -V = version-aware sort)
+  if [ -d "$nvm_dir/versions/node" ]; then
+    local newest
+    newest=$(ls -1 "$nvm_dir/versions/node" 2>/dev/null | sort -rV | head -1)
+    if [ -n "$newest" ] && [ -f "$nvm_dir/versions/node/$newest/bin/node" ]; then
+      echo "$nvm_dir/versions/node/$newest/bin/node"; return 0
+    fi
+  fi
+
+  # 3. Last resort: anything on PATH
+  command -v node 2>/dev/null && return 0
+
+  return 1
+}
+
+NODE=$(resolve_node || true)
+if [ -z "$NODE" ] || [ ! -x "$NODE" ]; then
+  echo "ERROR: Node.js not found (checked nvm alias/default, nvm versions, PATH)" >> "$LOG"
+  exit 1
+fi
+echo "Node: $NODE ($("$NODE" --version 2>&1))" >> "$LOG"
 
 echo "" >> "$LOG"
 echo "=== $(date '+%Y-%m-%d %H:%M:%S') — slot fired ===" >> "$LOG"
