@@ -303,6 +303,21 @@ for (const tweet of candidates) {
   }
 
   // ── Step 4: Post via ADB ───────────────────────────────────────────────────
+  // Optimistic pre-write: add tweet ID to replied-tweets BEFORE calling ADB.
+  // Why: if ADB posts the reply but the process is killed before persistReply runs
+  // (Mac sleep, caffeinate timeout, or exit-code ambiguity on 'unconfirmed'),
+  // the tweet ID is already deduped. Without this, the next slot finds the tweet
+  // still unreplied and posts again → double reply.
+  // Risk: if ADB truly fails (network down, device offline), we waste a feed slot.
+  // That is vastly preferable to double-replying.
+  {
+    const preReplied = existsSync(REPLIED_PATH)
+      ? new Set(JSON.parse(readFileSync(REPLIED_PATH, 'utf8')))
+      : new Set();
+    preReplied.add(tweet.tweetId);
+    writeFileSync(REPLIED_PATH, JSON.stringify([...preReplied], null, 2));
+  }
+
   console.log('  Posting via ADB...');
   const post = spawnSync(
     process.execPath,

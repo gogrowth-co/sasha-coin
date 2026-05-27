@@ -274,7 +274,11 @@ async function postReply() {
 postReply()
   .then(r => {
     console.log(JSON.stringify(r));
-    process.exit(r.status === 'ok' || r.status === 'dry_run' ? 0 : 1);
+    // Exit 0 for ok, dry_run, AND unconfirmed — the reply posted; uiautomator just
+    // couldn't verify the reset. Parent process checks postResult.status for logging,
+    // but a non-zero exit causes the `ok` guard to miss unconfirmed, skipping persistReply
+    // and creating orphaned replies that get double-posted on the next slot.
+    process.exit(r.status === 'ok' || r.status === 'dry_run' || r.status === 'unconfirmed' ? 0 : 1);
   })
   .catch(err => {
     console.error('[adb-reply] ERROR:', err.message);

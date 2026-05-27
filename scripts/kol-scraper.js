@@ -72,7 +72,12 @@ function getDailyReplyCount() {
   if (!existsSync(logPath)) return 0;
   try {
     const log = JSON.parse(readFileSync(logPath, 'utf8'));
-    return (log.entries ?? log).filter(e => (e.posted_at || e.postedAt || e.timestamp || '').startsWith(todayStr)).length;
+    // BUG FIX: `log.entries ?? log` on a flat array returns Array.prototype.entries
+    // (a built-in method, truthy) instead of falling through to the array itself.
+    // The ?? operator never sees undefined, so entries becomes the method function,
+    // .filter() throws, catch silently returns 0, and the daily cap is never enforced.
+    const entries = Array.isArray(log) ? log : (Array.isArray(log.entries) ? log.entries : []);
+    return entries.filter(e => (e.posted_at || e.postedAt || e.timestamp || '').startsWith(todayStr)).length;
   } catch { return 0; }
 }
 
