@@ -64,3 +64,9 @@ build/
 # !task-server.js
 # Dev-only VPS state snapshot (raw internal state — never deploy/commit)
 _devdata/
+
+# Operational content state (tactical, not for public consumption)
+content/kol-feed*.json
+content/reply-targets.json
+content/scheduled-posts.json
+content/mantle-signal.json
