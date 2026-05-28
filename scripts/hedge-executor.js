@@ -70,7 +70,8 @@ const MANUAL_SIZE = val('--size') ? parseFloat(val('--size')) : null
 // ─── config ─────────────────────────────────────────────────────────────────────
 const DRIFT_THRESHOLD   = 0.05      // 5% delta drift -> adjust
 const FUNDING_KILL_ANN  = -54.75    // annualized %; 3 consecutive periods -> close
-const TARGET_LEVERAGE   = 2         // conservative for Phase 3 (margin ~= 50% of notional)
+const TARGET_LEVERAGE   = 4         // isolated 4x: margin = 25% of notional (more capital-efficient)
+const TARGET_MARGIN_PCT = 0.35      // fund HL wallet at 35% of LP notional (adds safety buffer over 25% min)
 const BASE_RPCS = [
   process.env.ALCHEMY_BASE_RPC,
   'https://base-rpc.publicnode.com',
@@ -345,7 +346,11 @@ async function main() {
     if (process.env.HEDGE_LIVE_OK !== '1') { log('  ⛔ refusing live order: HEDGE_LIVE_OK != 1'); continue }
 
     try {
-      await exchange.updateLeverage({ asset: m.idx, isCross: true, leverage: TARGET_LEVERAGE }).catch(() => {})
+      // Isolated margin at 4x: margin = 25% of notional, fund wallet at TARGET_MARGIN_PCT (35%) for buffer.
+      // isCross: false = isolated; if the position already exists and can't change, updateLeverage is a no-op.
+      await exchange.updateLeverage({ asset: m.idx, isCross: false, leverage: TARGET_LEVERAGE }).catch((e) => {
+        log(`  warn: updateLeverage skipped (${e.message}) — position may already be open`)
+      })
       const res = await placeOrder(exchange, m, side, size)
       log('  result:', JSON.stringify(res))
       pos.hedgeSize = target

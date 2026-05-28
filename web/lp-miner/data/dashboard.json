@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-27T02:46:02.234Z",
+  "asOf": "2026-05-27T18:56:07.527Z",
   "generatedBy": "build-dashboard-data.js",
   "scope": "liquidity-miner-only",
   "agent": {
@@ -9,8 +9,8 @@
   },
   "book": {
     "deployedUsd": 45,
-    "idleUsd": 3.08,
-    "totalUsd": 48.08,
+    "idleUsd": 3.07,
+    "totalUsd": 48.07,
     "note": "deployedUsd = capital basis in open LP positions; idle/total filled by live wallet read"
   },
   "capital": {
@@ -36,8 +36,13 @@
         "feeTier": "CL2000-0.0338%",
         "lowerPrice": 65000,
         "upperPrice": 88000,
-        "pendingFeesUsd": 0.0441,
-        "hedgeSize": 0,
+        "pendingFeesUsd": 0.2291,
+        "hedgeSize": 0.00027,
+        "hedgePerp": "BTC",
+        "hedgeNotionalUsd": null,
+        "hedgeFundingAnnPct": null,
+        "hedgeUpdatedAt": "2026-05-27T18:34:21.356Z",
+        "deltaNeutral": true,
         "morphoHf": null,
         "ilPct": null,
         "netPnlPct": null,
@@ -48,11 +53,46 @@
         "liveLiquidity": "8559866",
         "inRange": true,
         "divergence": null,
-        "reconciledAt": "2026-05-27T02:46:02.982Z"
+        "reconciledAt": "2026-05-27T20:04:42.812Z"
       }
     ],
-    "reconciledAt": "2026-05-27T02:46:02.983Z",
+    "reconciledAt": "2026-05-27T20:04:42.818Z",
     "unfundedCount": 0
+  },
+  "hedge": {
+    "active": true,
+    "venue": "Hyperliquid",
+    "driftThresholdPct": 5,
+    "fundingKillAnnualizedPct": -54.75,
+    "legs": [
+      {
+        "perp": "BTC",
+        "side": "short",
+        "size": 0.00027,
+        "entryPx": 74864,
+        "markPx": 75158,
+        "notionalUsd": 20.29,
+        "uPnlUsd": -0.08,
+        "liquidationPx": 157743,
+        "marginUsedUsd": 10.15,
+        "fundingAnnPct": 1.1
+      }
+    ],
+    "accountValueUsd": 22.83,
+    "wallet": "0xFAef67C0ee18dD89eaAA91a3d485e48949F7Ed04",
+    "position": {
+      "perp": "BTC",
+      "side": "short",
+      "size": 0.00027,
+      "entryPx": 74864,
+      "markPx": 75158,
+      "notionalUsd": 20.29,
+      "uPnlUsd": -0.08,
+      "liquidationPx": 157743,
+      "marginUsedUsd": 10.15,
+      "fundingAnnPct": 1.1
+    },
+    "reconciledAt": "2026-05-27T20:04:45.752Z"
   },
   "killSwitch": {
     "oorTimeoutMinutes": 240,
@@ -108,6 +148,25 @@
     "usdc": 0.372131,
     "cbbtc": 0,
     "eth": 0.001311842461121011,
-    "idleUsd": 3.08
+    "idleUsd": 3.07
+  },
+  "overall": {
+    "navUsd": 70.9,
+    "breakdown": {
+      "lpDeployedUsd": 45,
+      "idleUsd": 3.07,
+      "hedgeAccountUsd": 22.83
+    },
+    "baselineNavUsd": 70.9,
+    "baselineAt": "2026-05-27T20:04:45.753Z",
+    "netPnlUsd": 0,
+    "netPnlPct": 0,
+    "feesEarnedUsd": 0.23,
+    "hedgeUPnlUsd": -0.08,
+    "fundingAnnPct": 1.1,
+    "deltaNeutral": true,
+    "killArmed": 0,
+    "status": "delta-neutral · carry accruing",
+    "note": "LP valued at deployed basis (in-range ≈ flat); precise IL accounting pending the ledger"
   }
 }

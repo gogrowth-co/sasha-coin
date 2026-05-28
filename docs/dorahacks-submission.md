@@ -15,12 +15,18 @@ An AI agent that posts her trade thesis to X before her wallet moves — reasoni
 
 ## TRACK
 Agentic Wallets & Economy (Byreal-sponsored)
-Path B: RealClaw Real-Life Expansion
+Path A: DeFi Deep Dive
 
 ---
 
 ## DEMO VIDEO URL
-[To be filled once recorded]
+https://youtu.be/BirU_Z57Z3A
+
+---
+
+## LIVE DEMO / FRONTEND URL
+https://sasha-dashboards.pages.dev/mantle/
+(Paste into the DoraHacks BUIDL "Live Demo / Website" link field — NOT the video field.)
 
 ---
 
@@ -142,6 +148,8 @@ Mantle attestation TX: https://explorer.mantle.xyz/tx/0x28d057caec328a4eda62fa62
 
 Solana LP TX: https://solscan.io/tx/3bv6jDpsKxCPW3soLaPbHQBftNXxH4bKWiLZ8JVw8rjhJtvUmkVkmCaN456b5kncsspq3kujp5nehh5JjZxWW5k6
 
+Live dashboard (real-time state, refreshes every 60s): https://sasha-dashboards.pages.dev/mantle/
+
 This is not a demo environment. These are mainnet transactions from a live, running agent.
 
 ---
@@ -239,8 +247,8 @@ Voice: "Every decision, timestamped before it was made. Every trade, attested af
 - [x] Open-source GitHub repo: https://github.com/gogrowth-co/sasha-coin (made public 2026-05-26)
 - [x] Deployment address in submission
 - [x] ERC-8004 agent identity registered (Agent #100)
-- [ ] Demo video (≥ 2 min) — **PENDING**
-- [ ] Frontend demo publicly accessible — **PENDING**
+- [x] Demo video published — https://youtu.be/BirU_Z57Z3A (~56s, dashboard-centric, real on-chain loop, Sasha's voice)
+- [x] Frontend demo publicly accessible — https://sasha-dashboards.pages.dev/mantle/ (live, auto-refreshing)
 - [ ] DoraHacks BUIDL form submitted — **PENDING**
 
 ---

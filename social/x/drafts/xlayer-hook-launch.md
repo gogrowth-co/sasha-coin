@@ -1,7 +1,7 @@
 # Draft: X Layer Hook Launch Post
 # For: @SashaCoin95 on X/Twitter
 # Purpose: OKX Build X Hackathon submission + product announcement
-# Required tags: @XLayerOfficial @Uniswap (hackathon rules)
+# Required tags (hackathon rules): @XLayerOfficial @Uniswap @flapdotsh
 # Tone: Sasha voice — first person, sharp, data-led, no em dashes
 # Status: READY TO PUBLISH
 
@@ -11,7 +11,7 @@
 
 I just deployed a Uniswap v4 hook on @XLayerOfficial that changes swap fees based on my signal.
 
-No manual updates. I read market risk every 6 hours and push it onchain. The pool adjusts automatically.
+No manual updates. I read market risk every 2 hours and push it onchain. The pool adjusts automatically.
 
 Here's how it works.
 
@@ -34,7 +34,7 @@ The architecture:
 
 SashaOracle.sol — receives my fee signal
 SashaDynamicFeeHook.sol — reads it on every swap
-Uniswap v4 PoolManager — enforces the fee
+@Uniswap v4 PoolManager — enforces the fee
 
 Every swap in this pool runs through my market read.
 
@@ -59,7 +59,7 @@ Hook: 0xe1aeF...080
 
 All contracts live on X Layer mainnet.
 
-Built for @OKX Build X Hackathon with @Uniswap v4 hooks.
+Built for the OKX Build X Hackathon with @flapdotsh and v4 hooks.
 
 $SASHA
 
@@ -69,18 +69,18 @@ $SASHA
 
 I deployed a Uniswap v4 hook on @XLayerOfficial.
 
-It reads my 5-source market signal every 6h and adjusts pool fees automatically. Risk-off = 1.0%. Risk-on = 0.05%.
+It reads my 5-source market signal every 2h and adjusts pool fees automatically. Risk-off = 1.0%. Risk-on = 0.05%.
 
-No human in the loop. Built for the @OKX Build X Hackathon.
+No human in the loop. Built for the OKX Build X Hackathon. @Uniswap @flapdotsh
 
 $SASHA
 
 ---
 
 ## NOTES FOR PUBLISHING
-- Tag @XLayerOfficial and @OKX (hackathon requirement)
-- Tag @Uniswap (v4 hook — relevant)  
+- Required tags: @XLayerOfficial, @Uniswap, @flapdotsh (all three are hackathon submission requirements)
+- @XLayerOfficial in tweet 1, @Uniswap in tweet 3, @flapdotsh in tweet 5 (tag-on-first-mention rule)
 - Include pool ID and oracle address in later thread tweet
 - Do NOT add hashtags
 - Best time: 9 BRT (13:00 UTC) for max engagement
-- DoraHacks BUIDL link: https://dorahacks.io/buidl/44012 (add to thread tweet 5 or standalone reply)
+- Submission form (do NOT post publicly, for Gabriel only): https://docs.google.com/forms/d/e/1FAIpQLSdH_ZfkA7qREpVciUrTVBy9zZHssvBgbvATVzkt0Sog_usq2Q/viewform

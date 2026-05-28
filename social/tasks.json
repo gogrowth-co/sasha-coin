@@ -1,6 +1,6 @@
 {
   "version": "2.1",
-  "lastUpdated": "2026-05-19T09:54:26.000Z",
+  "lastUpdated": "2026-05-27T14:45:00.000Z",
   "tasks": [
     {
       "id": "onb-01",
@@ -212,16 +212,17 @@
       "id": "onb-15",
       "title": "Write docs/sasha-ops-runbook.md",
       "category": "docs",
-      "status": "todo",
+      "status": "done",
       "priority": "medium",
-      "notes": "Document the full operating procedure: daily startup check, how to queue posts, how to run dry-run tests, how to deploy, how to read the dashboard, how to SSH-tail logs, how to restart the container, what to do when a post fails. Single source of truth for ops.",
+      "notes": "Completed 2026-05-27 as part of pre-mortem Phase 3. Covers 6 failure modes (duplicate reply, silent failure, ADB offline, Gemini deprecated, state deleted, X UI drift), config reference table, quick health check, pause/resume, manual trigger, backup verification, and clean deployment procedure.",
       "files": [
         "docs/sasha-ops-runbook.md"
       ],
       "created": "2026-05-02",
       "dueDate": "2026-05-12",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-05-27",
+      "completed": "2026-05-27"
     },
     {
       "id": "onb-16",

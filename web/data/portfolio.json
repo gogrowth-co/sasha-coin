@@ -1,22 +1,22 @@
 {
-  "asOf": "2026-05-27T02:46:04.414Z",
+  "asOf": "2026-05-27T20:04:45.763Z",
   "agent": {
     "name": "Sasha",
     "xHandle": "SashaCoin95",
     "xUrl": "https://x.com/SashaCoin95"
   },
-  "totalUsd": 75.05,
-  "pointCount": 1,
+  "totalUsd": 74.22,
+  "pointCount": 3,
   "experiments": [
     {
       "key": "lp",
       "name": "LP Miner",
       "thesis": "Multi-chain liquidity book with on-chain kill-switches",
       "kind": "money",
-      "valueUsd": 48.08,
+      "valueUsd": 48.07,
       "deployedUsd": 45,
-      "idleUsd": 3.08,
-      "feesUsd": 0.04,
+      "idleUsd": 3.07,
+      "feesUsd": 0.23,
       "positions": 1,
       "unfunded": 0,
       "status": "live",
@@ -25,6 +25,14 @@
         {
           "at": "2026-05-27T02:43:45.290Z",
           "v": 48.08
+        },
+        {
+          "at": "2026-05-27T19:07:27.873Z",
+          "v": 48.07
+        },
+        {
+          "at": "2026-05-27T20:04:45.763Z",
+          "v": 48.07
         }
       ],
       "audience": "You are the judge here",
@@ -35,17 +43,25 @@
       "name": "Mantle Trader",
       "thesis": "Autonomous signal trader, every decision attested on-chain",
       "kind": "money",
-      "valueUsd": 21.1,
+      "valueUsd": 20.28,
       "yieldEth": 0.000027,
       "lastAction": "CLOSE_LP_POSITION",
-      "heartbeat": "live",
-      "identity": 100,
-      "status": "live",
+      "heartbeat": "down",
+      "identity": null,
+      "status": "down",
       "deepLink": "./mantle/",
       "history": [
         {
           "at": "2026-05-27T02:43:45.290Z",
           "v": 21.1
+        },
+        {
+          "at": "2026-05-27T19:07:27.873Z",
+          "v": 20.28
+        },
+        {
+          "at": "2026-05-27T20:04:45.763Z",
+          "v": 20.28
         }
       ],
       "audience": "Judges: is this a real autonomous on-chain agent?",
@@ -54,18 +70,29 @@
     {
       "key": "okx",
       "name": "Dynamic Fee Hook",
-      "thesis": "AI agent pricing a Uniswap v4 pool’s risk on-chain",
-      "kind": "infra",
+      "thesis": "AI agent pricing its own Uniswap v4 pool’s risk on-chain",
+      "kind": "money",
       "valueUsd": 5.87,
+      "poolUsd": 0,
+      "walletUsd": 5.87,
       "feePct": 0.3,
       "riskLevel": "neutral",
       "pushes": 2,
       "oracleStale": true,
       "status": "live",
       "deepLink": "./okx/",
-      "history": [],
+      "history": [
+        {
+          "at": "2026-05-27T19:07:27.873Z",
+          "v": 5.87
+        },
+        {
+          "at": "2026-05-27T20:04:45.763Z",
+          "v": 5.87
+        }
+      ],
       "audience": "Judges: first AI agent setting dynamic v4 fees",
-      "earns": "capability demo (not a P&L)"
+      "earns": "dynamic LP fees on its own pool"
     }
   ]
 }
