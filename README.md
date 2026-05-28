@@ -1,203 +1,136 @@
-# Sasha — Autonomous Economic Actor on Mantle
+# Sasha — an autonomous AI agent running real DeFi infrastructure
 
-Sasha is an AI agent that runs on OpenClaw, posts to X autonomously, and executes DeFi trades on Byreal/Solana. She has a productive treasury (mETH staked on Mantle), an ERC-8004 identity NFT, and a public reputation feed that any protocol can consume. Her social token ($SASHA) lives on Base.
+Sasha is an AI agent with wallets, opinions, and on-chain footprint. She prices a Uniswap v4 pool's risk on **X Layer**, attests her trades on **Mantle**, executes on **Byreal (Solana)**, runs an LP book on **Base** with a delta-neutral hedge on **Hyperliquid**, and publishes on X as **[@SashaCoin95](https://x.com/SashaCoin95)**. A 2-hour keeper cron on a VPS keeps her live — no human in the loop.
 
-She is not a trading bot. She is the reference implementation of an autonomous economic actor with five layers that no other agent has assembled together.
-
----
-
-## The mechanic: tweet-before-trade (the accountability primitive)
-
-Sasha posts her trading thesis to X before any transaction is signed. That post is timestamped on a public, immutable feed. Sixty seconds later, she executes the trade on Byreal. The trade is then attested on Mantle via `SashaAgentLog.logTrade()`.
-
-Any agent can execute a trade and claim it was predicted. Sasha's thesis is on-chain before her wallet moves. The trade is the consequence, not the claim.
+This repo is open source. Below is what's where, what's live, and how to verify everything on-chain.
 
 ---
 
-## Five-layer architecture
+## Active hackathon submissions
 
-| Layer | What | Where |
+| Hackathon | Status | Highlight | Submission doc |
+|---|---|---|---|
+| **OKX Build X** — Uniswap v4 Hook on X Layer | **🟢 LIVE (May 28 deadline)** | First autonomous AI agent setting v4 swap fees from off-chain signals. **Real swap charged the agent-set fee on-chain** (0.05%). Both contracts source-verified on OKLink. | [`docs/okx-buildx-hackathon-submission.md`](docs/okx-buildx-hackathon-submission.md) |
+| Mantle Turing Test | submitted 2026-05-26 | Tweet-before-trade accountability primitive: thesis posted to X, attested on Mantle via `SashaAgentLog.logTrade()` 60s before the wallet moves | [`docs/dorahacks-submission.md`](docs/dorahacks-submission.md) |
+
+---
+
+## Live demo (anyone can verify in 90 seconds)
+
+- 🎬 **YouTube demo (46s):** https://youtu.be/MiDu7zSgQYI
+- 📊 **Live dashboard** (auto-refreshes every 5 min): https://sasha-dashboards.pages.dev/okx/
+- 🐦 **Sasha on X:** [@SashaCoin95](https://x.com/SashaCoin95)
+- 📡 **OKX launch thread:** https://x.com/SashaCoin95/status/2059997125514346550
+
+---
+
+## Verifiable contracts (X Layer mainnet, chainId 196)
+
+All source-verified on OKLink. Click to inspect:
+
+| Contract | Address | Role |
 |---|---|---|
-| **Identity** | ERC-8004 agent NFT | Mantle |
-| **Treasury** | mETH staking position | Mantle (mETH yield funds her gas) |
-| **Execution** | Byreal CLMM positions, swaps | Solana |
-| **Reasoning** | X posts, timestamped pre-trade | X + indexed on Mantle |
-| **Reputation** | `/api/sasha-reputation` portable feed | Any consumer |
+| SashaOracle | [`0xfE538FF6ec697B32ADBd215d690b1949d7Ed5c74`](https://www.oklink.com/x-layer/address/0xfE538FF6ec697B32ADBd215d690b1949d7Ed5c74) | Agent-set risk oracle. Only agent EOA can call `setFee(uint24, string)`. 6h staleness fallback to 0.30%. |
+| SashaDynamicFeeHook | [`0xe1aeF51eF6B801De34AA4a70FCf2027c0a6d9080`](https://www.oklink.com/x-layer/address/0xe1aeF51eF6B801De34AA4a70FCf2027c0a6d9080) | Uniswap v4 hook, permission bits `0x1080` (afterInitialize + beforeSwap). Reads oracle in `_getFee()`. |
+| LiquidityHelper | [`0xbd44673c97f11dd025dd82Ee29b98c0d779e6019`](https://www.oklink.com/x-layer/address/0xbd44673c97f11dd025dd82Ee29b98c0d779e6019) | Custom liquidity adder built when X Layer v4 periphery wasn't yet deployed (PositionManager is live now). |
+| Pool (USDC.e / WOKB, dynamic fee) | `0x4d3946dfb8ac9f3145e41b67e55eb2ffb02bf0c027c24ca8ffb3e55381f617cc` | Live pool, DYNAMIC_FEE_FLAG, tickSpacing 60 |
+| Agent EOA (the keeper) | [`0xe451278F3ce3f80d2F18ab292Ad2C3dAfE461d1f`](https://www.oklink.com/x-layer/address/0xe451278F3ce3f80d2F18ab292Ad2C3dAfE461d1f) | Signs every `setFee` push, ~0.000002 OKB per call |
+
+**Proof the hook fires on a real transaction:** [swap tx `0xe0250bcf…1e96b65a`](https://www.oklink.com/x-layer/tx/0xe0250bcf75003531401d263c61fb22dbe0a013e8eb6744555c2605dd92610602) — Swap event records `fee = 500` (0.05%), exactly the value Sasha had pushed seconds earlier.
 
 ---
 
-## Three-chain diagram
+## How the fee oracle works
 
 ```
-X post (timestamped thesis)
-        |
-        v
-   [60s accountability window]
-        |
-        v
-Byreal / Solana (CLMM execution)
-        |
-        +---> SashaAgentLog.logTrade() on Mantle (attestation)
-        |
-        +---> mantle-treasury.js autoCompound() on Mantle (yield loop)
-                ^
-                |
-        Base $SASHA (social token layer — community, creator economy)
+[Five off-chain signals: social sentiment · Polymarket odds · Elfa flow · Allora ML · pool APR]
+              ↓
+       scripts/mantle-signal.js   (LLM-based sentiment fuser)
+              ↓  ~every 13 min (agent heartbeat)
+       content/mantle-signal.json
+              ↓
+       scripts/push-signal-to-xlayer.js   (--force, every 2h via /etc/cron.d/sasha-oracle)
+              ↓
+       SashaOracle.setFee(uint24, string)   ← real on-chain tx, agent-signed
+              ↓  on every swap
+       SashaDynamicFeeHook._getFee()   (extends OZ BaseOverrideFee)
+              ↓
+       Uniswap v4 PoolManager.beforeSwap + OVERRIDE_FEE_FLAG
+              ↓
+       LP earns the fee matching Sasha's current market read
 ```
+
+**Signal → fee mapping:**
+
+| Reading | Fee (bps) | % | Why |
+|---|---:|---:|---|
+| `risk-off` | 10,000 | 1.00% | Protect LPs during uncertainty |
+| `neutral` | 3,000 | 0.30% | Standard conditions |
+| `risk-on` | 500 | 0.05% | Attract volume when confident |
+
+Most v4 dynamic-fee hooks react to *on-chain realized volatility* after the price moves. Sasha is **forward-looking** — she reads risk from off-chain intelligence and prices the pool *before* the danger shows up in price. That's the novelty.
 
 ---
 
-## Five-source signal pipeline
+## Broader architecture (the full agent, across chains)
 
-Every 6 hours, `mantle-signal.js` runs a deterministic, auditable fusion:
+Sasha is more than one hook. She runs across:
 
-| Source | Weight | Data |
-|---|---|---|
-| Sasha's X posts | **25%** | LLM extracts DeFi sentiment + risk appetite from recent tweets |
-| Byreal pool data | **20%** | Live APR, TVL, volume from Byreal CLMM via `byreal-cli` |
-| Allora inference | **25%** | Reputation-weighted ensemble SOL/USD predictions (5m + 8h) |
-| Elfa AI smart mentions | **15%** | Smart-account social activity leading price moves |
-| Polymarket implied odds | **15%** | Real-money crowd intelligence — uncorrelated, unfakeable |
+- **X Layer** — dynamic fee oracle + v4 hook *(this submission)*
+- **Mantle** — ERC-8004 identity NFT + tweet-before-trade attestation (`Clawlett/clawlett/contracts/SashaAgentLog.sol`)
+- **Solana / Byreal** — trade execution 60s after the thesis tweet (CLMM positions)
+- **Base** — Gnosis Safe + LP book on Aerodrome v3 with delta-neutral hedge on Hyperliquid
+- **Off-chain** — VPS cron scheduler, ElevenLabs voice (Token Trends podcast), Buffer + Typefully publishing pipeline
 
-Hard risk-off override: if Elfa or Polymarket detects a risk event, Sasha moves 50% to USDC immediately regardless of other signals. Allora disagreement with social bias reduces position size 40%.
+Every layer is real and on-chain. Repository structure below tells you where each lives.
 
 ---
 
-## How to run locally
+## For OKX / Uniswap / Flap reviewers — what to focus on
 
-### Prerequisites
+If you're scoring this submission, [`AGENTS.md`](AGENTS.md) gives you a code-reviewer-targeted reading order. Short version:
 
-```bash
-node >= 20
-npm install
-npm install -g byreal-cli
-```
+- Hook source: [`contracts/SashaDynamicFeeHook.sol`](contracts/SashaDynamicFeeHook.sol)
+- Oracle source: [`contracts/SashaOracle.sol`](contracts/SashaOracle.sol)
+- Deploy + CREATE2 hook-bit mining: [`scripts/deploy-xlayer-hook.js`](scripts/deploy-xlayer-hook.js)
+- Autonomous keeper: [`scripts/push-signal-to-xlayer.js`](scripts/push-signal-to-xlayer.js)
+- Signal pipeline: [`scripts/mantle-signal.js`](scripts/mantle-signal.js)
+- Full submission writeup: [`docs/okx-buildx-hackathon-submission.md`](docs/okx-buildx-hackathon-submission.md)
+- Demo video assets: [`videos/okx-demo/`](videos/okx-demo/)
 
-### Environment variables
-
-Copy `.env.example` to `.env`:
-
-```bash
-# Required for Mantle execution (VPS only)
-MANTLE_AGENT_PK=0x<private-key>
-MANTLE_RPC_URL=https://rpc.mantle.xyz
-
-# Signal sources
-OPENROUTER_API_KEY=<openrouter.ai>   # social bias LLM
-ALLORA_API_KEY=<app.allora.network or developer.upshot.xyz>  # free
-ELFA_API_KEY=<elfa.ai>               # free tier
-
-# Notifications
-TELEGRAM_BOT_TOKEN=<BotFather>
-TELEGRAM_CHAT_ID=<chat-id>
-
-# Polymarket: no key needed
-```
-
-### Commands
-
-```bash
-npm run signal:dry       # Five-source signal dry-run
-npm run signal:allora    # Test Allora signal alone
-npm run signal:elfa      # Test Elfa signal alone
-npm run signal:polymarket # Test Polymarket signal alone
-npm run trade:dry        # Full tweet-before-trade pipeline dry-run
-npm run treasury         # mETH treasury status
-npm run erc8004:status   # Check ERC-8004 registration
-npm run deploy:testnet   # Deploy SashaAgentLog to Mantle Sepolia
-npm run deploy:mainnet   # Deploy to Mantle mainnet
-```
+Every claim is verifiable on OKLink — addresses, deployments, every `setFee` tx, the real swap, source code.
 
 ---
 
-## Signal pipeline verification (dry-run output)
+## Repository structure (top level)
 
-```bash
-npm run signal:dry
-# → Five-source fusion runs in parallel
-# → Logs: social bias, Allora direction, Elfa smart mentions, Polymarket odds
-# → Final weighted score and recommendation
+```
+contracts/                Solidity sources (Hook, Oracle, LiquidityHelper) — source-verified on OKLink
+scripts/                  Deploy + autonomous keeper + signal pipeline + LP/treasury automation
+docs/                     Submission writeups (OKX Build X, Mantle Turing Test)
+videos/okx-demo/          Demo video + production assets (audio, screenshots, thumbnail)
+web/                      Live public dashboards (Cloudflare Pages auto-deploy)
+Clawlett/                 Separate on-chain Safe + ERC-8004 attestation contracts (Mantle / Base)
+state/                    Runtime state (gitignored)
+
+# Internal / operational — open-sourced for transparency, NOT submission-relevant:
+social/                   Daily X cadence + reply targets + drafts
+campaigns/                Marketing campaign briefs
+research/, reports/, seo/ Internal analysis and weekly reports
+_sop/, _context/          SOPs and brand context for the agent
+_ops/, _templates/        Operational scripts and project templates
+SOUL.md, BOOT.md,         OpenCLAW runtime files — context for the autonomous execution layer.
+HEARTBEAT.md, etc.        Sasha being a real ongoing agent (not a hackathon side-project) is part of
+                          the credibility story; these aren't part of the hook submission code.
 ```
 
 ---
 
-## Deployed contract
+## License
 
-```
-Address:  0x71e27D792ADF726eD5C55f74052E8A8f063B9EF8
-Network:  Mantle Mainnet
-TX:       0xe3ff3c40ba6370a307ee7cbecbb0f9008844c1e9251000a3cd69ab7b31d0e623
-Explorer: https://explorer.mantle.xyz/address/0x71e27D792ADF726eD5C55f74052E8A8f063B9EF8
-```
+MIT. See [LICENSE](LICENSE) when added; default MIT for hackathon submission code.
 
----
+## Contact
 
-## ERC-8004 agent identity
-
-```
-Agent ID: 100
-Registry: 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432
-Explorer: https://explorer.mantle.xyz/token/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432/instance/100
-```
-
----
-
-## Reputation feed
-
-```
-Endpoint: /api/sasha-reputation
-Schema:   docs/erc8004-reputation-schema.md
-Auth:     none (public, CORS open)
-```
-
-Returns: `tradeCount`, `winRate`, `signalAccuracy`, recent trades with Solana TXs + Mantle attestations + pre-tweet IDs. Any DeFi protocol can query this and verify the entire track record independently.
-
----
-
-## mETH yield loop
-
-`mantle-treasury.js` monitors Sasha's MNT balance on Mantle and auto-compounds yield into mETH when balance exceeds the threshold. Post-trade, `byreal-trade.js` triggers `--action compound` non-blocking. This makes Mantle economically load-bearing — not a receipt chain, her balance sheet.
-
----
-
-## Hackathon
-
-- **DoraHacks:** https://dorahacks.io/hackathon/mantleturingtesthackathon2026
-- **Track:** Agentic Wallets & Economy (Byreal), Path B — RealClaw Real-Life Expansion
-- **Deadline:** June 15, 2026
-
----
-
-## Live dashboard
-
-```
-URL: [placeholder — update after Cloudflare Pages deploy]
-```
-
-Shows: signal state (all 5 sources), last trade, ERC-8004 + SashaAgentLog status, mETH treasury balance.
-
----
-
-## Project structure
-
-```
-scripts/
-  mantle-signal.js         Five-source signal fusion
-  byreal-trade.js          Tweet-before-trade orchestration
-  mantle-treasury.js       mETH yield loop on Mantle
-  deploy-contract.js       Deploy SashaAgentLog.sol
-  erc8004-register.js      One-time ERC-8004 registration
-  erc8004-write.js         Per-trade attestation
-  signals/
-    allora.js              Allora inference signal (25% weight)
-    elfa.js                Elfa smart mentions (15% weight)
-    polymarket.js          Polymarket implied odds (15% weight)
-contracts/
-  SashaAgentLog.sol        On-chain attestation log (Mantle)
-docs/
-  erc8004-reputation-schema.md  Portable reputation schema spec
-  vps-setup.md             VPS deployment guide
-  strategy/winning-thesis.md    Strategic source of truth
-```
-
-Full VPS setup: [docs/vps-setup.md](docs/vps-setup.md)
+- **Sasha on X (the agent):** [@SashaCoin95](https://x.com/SashaCoin95)
+- **Gabriel (the builder):** [@gmangabeira](https://x.com/gmangabeira)
