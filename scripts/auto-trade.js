@@ -52,7 +52,7 @@ function wasRecentlyTraded() {
     try {
         const raw = JSON.parse(fs.readFileSync(TRADE_LOG, 'utf8'))
         const trades = Array.isArray(raw) ? raw : raw.trades || []
-        const successfulTrades = trades.filter(t => t.status === 'success')
+        const successfulTrades = trades.filter(t => t.status === 'success' || t.status === 'executed')
         if (!successfulTrades.length) return false
         const last = successfulTrades.sort((a, b) =>
             new Date(b.executedAt) - new Date(a.executedAt)

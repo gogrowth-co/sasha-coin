@@ -551,6 +551,30 @@ async function main() {
         console.log(`[trade] Wallet: ${JSON.stringify(balance).slice(0, 200)}`)
     }
 
+    // Step 2.5: Pre-flight funds check (avoid dangling pre-trade tweets)
+    // Trading requires SOL for both the LP deposit and rent/fees. If SOL is too
+    // low, abort BEFORE the tweet posts so no public promise outruns the wallet.
+    {
+        const baseInfoPre = getPoolBaseInfo(r.poolAddress)
+        const heldUsd = (baseInfoPre && baseInfoPre.usd) || 0
+        const sym = (baseInfoPre && baseInfoPre.symbol) || 'base'
+        const MIN_USD = 3.0
+        if (heldUsd < MIN_USD) {
+            const msg = `Insufficient ${sym} balance: ${heldUsd.toFixed(2)} (need >= ${MIN_USD}). Skipping trade so no pre-trade tweet outruns the wallet.`
+            console.error('[trade] PRE-FLIGHT ABORT: ' + msg)
+            sendTelegram(`⚠️ <b>[BYREAL_TRADE] PRE-FLIGHT skip</b>\n${msg}\nWallet: top-up USDC→SOL or wait for LP fees to accrue.`)
+            appendTradeLog({
+                id: 'mantle-trade-' + Date.now(),
+                executedAt: new Date().toISOString(),
+                action: r.action,
+                status: 'skipped',
+                error: msg,
+                rationale: r.rationale,
+            })
+            process.exit(0)
+        }
+    }
+
     // Step 3: Draft and post pre-trade tweet
     const preTweetText = draftPreTradeTweet(signal)
     console.log(`\n[trade] Pre-trade tweet:\n  "${preTweetText}"\n`)
