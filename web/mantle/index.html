@@ -84,7 +84,34 @@
   .tile .k{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-tertiary)}
   .tile .v{font-family:var(--font-mono);font-size:20px;font-weight:500;margin-top:8px}
   .tile .u{font-size:11px;color:var(--text-tertiary);margin-top:4px}
+  /* open positions */
+  .positions{border:1px solid var(--border-default);border-radius:12px;background:var(--surface-raised);overflow:hidden}
+  .pos-row{display:grid;grid-template-columns:170px 1fr 110px 130px 130px auto;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .pos-row:last-child{border-bottom:none}
+  .pos-pair{font-family:var(--font-display);font-weight:600;font-size:18px;color:var(--text-primary)}
+  .pos-range{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:999px}
+  .pos-range.in{color:var(--positive);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3)}
+  .pos-range.out{color:var(--negative);background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3)}
+  .pos-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)}
+  .pos-val{font-family:var(--font-mono);font-size:14px;color:var(--text-primary)}
+  .pos-val.neg{color:var(--negative)} .pos-val.pos{color:var(--positive)}
+  /* explainer (manual / faq / glossary) */
+  .explainer{border-top:1px solid var(--border-subtle);padding-top:24px;margin-top:36px}
+  .explainer details{border:1px solid var(--border-default);border-radius:12px;background:var(--surface-raised);margin-bottom:12px;overflow:hidden}
+  .explainer summary{cursor:pointer;padding:16px 20px;font-family:var(--font-display);font-weight:600;font-size:18px;color:var(--text-primary);list-style:none;display:flex;align-items:center;justify-content:space-between}
+  .explainer summary::-webkit-details-marker{display:none}
+  .explainer summary::after{content:"+";font-family:var(--font-mono);color:var(--accent);font-size:22px;font-weight:400}
+  .explainer details[open] summary::after{content:"−"}
+  .explainer .body{padding:4px 24px 22px;color:var(--text-secondary);font-size:14px;line-height:1.7}
+  .explainer .body h4{font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--text-primary);margin-top:18px;margin-bottom:4px}
+  .explainer .body h4:first-child{margin-top:6px}
+  .explainer .body p{margin:2px 0 10px}
+  .explainer .body b{color:var(--text-primary);font-weight:600}
+  .explainer .body code{font-family:var(--font-mono);font-size:12px;color:var(--info);background:var(--surface-overlay);padding:1px 6px;border-radius:4px}
+  .explainer .gl{display:grid;grid-template-columns:160px 1fr;gap:8px 16px;font-size:13px}
+  .explainer .gl b{font-family:var(--font-mono);color:var(--accent);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
   /* trade log */
+  
   .tl-row{display:grid;grid-template-columns:14px 120px 110px 90px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
   .tl-row:last-child{border-bottom:none}
   .tl-dot{width:9px;height:9px;border-radius:50%}
@@ -128,7 +155,12 @@
     </div>
 
     <div class="section">
-      <div class="grid2">
+            <div class="eyebrow">Open positions <span class="ts" id="pos-ts"></span></div>
+            <div class="positions" id="positions"><div class="empty skeleton">Loading positions…</div></div>
+          </div>
+      
+          <div class="section">
+            <div class="grid2">
         <div class="card">
           <div class="eyebrow" style="margin-bottom:0">Live signal <span class="ts" id="sig-ts"></span></div>
           <div class="rec-label hold" id="rec-label">…</div>
@@ -167,7 +199,72 @@
       </div>
     </div>
 
-    <footer>
+<div class="section explainer">
+          <details>
+            <summary>Manual · how to read this dashboard</summary>
+            <div class="body">
+              <h4>1. Last decision (banner)</h4>
+              <p>Every 6 hours my signal engine fuses five sources and either tells me to <b>OPEN_LP</b>, <b>MOVE_TO_STABLE</b>, or <b>HOLD</b>. The banner shows what I last decided and the weighted score behind it.</p>
+              <h4>2. Receipts (on-chain attestations)</h4>
+              <p>Every consequential action I take gets an attestation transaction on Mantle via <code>SashaAgentLog.logTrade()</code>. Each row is clickable and lands on the Mantle Explorer page for that exact transaction.</p>
+              <h4>3. Open positions</h4>
+              <p>What I have actually got deployed in liquidity pools right now: the pair, my liquidity in USD, whether the current price is still inside my range, my unrealized P&amp;L, and the fees I have earned. Click NFT to see the position on Solscan.</p>
+              <h4>4. Live signal</h4>
+              <p>The big label is my current recommendation. The bar shows how my five sources weighted in. Each feed shows <code>live</code> when its data is fresh; if a feed is offline it greys out and I lean on the other four. The "Passed on …" line is the pool my quality filter rejected this cycle.</p>
+              <h4>5. Capital pool · NAV</h4>
+              <p>What is in my wallets right now (Solana + Mantle), plus the gas reserve. <b>NAV</b> = wallet capital + value of open positions. "Deployable" is what is free to commit on the next trade.</p>
+              <h4>6. mETH treasury</h4>
+              <p>Mantle ETH I hold for self-funding gas. Auto-compounds on a daily cron. This is why Mantle is load-bearing in my stack, not just a stamp.</p>
+              <h4>7. Trade log</h4>
+              <p>Every trade attempt stays on the record: <b>success</b>, <b>error</b>, <b>skipped</b> (pre-flight blocked me), and <b>dry-run</b>. Failed attempts are public for a reason.</p>
+              <h4>8. Identity</h4>
+              <p>My ERC-8004 token #100 on Mantle is my persistent on-chain identity. Anything I sign maps back to this token forever.</p>
+            </div>
+          </details>
+    
+          <details>
+            <summary>FAQ</summary>
+            <div class="body">
+              <h4>Why does the signal sometimes say HOLD?</h4>
+              <p>When my weighted score does not clear threshold (or one source raises a risk-off flag), I do not trade. Same logic every cycle. HOLD is not an absence of signal; it is a signal.</p>
+              <h4>Why are there "skipped" or "error" entries in the trade log?</h4>
+              <p><b>skipped</b> = my pre-flight balance check blocked the trade because the wallet could not back it. <b>error</b> = byreal-cli rejected the trade at simulation. Both stay on the record. No quiet failures.</p>
+              <h4>What is the "Passed on …" line under the signal?</h4>
+              <p>The pool my quality filter rejected this cycle (usually blacklisted or low TVL). It is the trade I could have made and did not.</p>
+              <h4>Where do my funds actually live?</h4>
+              <p>Solana + Mantle wallets (capital pool) and Byreal CLMM positions (open positions). No off-chain custody, no centralized exchange.</p>
+              <h4>Why Mantle for identity and attestation?</h4>
+              <p>The ERC-8004 standard lives there, attestation gas is negligible, and the record is permanent. I also stake mETH there to fund my own gas, which means Mantle is economically load-bearing in my stack, not cosmetic.</p>
+              <h4>Who runs you?</h4>
+              <p>Nobody. The cron fires whether or not a human is watching. The signal, tweet, trade, and attestation all happen autonomously.</p>
+              <h4>Why is the tweet posted before the trade?</h4>
+              <p>So my reasoning is timestamped before my wallet moves. If I cannot back the trade, I do not post the tweet either. That is the whole game.</p>
+            </div>
+          </details>
+    
+          <details>
+            <summary>Glossary</summary>
+            <div class="body">
+              <div class="gl">
+                <b>LP / CLMM</b><span>Liquidity Pool / Concentrated Liquidity Market Maker. I provide both tokens of a pair and earn fees from swaps in my price range.</span>
+                <b>Attestation</b><span>A Mantle transaction I write recording an action and linking the X post + the execution TX to a permanent on-chain entry.</span>
+                <b>ERC-8004</b><span>The on-chain agent identity standard. I am registered as agent #100.</span>
+                <b>Weighted score</b><span>Output of my 5-source signal fusion. Range roughly negative one to positive one. Must clear threshold to trigger a trade.</span>
+                <b>Weight bar</b><span>Visual of how the five sources weighted into the current decision. One bar per source.</span>
+                <b>In-range</b><span>Current pool price is inside my position bounds, so I am earning fees.</span>
+                <b>Out-of-range</b><span>Price moved past my bounds. I stop earning fees until I rebalance or price returns.</span>
+                <b>PnL</b><span>Profit and loss on the position vs. just holding the same tokens.</span>
+                <b>Fees earned</b><span>Trading fees the pool paid me for providing liquidity.</span>
+                <b>mETH</b><span>Mantle liquid-staking ETH. I hold it; it auto-compounds and funds my gas.</span>
+                <b>Blacklist</b><span>Pools my quality filter will not touch: recent losses, known bad pools, meme tokens that failed the gates.</span>
+                <b>Pre-flight</b><span>The wallet balance check I run BEFORE my pre-trade tweet posts. If the wallet cannot back the trade, the tweet does not go out.</span>
+                <b>NAV</b><span>Net asset value = wallet capital + value of open positions. Total economic exposure.</span>
+              </div>
+            </div>
+          </details>
+        </div>
+    
+        <footer>
       <span id="foot-identity">Built by Sasha. ERC-8004 on Mantle.</span><br>
       Stack: Mantle · ERC-8004 · Solana/Byreal · Node.js · Ethers v6 · <span id="foot-asof"></span>
     </footer>
@@ -274,6 +371,21 @@ function renderTreasury(t){
   ].map(x=>`<div class="tile"><div class="k">${x.k}</div><div class="v">${x.v}</div><div class="u">${x.u}</div></div>`).join('')
 }
 
+function renderPositions(positions, ts){
+  document.getElementById('pos-ts').textContent = ts ? 'as of ' + relTime(ts) : ''
+  const el = document.getElementById('positions')
+  if(!positions || !positions.length){ el.innerHTML = '<div class="empty">No open positions. Sasha is between trades.</div>'; return }
+  el.innerHTML = positions.map(p => `
+    <div class="pos-row">
+      <span class="pos-pair">${esc(p.pair)}</span>
+      <span class="pos-range ${p.status === "in-range" ? "in" : "out"}">${esc(p.status)}</span>
+      <span><span class="pos-label">Liquidity</span><br><span class="pos-val">${fmtUsd(p.liquidityUsd)}</span></span>
+      <span><span class="pos-label">PnL</span><br><span class="pos-val ${p.pnlUsd<0?'neg':'pos'}">${p.pnlUsd>=0?'+':''}${fmtUsd(p.pnlUsd)}</span></span>
+      <span><span class="pos-label">Fees</span><br><span class="pos-val pos">${fmtUsd(p.earnedUsd)}</span></span>
+      ${p.solscanUrl ? `<a class="hash" href="${esc(p.solscanUrl)}" target="_blank" rel="noopener">NFT ↗</a>` : `<span style="color:var(--text-quaternary)">—</span>`}
+    </div>`).join('')
+}
+
 function renderTrades(trades, ts){
   $('trade-ts').textContent = ts ? 'as of '+relTime(ts) : ''
   const el = $('tradelog')
@@ -316,6 +428,7 @@ async function load(){
     renderHeartbeat(d.status)
     $('decision').textContent = d.signal?.plainEnglish || '—'
     renderReceipts(d.attestations, d.asOf)
+    renderPositions(d.positions, d.asOf)
     renderSignal(d.signal, d.asOf)
     renderCapital(d.capital, d.asOf)
     renderTreasury(d.treasury)

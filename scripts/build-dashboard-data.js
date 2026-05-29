@@ -30,6 +30,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { spawnSync } from 'child_process'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..')
@@ -215,6 +216,11 @@ function buildMantle() {
 
     const lastAction = trades.find(t => t.status === 'success') || trades[0] || null
 
+    const positions = getOpenPositions()
+    const deployedUsd = positions.reduce((sum, x) => sum + (Number(x.liquidityUsd) || 0), 0)
+    const wallet = (capitalOut && capitalOut.totalUsd) || 0
+    const nav = round(wallet + deployedUsd, 2)
+
     return {
         asOf: new Date().toISOString(),
         generatedBy: 'build-dashboard-data.js',
@@ -229,7 +235,40 @@ function buildMantle() {
         capital: capitalOut,
         treasury: treasuryOut,
         attestations,
+        positions,
+        nav,
+        deployedUsd: round(deployedUsd, 2),
         trades,
+    }
+}
+
+
+function getOpenPositions() {
+    // Public-safe sanitization of byreal-cli positions list. NFT mint + pool address
+    // + pair are all on-chain public; we expose only those plus health metrics.
+    const rnd = (x, d) => { const m = Math.pow(10, d); return Math.round((Number(x) || 0) * m) / m }
+    try {
+        const r = spawnSync('byreal-cli', ['positions', 'list', '-o', 'json'], { encoding: 'utf8', timeout: 15000 })
+        if (r.status !== 0 || !r.stdout) return []
+        const j = JSON.parse(r.stdout)
+        const arr = (j && j.data && j.data.positions) || []
+        return arr.map(p => ({
+            pair: p.pair,
+            poolAddress: p.poolAddress,
+            nftMint: p.nftMintAddress,
+            positionAddress: p.positionAddress,
+            status: p.status === 0 ? 'in-range' : 'out-of-range',
+            liquidityUsd: rnd(p.liquidityUsd, 2),
+            earnedUsd:    rnd(p.earnedUsd, 4),
+            pnlUsd:       rnd(p.pnlUsd, 4),
+            pnlPct:       rnd(Number(p.pnlUsdPercent) * 100, 2),
+            tokenA: p.tokenSymbolA,
+            tokenB: p.tokenSymbolB,
+            solscanUrl: p.nftMintAddress ? `https://solscan.io/token/${p.nftMintAddress}` : null,
+        }))
+    } catch (e) {
+        console.error('[build-data] getOpenPositions failed:', e.message)
+        return []
     }
 }
 
