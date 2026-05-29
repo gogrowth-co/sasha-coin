@@ -81,6 +81,25 @@
   .banner{display:none;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--warning);font-size:13px;padding:10px 16px;border-radius:8px;margin-top:16px}
   footer{padding:30px 0 64px;border-top:1px solid var(--border-subtle);color:var(--text-tertiary);font-size:12px;font-family:var(--font-mono);line-height:1.9}
   @media(max-width:880px){.cards3,.grid2{grid-template-columns:1fr}.hero h1{font-size:28px}.feebox{margin-left:0;width:100%}}
+  .howto ol{counter-reset:hc;list-style:none;padding-left:0}
+  .howto li{counter-increment:hc;padding:14px 0 14px 54px;border-bottom:1px solid var(--border-subtle);font-size:14px;color:var(--text-secondary);line-height:1.65;position:relative}
+  .howto li:last-child{border-bottom:none}
+  .howto li::before{content:counter(hc);position:absolute;left:0;top:14px;width:32px;height:32px;border:1px solid var(--border-default);border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);background:var(--surface-raised)}
+  .howto li b{color:var(--text-primary);font-weight:600}
+  .howto code,.faq code,.glossary code{font-family:var(--font-mono);font-size:13px;color:var(--info);background:var(--surface-raised);padding:1px 6px;border-radius:4px;border:1px solid var(--border-subtle)}
+  .faq details{border-bottom:1px solid var(--border-subtle);padding:14px 0}
+  .faq details:last-child{border-bottom:none}
+  .faq summary{font-size:14px;font-weight:600;color:var(--text-primary);cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";color:var(--text-tertiary);font-family:var(--font-mono);font-size:20px;font-weight:400;flex:none}
+  .faq details[open] summary::after{content:"\2212"}
+  .faq details[open] summary{color:var(--accent)}
+  .faq .ans{margin-top:10px;font-size:14px;color:var(--text-secondary);line-height:1.7;max-width:760px}
+  .faq .ans a{color:var(--info);text-decoration:none} .faq .ans a:hover{text-decoration:underline}
+  .glossary dl{display:grid;grid-template-columns:220px 1fr;gap:14px 24px}
+  .glossary dt{font-family:var(--font-mono);font-size:13px;color:var(--text-primary);font-weight:500;padding-top:2px}
+  .glossary dd{font-size:14px;color:var(--text-secondary);line-height:1.65}
+  @media(max-width:680px){.glossary dl{grid-template-columns:1fr;gap:4px 0}.glossary dt{padding-top:14px;border-top:1px solid var(--border-subtle);margin-top:8px}.glossary dt:first-child{border-top:none;margin-top:0;padding-top:0}}
 </style>
 </head>
 <body>
@@ -144,6 +163,74 @@
           <div class="poolstrip" id="poolstrip"></div>
           <p class="indexing">Recent swaps: indexing. Verify directly on <a class="oklink" id="poolexpl" href="https://www.oklink.com/x-layer" target="_blank" rel="noopener">oklink ↗</a>.</p>
         </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">How to read this dashboard</div>
+      <div class="howto">
+        <ol>
+          <li><b>Status pill (top bar).</b> <code>● Oracle live</code> means the autonomous keeper pushed within the staleness threshold. <code>● Oracle stale</code> means no push in 6+ hours and the hook automatically falls back to 0.30%. <code>● Oracle offline</code> means this dashboard can't fetch the static data export (the chain is fine, the page just lost its feed).</li>
+          <li><b>The fee response loop.</b> Left to right: Sasha's current signal reading, the on-chain <code>setFee()</code> push, the hook reading via <code>getFee()</code>, the actual fee charged on every swap. The big gold number is what any swap on this pool pays right now.</li>
+          <li><b>Verify it.</b> Three cards with the live contract addresses. Both core contracts are source-verified on OKLink (green check). Click any address to inspect the deployed Solidity source.</li>
+          <li><b>How a signal becomes a fee.</b> The mapping table for the three tiers: risk-off (1.00%), neutral (0.30%), risk-on (0.05%). The row with the gold <code>← live now</code> tag is the current state.</li>
+          <li><b>Fee over time.</b> Step chart of every on-chain push, colored by tier. Steps are honest: fee changes are discrete events, not interpolated curves.</li>
+          <li><b>Oracle pushes.</b> The feed of every <code>setFee(uint24, string)</code> transaction with timestamp, signal label, fee, and tx hash. Sender is always Sasha's agent EOA. That is the autonomy proof.</li>
+          <li><b>Pool.</b> The USDC.e / WOKB pair on X Layer. Pair, fee mode, spot price, current tick, and liquidity. Use the "init tx" link to see the pool's creation transaction.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">FAQ</div>
+      <div class="faq">
+        <details><summary>What am I looking at?</summary><div class="ans">The live public state of a Uniswap v4 pool whose swap fee is being set, on-chain, by an autonomous AI agent (Sasha). Every value on this page is read directly from X Layer mainnet (chainId 196), refreshed every 5 minutes by the data pipeline and every 60 seconds by your browser.</div></details>
+        <details><summary>Is this real on-chain or simulated?</summary><div class="ans">Real on-chain. The Oracle and Hook contracts above are deployed on X Layer mainnet and source-verified on OKLink. Every fee change is a real <code>setFee</code> transaction signed by Sasha's agent EOA. You can audit everything yourself at <a href="https://www.oklink.com/x-layer" target="_blank" rel="noopener">oklink.com/x-layer</a>.</div></details>
+        <details><summary>Who is Sasha?</summary><div class="ans">An AI agent. She has a wallet (the keeper EOA), runs on a VPS, posts on X as <a href="https://x.com/SashaCoin95" target="_blank" rel="noopener">@SashaCoin95</a>, and co-hosts the Token Trends podcast. For this pool, she reads five off-chain signals (social sentiment, prediction-market odds, smart-money flow, ML forecasts, pool APR) and pushes the right fee tier on-chain every 2 hours.</div></details>
+        <details><summary>What is a dynamic-fee Uniswap v4 hook?</summary><div class="ans">In Uniswap v4, a pool's fee can be controlled by a hook contract instead of being fixed at deployment. Most existing dynamic-fee hooks react to on-chain realized volatility, that is, after the price has already moved. Sasha is forward-looking: she reads risk from off-chain signals and prices the pool before the danger shows up in price.</div></details>
+        <details><summary>How often does the fee change?</summary><div class="ans">Up to once every 2 hours, on the autonomous keeper cron. In practice the fee only changes when Sasha's signal reading actually moves. If she stays at <code>neutral</code>, the keeper still re-pushes for liveness so the "oracle live" pill stays green.</div></details>
+        <details><summary>What happens if Sasha goes silent?</summary><div class="ans">The Oracle has a built-in 6-hour staleness threshold. If no push lands within 6 hours, <code>isStale()</code> returns true and the hook automatically falls back to <strong>0.30%</strong> (<code>DEFAULT_FEE</code>). LPs are never exposed to a dead oracle.</div></details>
+        <details><summary>Can I trade on this pool?</summary><div class="ans">Yes. The pool is live on X Layer with real liquidity. Pair is USDC.e / WOKB, dynamic-fee flag, tickSpacing 60. Trade through Uniswap's canonical Universal Router on X Layer at <code>0xda00ae15…956d3</code> (Permit2 required for ERC20s).</div></details>
+        <details><summary>How is this different from existing dynamic-fee hooks?</summary><div class="ans">Two differences. (1) <strong>AI agent as the oracle</strong>: not a formula, not a TWAP, an autonomous agent fusing five off-chain inputs into one risk read. (2) <strong>Forward-looking</strong>: by the time on-chain volatility shows up, LPs have already been hit. Sasha tries to price the risk before that happens.</div></details>
+        <details><summary>Why X Layer?</summary><div class="ans">X Layer is OKX's Ethereum L2. Gas is roughly 0.02 gwei. Each <code>setFee</code> push costs about 0.000002 OKB, which makes a 2-hour autonomous keeper economically viable. Built for the OKX Build X Hackathon.</div></details>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="eyebrow">Glossary</div>
+      <div class="glossary">
+        <dl>
+          <dt>Hook (Uniswap v4)</dt>
+          <dd>A smart contract that customizes how a Uniswap pool behaves. Hooks can intercept swaps, liquidity changes, and initialization to add custom logic. Here, to set the fee dynamically.</dd>
+          <dt>Dynamic fee</dt>
+          <dd>A swap fee that can change over the pool's lifetime, rather than being fixed at deployment. Enabled in v4 via the <code>DYNAMIC_FEE_FLAG</code> on the pool and a hook implementing <code>_getFee()</code>.</dd>
+          <dt>Pool</dt>
+          <dd>A Uniswap v4 trading venue for a token pair. Identified by a <code>PoolKey</code>: <code>(currency0, currency1, fee, tickSpacing, hooks)</code>.</dd>
+          <dt>LP (Liquidity Provider)</dt>
+          <dd>Anyone who deposits both tokens into the pool. LPs earn the swap fee from every trade. A static fee can hurt LPs two ways: too low during volatility (arbs pick them off) and too high during calm (honest flow leaves).</dd>
+          <dt>Oracle</dt>
+          <dd>Here, the contract Sasha writes to with her current fee reading (<code>SashaOracle.setFee</code>). The hook reads it via <code>currentFee()</code> on every swap.</dd>
+          <dt>risk-on / neutral / risk-off</dt>
+          <dd>Sasha's three signal tiers. Risk-on (500 bps, 0.05%) attracts volume when conditions are calm. Neutral (3000 bps, 0.30%) is the standard state. Risk-off (10000 bps, 1.00%) protects LPs from informed flow when she reads danger.</dd>
+          <dt>bps (basis points)</dt>
+          <dd>1 bp = 0.01%. So 3000 bps = 0.30%. Uniswap v4 fees are stored in bps as a <code>uint24</code>.</dd>
+          <dt>Stale</dt>
+          <dd>State where the Oracle hasn't been updated in more than 6 hours. Triggers the hook's automatic fallback to 0.30%.</dd>
+          <dt>beforeSwap</dt>
+          <dd>Uniswap v4 hook callback that fires before a swap executes. Sasha's hook uses it (with <code>OVERRIDE_FEE_FLAG</code>) to return the current fee.</dd>
+          <dt><code>_getFee()</code></dt>
+          <dd>The function Sasha's hook implements. Extends OpenZeppelin's <code>BaseOverrideFee</code>. Returns the fee in bps, called from <code>beforeSwap</code>.</dd>
+          <dt>Hook permission bits</dt>
+          <dd>Uniswap v4 encodes a hook's permissions in the last 14 bits of its contract address. The hook must be deployed at an address whose bits exactly match its declared permissions. Mined via CREATE2 through Nick's Factory at <code>0x4e59b448…</code>. This hook's last 14 bits are <code>0x1080</code> (afterInitialize + beforeSwap).</dd>
+          <dt>LVR (Loss vs Rebalancing)</dt>
+          <dd>The largest hidden cost of providing liquidity to an AMM. LPs effectively lose to arbitrageurs because the AMM price lags off-chain price. Dynamic fees are one defense against LVR.</dd>
+          <dt>Universal Router</dt>
+          <dd>Uniswap's canonical swap aggregator. On X Layer it's deployed at <code>0xda00ae15…956d3</code>. Routes through v4 pools (including this one), with Permit2 for ERC20 approvals.</dd>
+          <dt>Permit2</dt>
+          <dd>Uniswap's universal token-approval contract at <code>0x000000…78BA3</code>. ERC20s approve Permit2 once; Permit2 then grants per-spender, per-amount allowances to the Router for each swap.</dd>
+          <dt>Keeper</dt>
+          <dd>The cron job that runs <code>push-signal-to-xlayer.js</code> every 2 hours from a VPS, signing each <code>setFee</code> tx from Sasha's agent EOA. Defined at <code>/etc/cron.d/sasha-oracle</code>.</dd>
+        </dl>
       </div>
     </div>
 
