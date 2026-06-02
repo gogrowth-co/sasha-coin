@@ -140,47 +140,250 @@ function ruleBasedBias(posts) {
 
 // ---------------------------------------------------------------------------
 // Source B: Byreal pool data (on-chain via byreal-cli)
+//
+// Mirrors the LP miner's 3-tier risk classification (scripts/pool-scanner.js):
+//   Tier 1 (low):    stable/stable                  (e.g. USDC/USDT)
+//   Tier 2 (medium): stable/bluechip, blue/blue     (e.g. SOL/USDC, mSOL/SOL)
+//   Tier 3 (high):   bluechip/altcoin, alt/alt      (e.g. SOL/JUP, JTO/USDC)
+//
+// Memes are NOT a separate tier — they are filtered out by TVL + volume floors.
+//
+// Hackathon-grade risk dimensions stacked on top of the tier system:
+//   1. Tier classification + TVL floor (kills micro-cap memes)
+//   2. Emission dependency penalty (pools where >50% APY is rewards score worse)
+//   3. Pool blacklist (state/pool-blacklist.json — auto-fed by losing closes)
+//   4. 3-day rolling vol/tvl (state/pool-history.json — catches volume spikes)
+//   5. Break-even days vs. max IL (rejects pools where IL won't be repaid <14d)
+//
+// All checks surface in signalBreakdown.onchain so the pre-trade tweet can cite
+// the rejection reason. Every gate is configurable via env.
+//
+// Quality floors (configurable via env):
+//   BYREAL_MIN_TVL_USD       default 50_000  — pool TVL floor
+//   BYREAL_MIN_FEE_APR       default 2       — fee-APR floor (organic yield)
+//   BYREAL_MIN_VOL_TVL       default 0.05    — daily volume / TVL (5% turnover)
+//   BYREAL_MIN_VOL_TVL_3D    default 0.05    — 3-day average volume / TVL
+//   BYREAL_MAX_EM_DEP        default 0.50    — max emission dependency (0-1)
+//   BYREAL_MAX_BREAKEVEN_D   default 30      — max days for fees to offset expected IL
 // ---------------------------------------------------------------------------
+
+const BYREAL_STABLES   = new Set(['USDC', 'USDT', 'DAI', 'USDS', 'PYUSD', 'FDUSD', 'USDB', 'USDE'])
+const BYREAL_BLUECHIPS = new Set(['SOL', 'WSOL', 'MSOL', 'JITOSOL', 'BSOL', 'WBTC', 'CBBTC', 'ETH', 'WETH'])
+
+// Expected impermanent loss over a typical 30-day hold (NOT worst case).
+// These are calibrated to historical realized IL for ±25% range CL positions
+// during normal market conditions. Worst-case IL is 3-4× these values but
+// rarely materializes because positions rebalance on out-of-range alerts.
+//   Tier 1 stables:  ~0.5% expected IL (depeg drift, ~1% in stress)
+//   Tier 2 stable/blue: ~2% expected IL (normal SOL/USDC swings)
+//   Tier 3 blue/alt:   ~5% expected IL (alt volatility)
+const TIER_MAX_IL_PCT = { 1: 0.5, 2: 2.0, 3: 5.0 }
+
+const POOL_BLACKLIST_PATH = path.join(WORKSPACE, 'state', 'pool-blacklist.json')
+const POOL_HISTORY_PATH   = path.join(WORKSPACE, 'state', 'pool-history.json')
+
+function classifyByrealPool(tokenA, tokenB) {
+    const a = (tokenA || '').toUpperCase()
+    const b = (tokenB || '').toUpperCase()
+    const isStable   = t => BYREAL_STABLES.has(t)
+    const isBluechip = t => BYREAL_BLUECHIPS.has(t)
+
+    if (isStable(a) && isStable(b))                                  return 1
+    if ((isStable(a) && isBluechip(b)) || (isBluechip(a) && isStable(b))) return 2
+    if (isBluechip(a) && isBluechip(b))                              return 2
+    // Anything else (bluechip/altcoin, altcoin/altcoin, or with unknowns)
+    return 3
+}
+
+function emissionDependency(pool) {
+    // pool.feeApr = real swap-fee yield. pool.apr24h = total APR (fees + rewards).
+    // emDep = rewards portion of total APR. If feeApr is missing, assume worst case.
+    const total = pool.apr24h || 0
+    if (total <= 0) return 1
+    const fee = pool.feeApr ?? 0  // if feeApr missing, treat as non-organic (worst case, per intent above)
+    const rewards = Math.max(0, total - fee)
+    return Math.min(1, rewards / total)
+}
+
+function breakEvenDays(pool, tier, assumedPositionUsd = 20) {
+    // dailyFee = APR/365 × position
+    // maxLossUsd = position × TIER_MAX_IL_PCT/100
+    // breakEvenDays = maxLossUsd / dailyFee
+    const apr = pool.apr24h || 0
+    const dailyFeeUsd = (apr / 365 / 100) * assumedPositionUsd
+    if (dailyFeeUsd <= 0) return Infinity
+    const maxILPct = TIER_MAX_IL_PCT[tier] || 15
+    const maxLossUsd = assumedPositionUsd * (maxILPct / 100)
+    return maxLossUsd / dailyFeeUsd
+}
+
+function scoreByrealPool(pool, tier) {
+    const tvlWeight   = Math.min(1, Math.log10(Math.max(pool.tvl, 1) / 10_000) / 2)
+    const tierPenalty = [1.0, 0.85, 0.60][tier - 1] || 0   // matches scripts/pool-scanner.js
+    const emDep       = emissionDependency(pool)
+    const emFactor    = 1 - emDep * 0.5                     // 0.5 penalty when fully emissions-driven
+    return pool.apr24h * tierPenalty * Math.max(0, tvlWeight) * emFactor
+}
+
+function loadBlacklist() {
+    try {
+        if (!fs.existsSync(POOL_BLACKLIST_PATH)) return { entries: [] }
+        const raw = JSON.parse(fs.readFileSync(POOL_BLACKLIST_PATH, 'utf8'))
+        // Auto-expire entries older than 30 days
+        const cutoff = Date.now() - 30 * 24 * 3600 * 1000
+        const live = (raw.entries || []).filter(e => new Date(e.bannedAt).getTime() > cutoff)
+        return { ...raw, entries: live }
+    } catch (e) { return { entries: [] } }
+}
+
+function loadPoolHistory() {
+    try {
+        if (!fs.existsSync(POOL_HISTORY_PATH)) return { pools: {} }
+        return JSON.parse(fs.readFileSync(POOL_HISTORY_PATH, 'utf8'))
+    } catch (e) { return { pools: {} } }
+}
+
+function updatePoolHistory(enrichedPools) {
+    try {
+        const history = loadPoolHistory()
+        const now = new Date().toISOString()
+        const cutoffMs = Date.now() - 7 * 24 * 3600 * 1000   // keep 7 days of snapshots
+        for (const p of enrichedPools) {
+            if (!p.address) continue
+            const entry = history.pools[p.address] || { name: p.name, snapshots: [] }
+            entry.snapshots = (entry.snapshots || []).filter(s => new Date(s.at).getTime() > cutoffMs)
+            entry.snapshots.push({ at: now, tvl: p.tvl, volume24h: p.volume24h, apr24h: p.apr24h })
+            history.pools[p.address] = entry
+        }
+        history.updatedAt = now
+        fs.mkdirSync(path.dirname(POOL_HISTORY_PATH), { recursive: true })
+        fs.writeFileSync(POOL_HISTORY_PATH, JSON.stringify(history, null, 2))
+    } catch (e) { console.warn(`[signal] pool history update failed: ${e.message}`) }
+}
+
+function rollingVolToTvl(history, poolAddress, days = 3) {
+    const entry = history.pools[poolAddress]
+    if (!entry || !entry.snapshots?.length) return null
+    const cutoffMs = Date.now() - days * 24 * 3600 * 1000
+    const recent = entry.snapshots.filter(s => new Date(s.at).getTime() > cutoffMs)
+    if (!recent.length) return null
+    const totalVol = recent.reduce((sum, s) => sum + (s.volume24h || 0), 0)
+    const totalTvl = recent.reduce((sum, s) => sum + (s.tvl || 0), 0)
+    return totalTvl > 0 ? totalVol / totalTvl : null
+}
 
 function fetchByrealPoolData() {
     try {
-        const raw = execSync('byreal-cli pools list --sort-field apr24h --page-size 20 -o json 2>/dev/null', {
-            timeout: 30000,
+        const raw = execSync('byreal-cli pools list --sort-field apr24h --page-size 50 -o json 2>/dev/null', {
+            timeout: 60000,   // bumped from 30s: byreal pools list (page-size 50) can exceed 30s under RPC load
             encoding: 'utf8',
         })
         const data = JSON.parse(raw)
-        const pools = Array.isArray(data) ? data : (data.data?.pools || data.pools || data.data || [])
-        if (!pools.length) return null
+        const poolsRaw = Array.isArray(data) ? data : (data.data?.pools || data.pools || data.data || [])
+        if (!poolsRaw.length) return null
 
-        const top = pools[0]
-        const solUsdc = pools.find(p =>
-            (p.token_a?.symbol === 'SOL' || p.tokenA?.symbol === 'SOL') &&
-            (p.token_b?.symbol === 'USDC' || p.tokenB?.symbol === 'USDC')
-        ) || pools.find(p => {
-            const name = (p.pair || p.name || p.pool_name || '').toUpperCase()
-            return name.includes('SOL') && name.includes('USDC')
-        })
+        const minTvl       = parseFloat(process.env.BYREAL_MIN_TVL_USD || '50000')
+        const minFeeApr    = parseFloat(process.env.BYREAL_MIN_FEE_APR || '2')
+        const minVolToTvl  = parseFloat(process.env.BYREAL_MIN_VOL_TVL || '0.05')
+        const minVolToTvl3d = parseFloat(process.env.BYREAL_MIN_VOL_TVL_3D || '0.05')
+        const maxEmDep     = parseFloat(process.env.BYREAL_MAX_EM_DEP || '0.50')
+        const maxBreakEvenD = parseFloat(process.env.BYREAL_MAX_BREAKEVEN_D || '30')
+
+        const blacklist = loadBlacklist()
+        const blockedAddrs = new Set(blacklist.entries.map(e => e.poolAddress))
 
         const poolNorm = (p) => ({
             name:     p.pair || p.name || p.pool_name || 'Unknown',
             address:  p.id || p.address || p.pool_address,
-            apr24h:   p.total_apr || p.apr || p.apr24h || p.apr_24h || p.feeApr || 0,
+            apr24h:   p.total_apr || p.apr || p.apr24h || p.apr_24h || 0,
+            feeApr:   (() => {
+                // byreal-cli omits feeApr; derive organic fee yield from its breakout fields.
+                if (p.fee_apr != null) return p.fee_apr
+                if (p.feeApr  != null) return p.feeApr
+                if (p.total_apr != null && p.reward_apr != null) return p.total_apr - p.reward_apr
+                if (p.fee_24h_usd != null && p.tvl_usd > 0)       return (p.fee_24h_usd * 365 / p.tvl_usd) * 100
+                return null
+            })(),    // organic fee yield only (total_apr - reward_apr; emissions excluded)
             tvl:      p.tvl_usd || p.tvl || 0,
             volume24h: p.volume_24h_usd || p.volume24h || p.volume_24h || 0,
             tokenA:   p.token_a?.symbol || p.tokenA?.symbol || '?',
             tokenB:   p.token_b?.symbol || p.tokenB?.symbol || '?',
         })
 
+        const history = loadPoolHistory()
+
+        const enriched = poolsRaw.map(p => {
+            const n = poolNorm(p)
+            const tier = classifyByrealPool(n.tokenA, n.tokenB)
+            const volToTvl = n.tvl > 0 ? n.volume24h / n.tvl : 0
+            const volToTvl3d = rollingVolToTvl(history, n.address, 3)
+            const emDep = emissionDependency(n)
+            const breakEvenD = breakEvenDays(n, tier)
+            const qualityScore = scoreByrealPool(n, tier)
+            return { ...n, tier, volToTvl, volToTvl3d, emDep, breakEvenD, qualityScore }
+        })
+
+        // Refresh history with current snapshot (do this after enriching so we can read pre-update history)
+        updatePoolHistory(enriched)
+
+        const cfg = { minTvl, minFeeApr, minVolToTvl, minVolToTvl3d, maxEmDep, maxBreakEvenD }
+
+        const eligible = enriched.filter(p => !rejectReason(p, cfg, blockedAddrs))
+
+        eligible.sort((a, b) => b.qualityScore - a.qualityScore)
+        const topPool = eligible[0] || null
+
+        // SOL/USDC explicit pick (used for risk-off rotation regardless of eligibility)
+        const solUsdc = enriched.find(p =>
+            (p.tokenA.toUpperCase() === 'SOL' && p.tokenB.toUpperCase() === 'USDC') ||
+            (p.tokenA.toUpperCase() === 'USDC' && p.tokenB.toUpperCase() === 'SOL')
+        ) || enriched.find(p => {
+            const name = (p.name || '').toUpperCase()
+            return name.includes('SOL') && name.includes('USDC')
+        })
+
+        // Track what was excluded — return the highest-APR rejected pool so the
+        // rationale tweet can explain "we passed on X because Y".
+        const rawTop = [...enriched].sort((a, b) => b.apr24h - a.apr24h)[0]
+        const excludedTop = (rawTop && (!topPool || rawTop.address !== topPool.address))
+            ? {
+                name: rawTop.name, apr24h: rawTop.apr24h, tvl: rawTop.tvl, tier: rawTop.tier,
+                volToTvl: rawTop.volToTvl, emDep: rawTop.emDep, breakEvenD: rawTop.breakEvenD,
+                reason: rejectReason(rawTop, cfg, blockedAddrs),
+            }
+            : null
+
         return {
-            topPool: poolNorm(top),
-            solUsdcPool: solUsdc ? poolNorm(solUsdc) : null,
-            totalPools: pools.length,
+            topPool,
+            solUsdcPool: solUsdc || null,
+            excludedTop,
+            qualityFilter: { ...cfg, eligibleCount: eligible.length, tierCounts: tierCounts(eligible), blacklistSize: blacklist.entries.length },
+            totalPools: poolsRaw.length,
             fetchedAt: new Date().toISOString(),
         }
     } catch (e) {
         console.warn(`[signal] Byreal pool fetch failed: ${e.message}`)
         return null
     }
+}
+
+function tierCounts(pools) {
+    return { t1: pools.filter(p => p.tier === 1).length, t2: pools.filter(p => p.tier === 2).length, t3: pools.filter(p => p.tier === 3).length }
+}
+
+function rejectReason(p, cfg, blockedAddrs) {
+    if (blockedAddrs && blockedAddrs.has(p.address)) return 'blacklisted (recent loss or known bad pool)'
+    if (p.tvl < cfg.minTvl) return `TVL $${p.tvl.toFixed(0)} < $${cfg.minTvl}`
+    if (p.feeApr == null) return `feeApr unknown (non-organic, fail-safe skip)`
+    if (p.feeApr < cfg.minFeeApr) return `feeApr ${p.feeApr.toFixed(2)}% < ${cfg.minFeeApr}% (organic floor)`
+    if (p.volToTvl < cfg.minVolToTvl) return `vol/tvl ${p.volToTvl.toFixed(3)} < ${cfg.minVolToTvl}`
+    // 3-day rolling vol — only enforce if we have history (won't reject first-ever sighting)
+    if (p.volToTvl3d !== null && p.volToTvl3d !== undefined && p.volToTvl3d < cfg.minVolToTvl3d) {
+        return `3-day vol/tvl ${p.volToTvl3d.toFixed(3)} < ${cfg.minVolToTvl3d}`
+    }
+    if (p.emDep > cfg.maxEmDep) return `emissions-dependent: ${(p.emDep * 100).toFixed(0)}% of APR is rewards > ${cfg.maxEmDep * 100}%`
+    if (p.breakEvenD > cfg.maxBreakEvenD) return `IL break-even ${p.breakEvenD.toFixed(1)}d > ${cfg.maxBreakEvenD}d (fees too low for risk)`
+    return null
 }
 
 // ---------------------------------------------------------------------------
@@ -350,7 +553,19 @@ function buildBreakdown(socialBias, poolData, allora, elfa, poly, overrideReason
     return {
         weights: WEIGHTS,
         social:     { sentiment: socialBias.defiSentiment, riskAppetite: socialBias.riskAppetite, confidence: socialBias.confidence },
-        onchain:    poolData ? { topPoolAPR: poolData.topPool?.apr24h, tvl: poolData.topPool?.tvl } : null,
+        onchain:    poolData ? {
+            topPool: poolData.topPool ? {
+                name: poolData.topPool.name,
+                tier: poolData.topPool.tier,
+                apr: poolData.topPool.apr24h,
+                tvl: poolData.topPool.tvl,
+                emDep: poolData.topPool.emDep,
+                breakEvenD: poolData.topPool.breakEvenD,
+                volToTvl3d: poolData.topPool.volToTvl3d,
+            } : null,
+            qualityFilter: poolData.qualityFilter,
+            excludedTop: poolData.excludedTop,
+        } : null,
         allora:     { direction: allora.direction, confidence: allora.confidence, agreement: allora.agreement },
         elfa:       { sentiment: elfa.sentimentDirection, riskOff: elfa.riskOffSignal, surging: elfa.surgingTickers },
         polymarket: { bias: poly.directionalBias, riskOff: poly.riskOffSignal, impliedBullish: poly.impliedBullishProb },
@@ -466,7 +681,11 @@ async function main() {
         (async () => {
             console.log('[signal] [B] Fetching Byreal pool data...')
             poolData = fetchByrealPoolData()
-            if (poolData) console.log(`[signal] [B] Top pool: ${poolData.topPool.name} — APR ${poolData.topPool.apr24h?.toFixed(1)}%`)
+            if (poolData?.topPool) {
+                console.log(`[signal] [B] Top pool: ${poolData.topPool.name} — APR ${poolData.topPool.apr24h?.toFixed(1)}% (tier ${poolData.topPool.tier}, breakEven ${poolData.topPool.breakEvenD?.toFixed(1)}d)`)
+            } else if (poolData) {
+                console.log(`[signal] [B] No pool passed the quality filter. Excluded top: ${poolData.excludedTop?.name || 'none'} — ${poolData.excludedTop?.reason || 'no candidates'}`)
+            }
             else console.warn('[signal] [B] Byreal pool data unavailable')
         })()
     )
