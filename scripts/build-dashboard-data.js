@@ -248,7 +248,7 @@ function getOpenPositions() {
     // + pair are all on-chain public; we expose only those plus health metrics.
     const rnd = (x, d) => { const m = Math.pow(10, d); return Math.round((Number(x) || 0) * m) / m }
     try {
-        const r = spawnSync('byreal-cli', ['positions', 'list', '-o', 'json'], { encoding: 'utf8', timeout: 15000 })
+        const r = spawnSync('byreal-cli', ['positions', 'list', '-o', 'json'], { encoding: 'utf8', timeout: 60000 })
         if (r.status !== 0 || !r.stdout) return []
         const j = JSON.parse(r.stdout)
         const arr = (j && j.data && j.data.positions) || []
@@ -386,6 +386,13 @@ const CHAIN_EXPLORER = {
     xlayer: 'https://www.oklink.com/x-layer',
 }
 const txUrlFor = (chain, hash) => hash ? `${CHAIN_EXPLORER[chain] || ''}/tx/${hash}` : null
+const addrUrlFor = (chain, addr) => addr ? `${CHAIN_EXPLORER[chain] || ''}/address/${addr}` : null
+const CHAIN_LABEL = { base: 'Base', solana: 'Solana', mantle: 'Mantle', xlayer: 'X Layer' }
+const VENUE_LABEL = {
+    'aerodrome-slipstream': 'Aerodrome', 'aerodrome': 'Aerodrome',
+    'uniswap-v3': 'Uniswap v3', 'uniswap-v4': 'Uniswap v4',
+    'orca-whirlpools': 'Orca', 'raydium-clmm': 'Raydium', 'byreal': 'Byreal',
+}
 
 function buildLpMiner() {
     const positionsFile = read('state/lp-positions.json')
@@ -396,31 +403,70 @@ function buildLpMiner() {
     const open = positionsFile?.positions || []
     const closed = positionsFile?.closedPositions || []
 
-    const positions = open.map(p => ({
-        id: p.id, symbol: p.symbol, chain: p.chain, project: p.project || null,
-        status: p.status,
-        deployedUsd: round(p.capitalUsd, 2),     // capital basis deployed into this position
-        nftTokenId: p.nftTokenId || null,
-        feeTier: p.feeTier || null,
-        lowerPrice: p.lowerPrice ?? null, upperPrice: p.upperPrice ?? null,
-        pendingFeesUsd: round(p.pendingFeesUsd, 4),
-        hedgeSize: p.hedgeSize ?? 0,
-        hedgePerp: p.hedgePerp ?? null,
-        hedgeNotionalUsd: p.hedgeNotionalUsd ?? null,
-        hedgeFundingAnnPct: p.hedgeFundingAnnPct ?? null,
-        hedgeUpdatedAt: p.hedgeUpdatedAt ?? null,
-        deltaNeutral: (p.hedgeSize ?? 0) > 0,
-        morphoHf: p.morpho?.healthFactor ?? null,
-        ilPct: p.ilPct ?? null, netPnlPct: p.pnlPct ?? null,
-        openedAt: p.openedAt || null,
-        openTxUrl: txUrlFor(p.chain, p.openTxHash),
-        stakeTxUrl: txUrlFor(p.chain, p.stakeTxHash),
-        // live reconciliation — filled by lp-reconcile.js
-        funded: null, liveLiquidity: null, inRange: p.inRange ?? null, divergence: null,
-    }))
+    // SETUP + BASIS scaffold only. Every LIVE number (LP mark-to-market value,
+    // composition, emissions, hedge PnL, funding, gas, net result) is set to null
+    // here and filled by lp-reconcile.js from the chain. This is deliberate: the
+    // state layer must NEVER publish a money number it cannot prove on-chain. If
+    // reconcile is down, the front-end shows "awaiting on-chain sync", not a stale
+    // basis figure dressed up as a result. (The $45-flat bug is gone for good.)
+    const positions = open.map(p => {
+        const hedged = (p.hedgeSize ?? 0) > 0
+        const staked = Boolean(p.stakedAt || p.gaugeAddress)
+        return {
+            id: p.id, symbol: p.symbol,
+            chain: p.chain, chainLabel: CHAIN_LABEL[p.chain] || p.chain,
+            project: p.project || null,
+            venue: VENUE_LABEL[p.project] || p.project || null,
+            status: p.status,
+            feeTier: p.feeTier || null,
+            // capital basis deployed (what went in). Live LP value → lpValueUsd (reconcile).
+            deployedBasisUsd: round(p.capitalUsd, 2),
+            nftTokenId: p.nftTokenId || null,
+            poolAddress: p.poolAddress || null,
+            gaugeAddress: p.gaugeAddress || null,
+            staked,
+            // range setup (human prices). tick/current/inRange/pctOfRange → reconcile.
+            range: {
+                lowerPrice: p.lowerPrice ?? null, upperPrice: p.upperPrice ?? null,
+                currentPrice: null, currentTick: null, tickLower: null, tickUpper: null,
+                inRange: p.inRange ?? null, pctOfRange: null,
+                distanceToLowerPct: null, distanceToUpperPct: null,
+            },
+            // hedge setup. Live entry/mark/uPnl/funding/liq/margin → reconcile.
+            hedge: {
+                configured: hedged, venue: hedged ? 'Hyperliquid' : null,
+                perp: p.hedgePerp ?? null, size: p.hedgeSize ?? 0,
+                deltaNeutral: hedged, active: null, side: null,
+                notionalUsd: null, entryPx: null, markPx: null, uPnlUsd: null,
+                liquidationPx: null, marginUsedUsd: null,
+                fundingAnnPct: null, fundingUsd: null,
+            },
+            morphoHf: p.morpho?.healthFactor ?? null,
+            openedAt: p.openedAt || null,
+            stakedAt: p.stakedAt || null,
+            // ── live (null until reconcile reads the chain) ──
+            funded: null, liveLiquidity: null, divergence: null,
+            lpValueUsd: null, composition: null,
+            ageDays: null,
+            emissionsToken: staked ? 'AERO' : null, emissionsAmount: null, emissionsUsd: null,
+            swapFeesUsd: null, gasUsd: null,
+            ilUsd: null,         // raw LP value − deposit (the number the flat $45 basis hid)
+            pnl: null,           // { lpMtmChangeUsd, hedgeUPnlUsd, divergenceAfterHedgeUsd, emissionsUsd, fundingUsd, gasUsd, netResultUsd, workingCapitalUsd, returnPct }
+            apr: null,           // { totalApr, feeApr, emissionApr, fundingApr, basis } — never one blended APR
+            yield: null,         // { fees:{pendingUsd,claimedUsd}, emissions:{token,pendingAmount,pendingUsd,claimedUsd,lastClaimAt} }
+            costBasis: null,     // { investedUsd, currentUsd, withdrawnUsd, netDiffUsd }
+            netDelta: null,      // { asset, lpLong, hedgeShort, netUnits, netUsd } — how delta-neutral, signed
+            benchmark: null,     // { hodlUsd, lpValueUsd, ilVsHodlUsd, divergenceAfterHedgeUsd, netResultUsd, entryPrice }
+            // links
+            openTxUrl: txUrlFor(p.chain, p.openTxHash),
+            stakeTxUrl: txUrlFor(p.chain, p.stakeTxHash),
+            poolUrl: addrUrlFor(p.chain, p.poolAddress),
+            gaugeUrl: addrUrlFor(p.chain, p.gaugeAddress),
+        }
+    })
 
-    // Book = capital deployed into LP positions (basis). Idle wallet added by reconcile.
-    const deployedUsd = round(open.reduce((s, p) => s + (Number(p.capitalUsd) || 0), 0), 2)
+    // Book = capital basis deployed into LP positions. Live value/working/idle/nav → reconcile.
+    const deployedBasisUsd = round(open.reduce((s, p) => s + (Number(p.capitalUsd) || 0), 0), 2)
 
     // Capital exposure grouped by chain (LP only)
     const byChain = {}
@@ -477,12 +523,19 @@ function buildLpMiner() {
         scope: 'liquidity-miner-only',
         agent: { name: 'Sasha LP', xHandle: X_HANDLE, xUrl: `https://x.com/${X_HANDLE}` },
         book: {
-            deployedUsd,            // capital in LP positions (basis)
-            idleUsd: null,          // LP wallet idle balance — filled by lp-reconcile.js
-            totalUsd: null,         // deployed + idle — filled by lp-reconcile.js
-            note: 'deployedUsd = capital basis in open LP positions; idle/total filled by live wallet read',
+            deployedBasisUsd,       // capital basis put into LP positions
+            lpValueUsd: null,       // live marked-to-market LP value — filled by lp-reconcile.js
+            hedgeMarginUsd: null,   // hedge margin actually used (working) — reconcile
+            workingCapitalUsd: null,// deployedBasis + hedgeMargin — reconcile
+            idle: { hedgeBufferUsd: null, lpWalletUsd: null, totalUsd: null }, // quarantined, never in the return %
+            navUsd: null,           // total footprint (working + idle), secondary to the net result — reconcile
+            note: 'deployedBasisUsd = capital basis; lpValueUsd/working/idle/nav are marked to market by the live on-chain reconcile',
         },
-        capital: { chains },        // per-chain deployed; idle merged by reconcile
+        // THE HERO lives here, filled by reconcile: marked-to-market net result on
+        // working capital, not blended NAV. Scaffolded so the front-end can show an
+        // "awaiting on-chain sync" edge state if reconcile has not run yet.
+        overall: null,
+        capital: { chains },        // per-chain deployed basis; idle merged by reconcile
         positions: { openCount: open.length, closedCount: closed.length, items: positions },
         hedge,
         killSwitch,

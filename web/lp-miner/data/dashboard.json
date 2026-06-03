@@ -1,5 +1,5 @@
 {
-  "asOf": "2026-05-27T18:56:07.527Z",
+  "asOf": "2026-06-03T02:23:13.487Z",
   "generatedBy": "build-dashboard-data.js",
   "scope": "liquidity-miner-only",
   "agent": {
@@ -8,10 +8,37 @@
     "xUrl": "https://x.com/SashaCoin95"
   },
   "book": {
-    "deployedUsd": 45,
-    "idleUsd": 3.07,
-    "totalUsd": 48.07,
-    "note": "deployedUsd = capital basis in open LP positions; idle/total filled by live wallet read"
+    "deployedBasisUsd": 45,
+    "lpValueUsd": 41.58,
+    "hedgeMarginUsd": 14.34,
+    "workingCapitalUsd": 59.34,
+    "idle": {
+      "hedgeBufferUsd": 11,
+      "lpWalletUsd": 2.81,
+      "totalUsd": 13.81
+    },
+    "navUsd": 69.73,
+    "note": "workingCapitalUsd = LP basis + hedge margin used (the return denominator). idle is quarantined, never in the return. navUsd = marked-to-market footprint, secondary to the net result."
+  },
+  "overall": {
+    "netResultUsd": -0.83,
+    "returnPct": -1.4,
+    "periodDays": 7.4,
+    "onWorkingCapitalUsd": 59.34,
+    "divergenceAfterHedgeUsd": -1.02,
+    "components": {
+      "lpMtmChangeUsd": -3.42,
+      "hedgeUPnlUsd": 2.4,
+      "emissionsUsd": 0.17,
+      "fundingUsd": 0.03,
+      "gasUsd": 0.01
+    },
+    "navUsd": 69.73,
+    "fundingAnnPct": 0.7,
+    "deltaNeutral": true,
+    "killArmed": 0,
+    "status": "delta-neutral · carry accruing",
+    "note": "Hero = LP mark-to-market change + hedge PnL + emissions + funding − gas, on working capital. NAV is secondary."
   },
   "capital": {
     "chains": [
@@ -29,34 +56,133 @@
         "id": "aerodrome-usdc-cbbtc-cl2000-001",
         "symbol": "USDC/cbBTC",
         "chain": "base",
+        "chainLabel": "Base",
         "project": "aerodrome-slipstream",
+        "venue": "Aerodrome",
         "status": "open",
-        "deployedUsd": 45,
-        "nftTokenId": "71397771",
         "feeTier": "CL2000-0.0338%",
-        "lowerPrice": 65000,
-        "upperPrice": 88000,
-        "pendingFeesUsd": 0.2291,
-        "hedgeSize": 0.00027,
-        "hedgePerp": "BTC",
-        "hedgeNotionalUsd": null,
-        "hedgeFundingAnnPct": null,
-        "hedgeUpdatedAt": "2026-05-27T18:34:21.356Z",
-        "deltaNeutral": true,
+        "deployedBasisUsd": 45,
+        "nftTokenId": "71397771",
+        "poolAddress": "0x3e66e55e97ce60096f74b7c475e8249f2d31a9fb",
+        "gaugeAddress": "0x9B55cb6cAe1e303B5EDce6F9fcf90246D382809c",
+        "staked": true,
+        "range": {
+          "lowerPrice": 65000,
+          "upperPrice": 88000,
+          "currentPrice": 66657.59107283555,
+          "currentTick": -65022,
+          "tickLower": -68000,
+          "tickUpper": -64000,
+          "inRange": true,
+          "pctOfRange": 7.2,
+          "distanceToLowerPct": 2.6,
+          "distanceToUpperPct": 32
+        },
+        "hedge": {
+          "configured": true,
+          "venue": "Hyperliquid",
+          "perp": "BTC",
+          "size": 0.00043,
+          "deltaNeutral": true,
+          "active": true,
+          "side": "short",
+          "notionalUsd": 28.67,
+          "entryPx": 72273.8,
+          "markPx": 66681,
+          "uPnlUsd": 2.4,
+          "liquidationPx": 124059,
+          "marginUsedUsd": 14.34,
+          "fundingAnnPct": 0.7,
+          "fundingUsd": 0.03,
+          "intendedSize": 0.00027
+        },
         "morphoHf": null,
-        "ilPct": null,
-        "netPnlPct": null,
         "openedAt": "2026-05-26T15:52:24.192Z",
-        "openTxUrl": "https://basescan.org/tx/0xd176d5da1cbd869ecb76989584d16c03ad0cff4250b17224c3b282fa4f437e0e",
-        "stakeTxUrl": "https://basescan.org/tx/0xe8dd7f99be932c3dd39bf142dbcf37823fa3e3c81e22efd8eaa004cb2afb3c10",
+        "stakedAt": "2026-05-26T15:57:43.079Z",
         "funded": true,
         "liveLiquidity": "8559866",
-        "inRange": true,
         "divergence": null,
-        "reconciledAt": "2026-05-27T20:04:42.812Z"
+        "lpValueUsd": 41.58,
+        "composition": {
+          "token0": {
+            "symbol": "USDC",
+            "amount": 10.9995,
+            "usd": 11
+          },
+          "token1": {
+            "symbol": "cbBTC",
+            "amount": 0.00045883,
+            "usd": 30.58
+          }
+        },
+        "ageDays": 7.4,
+        "emissionsToken": "AERO",
+        "emissionsAmount": 0.4458,
+        "emissionsUsd": 0.17,
+        "swapFeesUsd": 0,
+        "gasUsd": 0.0097,
+        "ilUsd": -3.42,
+        "pnl": {
+          "lpMtmChangeUsd": -3.42,
+          "hedgeUPnlUsd": 2.4,
+          "divergenceAfterHedgeUsd": -1.02,
+          "emissionsUsd": 0.17,
+          "fundingUsd": 0.03,
+          "gasUsd": 0.01,
+          "netResultUsd": -0.83,
+          "workingCapitalUsd": 59.34,
+          "returnPct": -1.4
+        },
+        "apr": {
+          "totalApr": 22.66,
+          "feeApr": 0,
+          "emissionApr": 20.17,
+          "fundingApr": 2.49,
+          "basis": "annualized from 7.4d. A projection, not a realized rate."
+        },
+        "yield": {
+          "fees": {
+            "pendingUsd": 0,
+            "claimedUsd": 0,
+            "note": "organic fees accrue to veAERO voters while staked"
+          },
+          "emissions": {
+            "token": "AERO",
+            "pendingAmount": 0.4458,
+            "pendingUsd": 0.17,
+            "claimedUsd": 0,
+            "lastClaimAt": null
+          }
+        },
+        "costBasis": {
+          "investedUsd": 45,
+          "currentUsd": 41.58,
+          "withdrawnUsd": 0,
+          "netDiffUsd": -3.42
+        },
+        "netDelta": {
+          "asset": "cbBTC",
+          "lpLong": 0.00045883,
+          "hedgeShort": 0.00043,
+          "netUnits": 0.00002883,
+          "netUsd": 1.92
+        },
+        "benchmark": {
+          "hodlUsd": 41.95,
+          "lpValueUsd": 41.58,
+          "ilVsHodlUsd": -0.36,
+          "divergenceAfterHedgeUsd": -1.02,
+          "netResultUsd": -0.83,
+          "entryPrice": 72273.8
+        },
+        "openTxUrl": "https://basescan.org/tx/0xd176d5da1cbd869ecb76989584d16c03ad0cff4250b17224c3b282fa4f437e0e",
+        "stakeTxUrl": "https://basescan.org/tx/0xe8dd7f99be932c3dd39bf142dbcf37823fa3e3c81e22efd8eaa004cb2afb3c10",
+        "poolUrl": "https://basescan.org/address/0x3e66e55e97ce60096f74b7c475e8249f2d31a9fb",
+        "gaugeUrl": "https://basescan.org/address/0x9B55cb6cAe1e303B5EDce6F9fcf90246D382809c",
+        "reconciledAt": "2026-06-03T02:23:17.340Z"
       }
     ],
-    "reconciledAt": "2026-05-27T20:04:42.818Z",
+    "reconciledAt": "2026-06-03T02:23:17.360Z",
     "unfundedCount": 0
   },
   "hedge": {
@@ -68,31 +194,33 @@
       {
         "perp": "BTC",
         "side": "short",
-        "size": 0.00027,
-        "entryPx": 74864,
-        "markPx": 75158,
-        "notionalUsd": 20.29,
-        "uPnlUsd": -0.08,
-        "liquidationPx": 157743,
-        "marginUsedUsd": 10.15,
-        "fundingAnnPct": 1.1
+        "size": 0.00043,
+        "entryPx": 72273.8,
+        "markPx": 66681,
+        "notionalUsd": 28.67,
+        "uPnlUsd": 2.4,
+        "liquidationPx": 124059,
+        "marginUsedUsd": 14.34,
+        "fundingAnnPct": 0.7,
+        "fundingUsd": 0.03
       }
     ],
-    "accountValueUsd": 22.83,
+    "accountValueUsd": 25.34,
     "wallet": "0xFAef67C0ee18dD89eaAA91a3d485e48949F7Ed04",
     "position": {
       "perp": "BTC",
       "side": "short",
-      "size": 0.00027,
-      "entryPx": 74864,
-      "markPx": 75158,
-      "notionalUsd": 20.29,
-      "uPnlUsd": -0.08,
-      "liquidationPx": 157743,
-      "marginUsedUsd": 10.15,
-      "fundingAnnPct": 1.1
+      "size": 0.00043,
+      "entryPx": 72273.8,
+      "markPx": 66681,
+      "notionalUsd": 28.67,
+      "uPnlUsd": 2.4,
+      "liquidationPx": 124059,
+      "marginUsedUsd": 14.34,
+      "fundingAnnPct": 0.7,
+      "fundingUsd": 0.03
     },
-    "reconciledAt": "2026-05-27T20:04:45.752Z"
+    "reconciledAt": "2026-06-03T02:23:15.648Z"
   },
   "killSwitch": {
     "oorTimeoutMinutes": 240,
@@ -148,25 +276,6 @@
     "usdc": 0.372131,
     "cbbtc": 0,
     "eth": 0.001311842461121011,
-    "idleUsd": 3.07
-  },
-  "overall": {
-    "navUsd": 70.9,
-    "breakdown": {
-      "lpDeployedUsd": 45,
-      "idleUsd": 3.07,
-      "hedgeAccountUsd": 22.83
-    },
-    "baselineNavUsd": 70.9,
-    "baselineAt": "2026-05-27T20:04:45.753Z",
-    "netPnlUsd": 0,
-    "netPnlPct": 0,
-    "feesEarnedUsd": 0.23,
-    "hedgeUPnlUsd": -0.08,
-    "fundingAnnPct": 1.1,
-    "deltaNeutral": true,
-    "killArmed": 0,
-    "status": "delta-neutral · carry accruing",
-    "note": "LP valued at deployed basis (in-range ≈ flat); precise IL accounting pending the ledger"
+    "idleUsd": 2.81
   }
 }
