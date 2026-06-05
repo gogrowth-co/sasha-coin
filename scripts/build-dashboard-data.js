@@ -433,10 +433,14 @@ function buildLpMiner() {
                 distanceToLowerPct: null, distanceToUpperPct: null,
             },
             // hedge setup. Live entry/mark/uPnl/funding/liq/margin → reconcile.
+            // staticHedge: set once at open, intentionally NOT in the hedge-executor
+            // registry, so the cron never auto-rebalances it (drives the "static · no
+            // rebalance" labels). Preserved through the reconcile overlay.
             hedge: {
                 configured: hedged, venue: hedged ? 'Hyperliquid' : null,
                 perp: p.hedgePerp ?? null, size: p.hedgeSize ?? 0,
                 deltaNeutral: hedged, active: null, side: null,
+                staticHedge: Boolean(p.staticHedge),
                 notionalUsd: null, entryPx: null, markPx: null, uPnlUsd: null,
                 liquidationPx: null, marginUsedUsd: null,
                 fundingAnnPct: null, fundingUsd: null,
@@ -475,9 +479,16 @@ function buildLpMiner() {
     }
     const chains = Object.keys(byChain).map(c => ({ chain: c, deployedUsd: round(byChain[c], 2) }))
 
+    // Which guardrails actually apply is derived off the live book, so the panel
+    // never shows a threshold for a leg the position doesn't have (no Morpho borrow
+    // → no HF rows; static hedge → manual OOR + no drift row). Labels in index.html
+    // branch on these flags.
     const killSwitch = {
         oorTimeoutMinutes: 240, hedgeDriftPct: 5, hfDeleverage: 1.20, hfEmergency: 1.05,
         fundingKillAnnualizedPct: -54.75,
+        staticHedge: open.some(p => p.staticHedge),
+        hasMorphoLeg: open.some(p => p.morpho),
+        hasHedge: open.some(p => (p.hedgeSize ?? 0) > 0),
         armed: (rebalance?.rebalanceActions || []).map(a => ({
             positionId: a.positionId, symbol: a.symbol, type: a.type, reason: a.reason, killSwitch: Boolean(a.killSwitch),
         })),
@@ -510,6 +521,8 @@ function buildLpMiner() {
         venue: 'Hyperliquid',
         driftThresholdPct: 5,
         fundingKillAnnualizedPct: -54.75,
+        // True only when every hedged leg is static (set once, no auto-rebalance).
+        staticHedge: hedgedLegs.length > 0 && hedgedLegs.every(p => p.staticHedge),
         legs: hedgedLegs.map(p => ({
             symbol: p.symbol, perp: p.hedgePerp || null, size: p.hedgeSize,
             notionalUsd: p.hedgeNotionalUsd ?? null, fundingAnnPct: p.hedgeFundingAnnPct ?? null,

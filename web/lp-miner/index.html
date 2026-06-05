@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sasha LP · Live liquidity book</title>
-<meta name="description" content="An autonomous AI agent runs a real multi-chain LP book with delta-neutral hedging and on-chain kill-switches. Live reconciliation. Read-only.">
+<meta name="description" content="An autonomous AI agent runs a real delta-neutral LP book on Base with a Hyperliquid hedge and on-chain kill-switches. Live reconciliation. Read-only.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -829,7 +829,7 @@ footer a:hover{color:var(--accent)}
 
   <!-- ── HERO HEAD ─────────────────────────────────────────────────────── -->
   <div class="hero-head section">
-    <h1>Sasha runs a multi-chain LP book. Autonomously.</h1>
+    <h1>Sasha runs a delta-neutral LP book on Base. Autonomously.</h1>
     <p>Real liquidity on Base with a delta-neutral hedge on Hyperliquid. On-chain kill-switches. Every position is reconciled against the chain, not just a state file. Read-only.</p>
     <div class="offline-banner" id="errbanner"></div>
 
@@ -946,11 +946,11 @@ footer a:hover{color:var(--accent)}
         <div class="expl-body">
           <ol>
             <li><strong>Net result (hero)</strong>:the marked-to-market net result on working capital. This is LP MTM change + hedge unrealized PnL + AERO emissions + funding income minus gas. NOT the blended NAV. Working capital is LP basis deployed plus hedge margin.</li>
-            <li><strong>P&amp;L decomposition</strong>:every component that adds or subtracts from the net result, labeled individually. LP MTM tells you how the pool rebalanced. Hedge PnL tells you how the short offset it. Emissions are AERO gauge rewards, never swap fees (those go to voters while staked).</li>
-            <li><strong>Range bar (per position)</strong>:the centerpiece. Shows the LP's configured price band with the current BTC price as a marker. The purple band is the in-range zone. The marker turns red if BTC exits the range. Distance-to-floor is the most actionable risk signal right now.</li>
-            <li><strong>Setup column (per card)</strong>:pair, chain, venue, fee tier, staked status, delta-neutral status, composition (USDC/cbBTC split shows how much the pool has rebalanced).</li>
-            <li><strong>Performance column (per card)</strong>:LP value vs. basis, divergence after hedge (the net IL), emissions, hedge PnL, funding, liquidation distance, net result on working capital.</li>
-            <li><strong>Hedge section</strong>:the Hyperliquid BTC perpetual short. Entry, mark, unrealized PnL, liquidation price, margin, and funding rate. Positive funding = longs pay us.</li>
+            <li><strong>P&amp;L decomposition</strong>:every component that adds or subtracts from the net result, labeled individually. LP MTM tells you how the pool rebalanced. Hedge PnL tells you how the short offset it. The yield line is AERO gauge rewards when the position is staked (organic swap fees then go to voters), or the swap fees the position collects directly when it is unstaked.</li>
+            <li><strong>Range bar (per position)</strong>:the centerpiece. Shows the LP's configured price band with the current price of the pool's volatile asset as a marker. The purple band is the in-range zone. The marker turns red if price exits the range. Distance-to-floor is the most actionable risk signal right now.</li>
+            <li><strong>Setup column (per card)</strong>:pair, chain, venue, fee tier, staked status, delta-neutral status, composition (the token split shows how much the pool has rebalanced).</li>
+            <li><strong>Performance column (per card)</strong>:LP value vs. basis, divergence after hedge (the net IL), fees or emissions, hedge PnL, funding, liquidation distance, net result on working capital.</li>
+            <li><strong>Hedge section</strong>:the Hyperliquid perpetual short that offsets the LP's volatile-asset exposure. Entry, mark, unrealized PnL, liquidation price, margin, and funding rate. Positive funding = longs pay us.</li>
             <li><strong>Capital book</strong>:where every dollar sits. Working capital (in the strategy) vs idle (quarantined, never part of the return calculation).</li>
             <li><strong>Kill-switches</strong>:automated risk guardrails. Thresholds and armed status. Green means the miner is running normally.</li>
           </ol>
@@ -963,19 +963,19 @@ footer a:hover{color:var(--accent)}
           <div class="faq-list">
             <div class="faq-item">
               <div class="faq-q">What is a delta-neutral LP?</div>
-              <div class="faq-a">The LP earns AERO emissions on a USDC/BTC pool. But holding BTC inside an LP means the portfolio moves with BTC price. To cancel that, the strategy shorts the exact BTC amount on Hyperliquid. LP earns emissions; the short earns funding. Together the BTC exposure nets to zero.</div>
+              <div class="faq-a">The LP earns trading fees (or AERO emissions, when staked) on a pool that holds a volatile asset. But holding that asset inside an LP means the portfolio moves with its price. To cancel that, the strategy shorts the exact amount of the volatile asset on Hyperliquid. The LP earns yield; the short earns funding. Together the price exposure nets to zero.</div>
             </div>
             <div class="faq-item">
               <div class="faq-q">Why does the hero show a loss? Is that bad?</div>
-              <div class="faq-a">The hero is marked-to-market: LP MTM change + hedge PnL + emissions + funding. The LP has drifted toward cbBTC as BTC fell, so LP value dropped $3.47. The hedge short gained $2.47. Net IL after hedge is -$1.00. Emissions offset slightly. This is what the strategy looks like in a down-move. The hedge absorbed most of the drop.</div>
+              <div class="faq-a">The hero is marked-to-market: LP MTM change + hedge PnL + fees/emissions + funding. In a down-move the LP drifts toward the volatile asset and its value falls, while the short gains roughly the same amount, so the net IL after hedge is small. This is what a delta-neutral position looks like in a drawdown: the hedge absorbs most of the move, and fees plus funding decide whether the net is positive.</div>
             </div>
             <div class="faq-item">
               <div class="faq-q">What is carry and where does yield come from?</div>
-              <div class="faq-a">Carry = AERO emissions + funding received minus gas minus IL from range rebalancing. The strategy is positive-carry when BTC stays inside the range. If BTC moves a lot, IL/LVR grows and carry turns negative. That is what the kill-switches protect against.</div>
+              <div class="faq-a">Carry = trading fees and/or AERO emissions + funding received minus gas minus IL from range rebalancing. The strategy is positive-carry when price stays inside the range. If price moves a lot, IL/LVR grows and carry turns negative. That is what the kill-switches protect against.</div>
             </div>
             <div class="faq-item">
-              <div class="faq-q">Why does the dashboard say "AERO emissions" instead of fees?</div>
-              <div class="faq-a">This position is staked in Aerodrome's gauge. Staking means the LP NFT lives in the gauge contract, which earns AERO token emissions from protocol incentives. Organic swap fees go to veAERO voters, not to staked positions. Calling these "fees" would be wrong. They are AERO gauge rewards.</div>
+              <div class="faq-q">Staked or unstaked: fees or AERO emissions?</div>
+              <div class="faq-a">It depends on where the LP NFT sits. Staked in Aerodrome's gauge, the position earns AERO emissions and forfeits organic swap fees to veAERO voters. Unstaked, the NFT sits in the agent's own wallet and collects swap fees directly, with no emissions. The dashboard labels whichever mode the live position is in, driven off the on-chain NFT owner.</div>
             </div>
             <div class="faq-item">
               <div class="faq-q">What is "idle capital" and why is it separated?</div>
@@ -986,12 +986,12 @@ footer a:hover{color:var(--accent)}
               <div class="faq-a">"Funded" means the reconciler queried the Aerodrome NFT contract and confirmed real on-chain liquidity. "Unfunded" means the state file says the position is open, but the chain disagrees, a mismatch that requires investigation. "Unverified" means the RPC call failed and the check is pending.</div>
             </div>
             <div class="faq-item">
-              <div class="faq-q">What happens if BTC goes out of range?</div>
-              <div class="faq-a">The LP earns zero emissions while out of range. The position-monitor detects it and, after a configurable timeout, files a CLOSE_REOPEN signal. The automated rebalancer executes it with Gabriel's confirmation for any on-chain transaction.</div>
+              <div class="faq-q">What happens if price goes out of range?</div>
+              <div class="faq-a">The LP earns zero fees while out of range. For a static position the close is a manual decision (kill if it stays out of range beyond 24h); for an auto-monitored position the position-monitor files a CLOSE_REOPEN signal after a timeout. Either way, any on-chain transaction needs Gabriel's confirmation.</div>
             </div>
             <div class="faq-item">
               <div class="faq-q">What triggers the hedge drift adjustment?</div>
-              <div class="faq-a">As BTC price moves within the LP range, the amount of BTC in the pool changes. If the live BTC amount drifts more than 5% from the current Hyperliquid short size, the hedge executor fires an adjustment order to re-sync them.</div>
+              <div class="faq-a">As price moves within the LP range, the amount of the volatile asset in the pool changes, so the hedge can drift from the LP's exact exposure. An auto-rehedged position re-syncs when drift exceeds its threshold; this position runs a static hedge (set once at open), so drift is reviewed and corrected manually instead.</div>
             </div>
             <div class="faq-item">
               <div class="faq-q">What is the funding kill switch?</div>
@@ -1012,14 +1012,14 @@ footer a:hover{color:var(--accent)}
             <div class="gloss-item"><span class="gloss-term">NAV</span><span class="gloss-def">Net Asset Value. Total capital footprint: LP deployed + idle wallet + Hyperliquid hedge margin. Secondary metric, never the hero.</span></div>
             <div class="gloss-item"><span class="gloss-term">Working capital</span><span class="gloss-def">LP basis deployed + hedge margin used. The denominator for return %. Idle cash is excluded.</span></div>
             <div class="gloss-item"><span class="gloss-term">LP / CLMM</span><span class="gloss-def">Liquidity Position in a Concentrated Liquidity Market Maker. Capital deployed inside a specific price range. Earns nothing while out of range.</span></div>
-            <div class="gloss-item"><span class="gloss-term">Delta-neutral</span><span class="gloss-def">BTC price moves do not change total portfolio value. The LP's BTC exposure is exactly offset by a Hyperliquid short of the same size.</span></div>
+            <div class="gloss-item"><span class="gloss-term">Delta-neutral</span><span class="gloss-def">The volatile asset's price moves do not change total portfolio value. The LP's exposure to that asset is exactly offset by a Hyperliquid short of the same size.</span></div>
             <div class="gloss-item"><span class="gloss-term">AERO emissions</span><span class="gloss-def">Gauge rewards paid in AERO tokens for staking the LP NFT in Aerodrome's incentive contract. Not the same as swap fees.</span></div>
-            <div class="gloss-item"><span class="gloss-term">Swap fees</span><span class="gloss-def">Organic trading fees on the pool. While staked in the gauge, these go to veAERO voters, not to this position. Shown as $0 on this dashboard.</span></div>
+            <div class="gloss-item"><span class="gloss-term">Swap fees</span><span class="gloss-def">Organic trading fees on the pool. Staked positions forfeit these to veAERO voters; an unstaked position collects them directly. The dashboard shows whichever applies to the live position.</span></div>
             <div class="gloss-item"><span class="gloss-term">Funding rate</span><span class="gloss-def">Periodic payment between longs and shorts on a perpetual exchange. Positive rate = longs pay shorts (we receive). Negative rate = shorts pay longs (we pay).</span></div>
             <div class="gloss-item"><span class="gloss-term">Divergence after hedge</span><span class="gloss-def">Net IL: LP MTM change + hedge uPnL. What remains after the hedge offset. The true impermanent loss cost.</span></div>
-            <div class="gloss-item"><span class="gloss-term">Carry</span><span class="gloss-def">Net income: AERO emissions + funding received minus gas minus IL from rebalancing. Strategy is +EV when carry is positive.</span></div>
-            <div class="gloss-item"><span class="gloss-term">OOR (Out of Range)</span><span class="gloss-def">Current market price is outside the LP's configured band. No emissions accrue while OOR. Kill-switch closes after a timeout.</span></div>
-            <div class="gloss-item"><span class="gloss-term">Hedge drift</span><span class="gloss-def">Gap between LP's current BTC exposure and the Hyperliquid short size. Builds as price moves within range. Triggers a rebalance at 5% drift.</span></div>
+            <div class="gloss-item"><span class="gloss-term">Carry</span><span class="gloss-def">Net income: trading fees and/or AERO emissions + funding received minus gas minus IL from rebalancing. Strategy is +EV when carry is positive.</span></div>
+            <div class="gloss-item"><span class="gloss-term">OOR (Out of Range)</span><span class="gloss-def">Current market price is outside the LP's configured band. No fees accrue while OOR. The position is closed manually (static hedge) or by a kill-switch timeout (auto-monitored).</span></div>
+            <div class="gloss-item"><span class="gloss-term">Hedge drift</span><span class="gloss-def">Gap between the LP's current exposure to the volatile asset and the Hyperliquid short size. Builds as price moves within range. An auto-rehedged position rebalances past its drift threshold; a static hedge is corrected manually.</span></div>
             <div class="gloss-item"><span class="gloss-term">Kill switch</span><span class="gloss-def">Automated rule that triggers a position close or hedge removal when a risk threshold is breached: OOR timeout, hedge drift, HF breach, or extreme negative funding.</span></div>
             <div class="gloss-item"><span class="gloss-term">Gauge / staking</span><span class="gloss-def">Aerodrome Slipstream gauge contract that custodies the LP NFT and distributes AERO rewards. The NFT shows 0 in your wallet while staked.</span></div>
             <div class="gloss-item"><span class="gloss-term">Live-vs-state reconciled</span><span class="gloss-def">Cross-checks every position against the actual blockchain every 5 min. No position is shown as funded unless the chain confirms it.</span></div>
@@ -1034,7 +1034,7 @@ footer a:hover{color:var(--accent)}
 
 <footer>
   <div class="wrap">
-    Autonomous multi-chain LP. Delta-neutral via Hyperliquid. Live on-chain reconciliation.<br>
+    Autonomous delta-neutral LP on Base. Hedged on Hyperliquid. Live on-chain reconciliation.<br>
     Stack: Base/Aerodrome Slipstream · Hyperliquid perps · Node.js · Ethers v6 ·
     <span id="foot-asof">--</span>
   </div>
@@ -1209,10 +1209,13 @@ function renderBookSummary(d) {
 /* ─────────────────────────────────────────────────────────────────────────
    RENDER: RANGE BAR
 ───────────────────────────────────────────────────────────────────────── */
-function renderRangeBar(r) {
+function renderRangeBar(r, priceAsset) {
   if (!r || r.lowerPrice == null || r.upperPrice == null) {
     return '<div class="pnl-await"><span class="pnl-await-dot"></span> Range data unavailable</div>'
   }
+  // Marker labels the price of the pool's volatile asset (driven off the live
+  // position: the hedge perp, else the non-stable LP token). Never hardcoded.
+  const assetLbl = priceAsset ? esc(priceAsset) + ' ' : ''
 
   const lo = Number(r.lowerPrice)
   const hi = Number(r.upperPrice)
@@ -1232,7 +1235,7 @@ function renderRangeBar(r) {
     <div class="range-bar-section">
       <div class="range-bar-label">
         <span>${fmtPx(lo)} floor</span>
-        <span class="current-price-label">BTC ${fmtPx(cur)}</span>
+        <span class="current-price-label">${assetLbl}${fmtPx(cur)}</span>
         <span>${fmtPx(hi)} ceiling</span>
       </div>
       <div class="range-track">
@@ -1281,6 +1284,11 @@ function renderPositionCard(p) {
   else if (rangeStatus === false) chips += `<span class="chip chip-oor">Out of range</span>`
 
   const hedge = p.hedge || {}
+  // Fee-mode + edge-state flags, driven off the live position (never cbBTC-era assumptions).
+  // staked → gauge custodies the NFT (AERO emissions, fees to voters); unstaked → LP wallet
+  // holds the NFT and collects swap fees directly. freshPosition gates the day-0 edge state.
+  const staked = !!p.staked
+  const freshPosition = (p.ageDays != null && p.ageDays < 1)
   if (hedge.deltaNeutral) chips += `<span class="chip chip-neutral">Δ-neutral</span>`
   else if (hedge.configured) chips += `<span class="chip chip-directional">Directional</span>`
 
@@ -1297,8 +1305,10 @@ function renderPositionCard(p) {
   if (p.stakeTxUrl) links += `<a class="pos-link" href="${esc(p.stakeTxUrl)}" target="_blank" rel="noopener">stake tx</a>`
   if (p.poolUrl) links += `<a class="pos-link" href="${esc(p.poolUrl)}" target="_blank" rel="noopener">pool</a>`
 
-  // Range bar
-  const rangeBar = renderRangeBar(p.range)
+  // Range bar — label the marker with the live volatile asset (hedge perp first,
+  // then the signed-delta asset). Falls back to no prefix for stable/stable pools.
+  const priceAsset = (p.hedge && p.hedge.perp) || (p.netDelta && p.netDelta.asset) || ''
+  const rangeBar = renderRangeBar(p.range, priceAsset)
 
   // Card class
   const cardClass = p.divergence === 'UNFUNDED' ? 'pos-card unfunded-card'
@@ -1387,7 +1397,9 @@ function renderPositionCard(p) {
     const liqDist = hedge.liquidationPx && hedge.markPx
       ? ((Number(hedge.liquidationPx) - Number(hedge.markPx)) / Number(hedge.markPx) * 100)
       : null
-    const liqDistClass = liqDist != null ? (Math.abs(liqDist) < 20 ? 'neg' : Math.abs(liqDist) < 40 ? 'warn' : 'pos') : ''
+    // Safe distance is not an alarm: red only when within ~5% of liquidation,
+    // amber 5-12%, green beyond. (A +18% buffer should read green, not red.)
+    const liqDistClass = liqDist != null ? (Math.abs(liqDist) < 5 ? 'neg' : Math.abs(liqDist) < 12 ? 'warn' : 'pos') : ''
 
     hedgeRows = `
       <div class="stat-row">
@@ -1418,7 +1430,17 @@ function renderPositionCard(p) {
   // ── (2) APR BREAKDOWN STACK ────────────────────────────────────────────────
   const apr = p.apr
   let aprBlockHtml = ''
-  if (apr != null) {
+  if (apr == null) {
+    aprBlockHtml = `<div class="apr-block"><div class="apr-basis">Awaiting on-chain sync</div></div>`
+  } else if (freshPosition) {
+    // Day-0 edge state: don't show walls of 0.00% before any volume has accrued.
+    aprBlockHtml = `<div class="apr-block"><div class="apr-block-head">APR breakdown</div><div class="apr-basis">Awaiting first fee accrual — realized APR after ~24h of volume.</div></div>`
+  } else {
+    // Fee-APR caveat derived from fee-mode: staked forfeits fees to voters; unstaked
+    // collects them but the figure is pending the on-chain fee read.
+    const feeAprSuffix = staked
+      ? (apr.feeApr === 0 ? ' (staked, fees to voters)' : '')
+      : (p.swapFeesUsd == null ? ' (fee read pending)' : '')
     aprBlockHtml = `
       <div class="apr-block">
         <div class="apr-block-head">APR breakdown</div>
@@ -1428,11 +1450,11 @@ function renderPositionCard(p) {
         </div>
         <div class="apr-row">
           <span class="ak">Fee APR</span>
-          <span class="av ${apr.feeApr === 0 ? 'zero' : ''}">${fmtPct(apr.feeApr)}${apr.feeApr === 0 ? ' (staked, fees to voters)' : ''}</span>
+          <span class="av ${apr.feeApr === 0 ? 'zero' : ''}">${fmtPct(apr.feeApr)}${feeAprSuffix}</span>
         </div>
         <div class="apr-row">
           <span class="ak">Emission APR</span>
-          <span class="av">${fmtPct(apr.emissionApr)}</span>
+          <span class="av ${!staked ? 'zero' : ''}">${staked ? fmtPct(apr.emissionApr) : 'n/a (unstaked)'}</span>
         </div>
         <div class="apr-row">
           <span class="ak">Funding APR</span>
@@ -1440,25 +1462,29 @@ function renderPositionCard(p) {
         </div>
         ${apr.basis ? `<div class="apr-basis">${esc(apr.basis)}</div>` : ''}
       </div>`
-  } else {
-    aprBlockHtml = `<div class="apr-block"><div class="apr-basis">Awaiting on-chain sync</div></div>`
   }
 
   // ── (3) YIELD: PENDING vs CLAIMED ─────────────────────────────────────────
   const yld = p.yield
   let yieldBlockHtml = ''
-  if (yld != null) {
+  if (yld == null) {
+    yieldBlockHtml = `<div class="yield-block"><div class="yield-note">Awaiting on-chain sync</div></div>`
+  } else if (freshPosition) {
+    yieldBlockHtml = `<div class="yield-block"><div class="yield-block-head">Yield: pending vs claimed</div><div class="yield-note">Awaiting first fee accrual — realized yield after ~24h of volume.</div></div>`
+  } else {
     const fees = yld.fees || {}
     const emis = yld.emissions || {}
+    // Unstaked positions collect swap fees directly; the figure is pending the on-chain read.
+    const feePending = fees.pendingUsd != null ? fmtUsd(fees.pendingUsd) : (staked ? '--' : 'fee read pending')
     yieldBlockHtml = `
       <div class="yield-block">
         <div class="yield-block-head">Yield: pending vs claimed</div>
         <div class="yield-row">
-          <span class="yk">Fees</span>
+          <span class="yk">Fees${staked ? '' : ' (collecting)'}</span>
           <div class="yield-cols">
             <div class="yield-chip">
               <span class="yc-lbl">Pending</span>
-              <span class="yc-val dim">${fees.pendingUsd != null ? fmtUsd(fees.pendingUsd) : '--'}</span>
+              <span class="yc-val ${fees.pendingUsd != null ? '' : 'dim'}">${feePending}</span>
             </div>
             <div class="yield-chip">
               <span class="yc-lbl">Claimed</span>
@@ -1466,8 +1492,8 @@ function renderPositionCard(p) {
             </div>
           </div>
         </div>
-        ${fees.note ? `<div class="yield-note">${esc(fees.note)}</div>` : ''}
-        <div class="yield-row" style="margin-top:6px">
+        ${fees.note ? `<div class="yield-note">${esc(fees.note)}</div>` : (staked ? '' : '<div class="yield-note">Unstaked: the LP collects swap fees directly. Fee figure pending on-chain read.</div>')}
+        ${staked ? `<div class="yield-row" style="margin-top:6px">
           <span class="yk">Emissions (${esc(emis.token || 'AERO')})</span>
           <div class="yield-cols">
             <div class="yield-chip">
@@ -1479,10 +1505,8 @@ function renderPositionCard(p) {
               <span class="yc-val dim">${emis.claimedUsd != null ? fmtUsd(emis.claimedUsd) : '--'}</span>
             </div>
           </div>
-        </div>
+        </div>` : ''}
       </div>`
-  } else {
-    yieldBlockHtml = `<div class="yield-block"><div class="yield-note">Awaiting on-chain sync</div></div>`
   }
 
   // ── (5) NET DELTA SIGNED ───────────────────────────────────────────────────
@@ -1555,8 +1579,11 @@ function renderPositionCard(p) {
     costBasisHtml = `<div class="yield-block"><div class="yield-note">Awaiting on-chain sync</div></div>`
   }
 
-  let perfRows = `
-    ${hedgeRows}
+  // Fee/emission stat rows derived off fee-mode. Staked → AERO emissions + fees to
+  // voters. Unstaked → collects swap fees directly (figure pending the on-chain read).
+  let yieldStatRows
+  if (staked) {
+    yieldStatRows = `
     <div class="stat-row">
       <span class="stat-key">AERO emissions</span>
       <span class="stat-val pos">${p.emissionsAmount != null ? Number(p.emissionsAmount).toFixed(4) : '--'} AERO (${fmtUsd(p.emissionsUsd)})</span>
@@ -1564,7 +1591,19 @@ function renderPositionCard(p) {
     <div class="stat-row" style="border-bottom:none">
       <span class="stat-key">Swap fees (staked)</span>
       <span class="stat-val dim">${fmtUsd(p.swapFeesUsd)} to veAERO voters</span>
-    </div>
+    </div>`
+  } else {
+    const feeCell = p.swapFeesUsd != null ? fmtUsd(p.swapFeesUsd) : (freshPosition ? 'awaiting first accrual' : 'collecting · fee read pending')
+    yieldStatRows = `
+    <div class="stat-row" style="border-bottom:none">
+      <span class="stat-key">Swap fees (unstaked · collecting)</span>
+      <span class="stat-val ${p.swapFeesUsd != null ? 'pos' : 'dim'}">${feeCell}</span>
+    </div>`
+  }
+
+  let perfRows = `
+    ${hedgeRows}
+    ${yieldStatRows}
     ${aprBlockHtml}
     ${yieldBlockHtml}
     ${netDeltaHtml}
@@ -1717,9 +1756,11 @@ function renderHedge(d) {
       </div>
     </div>
     <div class="hkpi-note">
-      Neutralizes the cbBTC leg of the Aerodrome LP. Market-neutral carry strategy.
+      Neutralizes the ${esc(p.perp)} leg of the LP. Market-neutral carry strategy.
       Funding kill-switch at ${h.fundingKillAnnualizedPct || -54.75}% ann.
-      Rehedge fires at ${h.driftThresholdPct || 5}% drift from intended size.
+      ${h.staticHedge
+        ? 'Static hedge · no rebalance (set once at open; drift corrected manually).'
+        : `Rehedge fires at ${h.driftThresholdPct || 5}% drift from intended size.`}
     </div>
   `
 }
@@ -1790,13 +1831,22 @@ function renderKillSwitch(d) {
     html += `<div class="ks-row"><span class="ks-safe-row">No kill-switch armed</span></div>`
   }
 
-  const rows = [
-    ['OOR timeout', (ks.oorTimeoutMinutes || '--') + ' min'],
-    ['Hedge drift threshold', (ks.hedgeDriftPct || '--') + '%'],
-    ['Morpho HF deleverage', '< ' + (ks.hfDeleverage || '--')],
-    ['Morpho HF emergency', '< ' + (ks.hfEmergency || '--')],
-    ['Funding kill (ann.)', (ks.fundingKillAnnualizedPct || '--') + '%'],
-  ]
+  // Rows derived off the live position: a static hedge has no auto-rebalance and
+  // its OOR close is manual; rows for legs the position doesn't have (Morpho borrow,
+  // auto-rehedge) are dropped rather than shown as inapplicable thresholds.
+  const rows = []
+  if (ks.staticHedge) {
+    rows.push(['OOR kill', 'manual · OOR > 24h (auto-monitor pending)'])
+    rows.push(['Hedge mode', 'static · no rebalance'])
+  } else {
+    rows.push(['OOR timeout', (ks.oorTimeoutMinutes || '--') + ' min'])
+    if (ks.hasHedge) rows.push(['Hedge drift threshold', (ks.hedgeDriftPct || '--') + '%'])
+  }
+  if (ks.hasMorphoLeg) {
+    rows.push(['Morpho HF deleverage', '< ' + (ks.hfDeleverage || '--')])
+    rows.push(['Morpho HF emergency', '< ' + (ks.hfEmergency || '--')])
+  }
+  if (ks.hasHedge) rows.push(['Funding kill (ann.)', (ks.fundingKillAnnualizedPct || '--') + '%'])
   html += rows.map(([k, v]) => `<div class="ks-row"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join('')
   $('ks-content').innerHTML = html
 }
