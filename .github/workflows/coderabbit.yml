@@ -1,60 +1,23 @@
-name: CodeRabbit Security Review
+name: Secret Scanning
+
+# Code review is handled by the CodeRabbit GitHub App (reads .coderabbit.yaml).
+# This workflow only runs TruffleHog secret scanning on pull requests.
+# It deliberately does NOT trigger on push: direct pushes to main are covered
+# by local gitleaks/secret-guard hooks, and a push-to-main TruffleHog run hits
+# the "BASE and HEAD are the same" failure. PR runs have a real diff to scan.
 
 on:
-  push:
-    branches:
-      - main
-      - master
-      - develop
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
-# Cancel in-progress runs on new pushes to the same branch
 concurrency:
-  group: coderabbit-${{ github.ref }}
+  group: secret-scan-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  coderabbit-review:
-    name: AI Code Review
-    runs-on: ubuntu-latest
-    # Skip draft PRs and automated bots
-    if: |
-      github.event.pull_request.draft == false &&
-      !contains(github.actor, '[bot]')
-
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for better context
-
-      - name: CodeRabbit Review
-        uses: coderabbitai/ai-pr-reviewer@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        with:
-          debug: false
-          review_simple_changes: false
-          review_comment_lgtm: false
-          # Focus areas for every review
-          system_message: |
-            You are an expert code reviewer specializing in security, Web3/blockchain
-            operations, and JavaScript/Node.js best practices.
-            Focus on: security vulnerabilities, hardcoded secrets, unsafe transaction
-            handling, missing error handling, and code correctness.
-            Be concise. Skip nitpicks. Prioritize critical and major issues.
-
   secret-scan:
-    name: Secret Scanning
+    name: Secret Scanning (TruffleHog)
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,7 +27,6 @@ jobs:
       - name: TruffleHog OSS
         uses: trufflesecurity/trufflehog@main
         with:
-          path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extra_args: --debug --only-verified
+          base: ${{ github.event.pull_request.base.sha }}
+          head: ${{ github.event.pull_request.head.sha }}
+          extra_args: --only-verified

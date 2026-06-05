@@ -180,8 +180,8 @@ function buildPrompt(style, context) {
 // ── Gemini 3.1 Flash Image via generateContent (with reference images) ────────
 
 async function generateImage(prompt, outputPath) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY not set');
+  const apiKey = process.env.GOOGLE_AGENT_PLATFORM_API_KEY || process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GOOGLE_AGENT_PLATFORM_API_KEY (or GEMINI_API_KEY) not set');
 
   const parts = [];
   const loadedRefs = REF_IMAGES.map(f => ({ file: path.basename(f), img: readRefImage(f) }));
@@ -191,10 +191,10 @@ async function generateImage(prompt, outputPath) {
   });
   parts.push({ text: prompt });
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${apiKey}`;
+  const url = 'https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-3.1-flash-image-preview:generateContent';
   const resp = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       contents: [{ role: 'user', parts }],
       generation_config: { response_modalities: ['IMAGE', 'TEXT'] },

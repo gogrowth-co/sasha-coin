@@ -225,11 +225,14 @@
     "reconciledAt": "2026-06-05T02:07:52.097Z"
   },
   "killSwitch": {
-    "oorTimeoutMinutes": 240,
+    "oorTimeoutMinutes": 720,
+    "oorDistanceKillPct": 5,
+    "hedgeLiqProximityPct": 3,
     "hedgeDriftPct": 5,
     "hfDeleverage": 1.2,
     "hfEmergency": 1.05,
     "fundingKillAnnualizedPct": -54.75,
+    "confirmGatedKill": true,
     "staticHedge": true,
     "hasMorphoLeg": false,
     "hasHedge": true,

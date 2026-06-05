@@ -483,9 +483,17 @@ function buildLpMiner() {
     // never shows a threshold for a leg the position doesn't have (no Morpho borrow
     // → no HF rows; static hedge → manual OOR + no drift row). Labels in index.html
     // branch on these flags.
+    // OOR policy is three-tier (no auto-recenter): soft alert on time, hard KILL on distance,
+    // hard KILL on hedge-liq proximity. Thresholds are read off the live position (with policy
+    // fallbacks) so the panel tracks the actual per-position config in state/lp-positions.json.
+    const primary = open.find(p => p.staticHedge) || open[0] || {}
     const killSwitch = {
-        oorTimeoutMinutes: 240, hedgeDriftPct: 5, hfDeleverage: 1.20, hfEmergency: 1.05,
+        oorTimeoutMinutes:    primary.oorTimeoutMinutes  ?? 720,
+        oorDistanceKillPct:   primary.oorDistanceKillPct ?? 5,
+        hedgeLiqProximityPct: primary.hedgeLiqProximityPct ?? 3,
+        hedgeDriftPct: 5, hfDeleverage: 1.20, hfEmergency: 1.05,
         fundingKillAnnualizedPct: -54.75,
+        confirmGatedKill: true,   // distance/hedge-liq KILLs never auto-execute — Gabriel confirms (--confirm-kill); monitor only alerts
         staticHedge: open.some(p => p.staticHedge),
         hasMorphoLeg: open.some(p => p.morpho),
         hasHedge: open.some(p => (p.hedgeSize ?? 0) > 0),

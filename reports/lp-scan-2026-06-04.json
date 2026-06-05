@@ -1,0 +1,367 @@
+{
+  "generatedAt": "2026-06-04T18:22:13.891Z",
+  "scope": "base-stable-bluechip",
+  "filters": {
+    "minTvlUsd": 1000000,
+    "minFeeApr30": 15
+  },
+  "validated": true,
+  "pass": [
+    {
+      "name": "WETH / USDC 0.05%",
+      "addr": "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59",
+      "dex": "aerodrome-slipstream",
+      "tvl": 9597143.0327,
+      "vol24": 221397936.303432,
+      "c": {
+        "stable": "USDC",
+        "vol": "WETH",
+        "perp": "ETH",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "WETH",
+      "perp": "ETH",
+      "lst": false,
+      "feeRate": 0.001024,
+      "ts": 100,
+      "vol7avg": 148396037.11508355,
+      "vol30avg": 146151125.88776487,
+      "days30": 30,
+      "feeApr30": 569.1844398451465,
+      "feeApr7": 577.9272294176654,
+      "feeApr24": 862.232566408781,
+      "ds": {
+        "tvl": 9608836.37,
+        "vol24": 221917877.65
+      }
+    },
+    {
+      "name": "WETH / USDC 0.05%",
+      "addr": "0x3fe04a59ebd38cf06080a6f60a98d124eb59392a",
+      "dex": "aerodrome-slipstream-3",
+      "tvl": 2600599.1345,
+      "vol24": 33120929.1361961,
+      "c": {
+        "stable": "USDC",
+        "vol": "WETH",
+        "perp": "ETH",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "WETH",
+      "perp": "ETH",
+      "lst": false,
+      "feeRate": 0.000546,
+      "ts": 50,
+      "vol7avg": 34121774.50225524,
+      "vol30avg": 21952423.39017218,
+      "days30": 30,
+      "feeApr30": 168.22655977190988,
+      "feeApr7": 261.4831463389632,
+      "feeApr24": 253.81343398861,
+      "ds": {
+        "tvl": 2222686.03,
+        "vol24": 33215170.45
+      }
+    },
+    {
+      "name": "cbBTC / USDC 0.05%",
+      "addr": "0x4e962bb3889bf030368f56810a9c96b83cb3e778",
+      "dex": "aerodrome-slipstream",
+      "tvl": 9155786.5542,
+      "vol24": 229560236.156897,
+      "c": {
+        "stable": "USDC",
+        "vol": "CBBTC",
+        "perp": "BTC",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "CBBTC",
+      "perp": "BTC",
+      "lst": false,
+      "feeRate": 0.000276,
+      "ts": 100,
+      "vol7avg": 158078230.51544502,
+      "vol30avg": 113527994.24756132,
+      "days30": 30,
+      "feeApr30": 124.91346399128278,
+      "feeApr7": 173.93154425187868,
+      "feeApr24": 252.58232106598584,
+      "ds": {
+        "tvl": 9176446.46,
+        "vol24": 230191726.45
+      }
+    },
+    {
+      "name": "cbBTC / USDC 0.05%",
+      "addr": "0x160d7e9d948b16c163332a277b393c288408eb12",
+      "dex": "aerodrome-slipstream-3",
+      "tvl": 3469590.7793,
+      "vol24": 42204142.0989354,
+      "c": {
+        "stable": "USDC",
+        "vol": "CBBTC",
+        "perp": "BTC",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "CBBTC",
+      "perp": "BTC",
+      "lst": false,
+      "feeRate": 0.000315,
+      "ts": 50,
+      "vol7avg": 26264258.008451637,
+      "vol30avg": 23132402.88508202,
+      "days30": 30,
+      "feeApr30": 76.65595716878454,
+      "feeApr7": 87.0342716650569,
+      "feeApr24": 139.85572208616742,
+      "ds": {
+        "tvl": 3338066.63,
+        "vol24": 42394800.92
+      }
+    },
+    {
+      "name": "WETH / USDC 0.3%",
+      "addr": "0x6c561b446416e1a00e8e93e221854d6ea4171372",
+      "dex": "uniswap-v3-base",
+      "tvl": 105446773.7796,
+      "vol24": 236965660.632149,
+      "c": {
+        "stable": "USDC",
+        "vol": "WETH",
+        "perp": "ETH",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "WETH",
+      "perp": "ETH",
+      "lst": false,
+      "feeRate": 0.003,
+      "ts": 60,
+      "vol7avg": 78230126.77474074,
+      "vol30avg": 57652993.01931969,
+      "days30": 30,
+      "feeApr30": 59.86909328122883,
+      "feeApr7": 81.23718322325144,
+      "feeApr24": 246.0742885643433,
+      "ds": {
+        "tvl": 105474589.42,
+        "vol24": 237588826.63
+      }
+    },
+    {
+      "name": "WETH / USDC 0.05%",
+      "addr": "0xb775272e537cc670c65dc852908ad47015244eaf",
+      "dex": "pancakeswap-v3-base",
+      "tvl": 1470596.7023,
+      "vol24": 6939191.0321713,
+      "c": {
+        "stable": "USDC",
+        "vol": "WETH",
+        "perp": "ETH",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "WETH",
+      "perp": "ETH",
+      "lst": false,
+      "feeRate": 0.0005,
+      "ts": 10,
+      "vol7avg": 4255959.5963599635,
+      "vol30avg": 4128071.4657633235,
+      "days30": 30,
+      "feeApr30": 51.22907193546252,
+      "feeApr7": 52.8161544984374,
+      "feeApr24": 86.11486489739983,
+      "ds": {
+        "tvl": 1472144.69,
+        "vol24": 6965089.53
+      }
+    },
+    {
+      "name": "WETH / USDC 0.01%",
+      "addr": "0x72ab388e2e2f6facef59e3c3fa2c4e29011c2d38",
+      "dex": "pancakeswap-v3-base",
+      "tvl": 4200530.4667,
+      "vol24": 92439708.6999459,
+      "c": {
+        "stable": "USDC",
+        "vol": "WETH",
+        "perp": "ETH",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "WETH",
+      "perp": "ETH",
+      "lst": false,
+      "feeRate": 0.0001,
+      "ts": 1,
+      "vol7avg": 54672257.034488685,
+      "vol30avg": 48759325.93869792,
+      "days30": 30,
+      "feeApr30": 42.36882486322365,
+      "feeApr7": 47.5067946198367,
+      "feeApr24": 80.32436365587724,
+      "ds": {
+        "tvl": 4208099.59,
+        "vol24": 92818633.61
+      }
+    },
+    {
+      "name": "cbBTC / USDC 0.01%",
+      "addr": "0xb94b22332abf5f89877a14cc88f2abc48c34b3df",
+      "dex": "pancakeswap-v3-base",
+      "tvl": 2020875.7612,
+      "vol24": 29914637.6798053,
+      "c": {
+        "stable": "USDC",
+        "vol": "CBBTC",
+        "perp": "BTC",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "CBBTC",
+      "perp": "BTC",
+      "lst": false,
+      "feeRate": 0.0001,
+      "ts": 1,
+      "vol7avg": 24351542.200191148,
+      "vol30avg": 22689120.39215796,
+      "days30": 30,
+      "feeApr30": 40.97990139789725,
+      "feeApr7": 43.982480633999344,
+      "feeApr24": 54.0302524418686,
+      "ds": {
+        "tvl": 2025018.37,
+        "vol24": 30036685.25
+      }
+    },
+    {
+      "name": "USDC / WETH 0.05%",
+      "addr": "0xd0b53d9277642d899df5c87a3966a349a798f224",
+      "dex": "uniswap-v3-base",
+      "tvl": 9777374.8966,
+      "vol24": 54463685.5016275,
+      "c": {
+        "stable": "USDC",
+        "vol": "WETH",
+        "perp": "ETH",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "WETH",
+      "perp": "ETH",
+      "lst": false,
+      "feeRate": 0.0005,
+      "ts": 10,
+      "vol7avg": 18678641.313005053,
+      "vol30avg": 17253085.25043622,
+      "days30": 30,
+      "feeApr30": 32.203818422668235,
+      "feeApr7": 34.86469605260633,
+      "feeApr24": 101.65941992777057,
+      "ds": {
+        "tvl": 9796641.15,
+        "vol24": 54660570.47
+      }
+    },
+    {
+      "name": "cbBTC / USDC 0.05%",
+      "addr": "0xfbb6eed8e7aa03b138556eedaf5d271a5e1e43ef",
+      "dex": "uniswap-v3-base",
+      "tvl": 6647021.6984,
+      "vol24": 27546917.6781344,
+      "c": {
+        "stable": "USDC",
+        "vol": "CBBTC",
+        "perp": "BTC",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "CBBTC",
+      "perp": "BTC",
+      "lst": false,
+      "feeRate": 0.0005,
+      "ts": 10,
+      "vol7avg": 13159646.190413548,
+      "vol30avg": 11210127.470796201,
+      "days30": 30,
+      "feeApr30": 30.77842011427105,
+      "feeApr7": 36.1310002994058,
+      "feeApr24": 75.63255702128441,
+      "ds": {
+        "tvl": 6657735.35,
+        "vol24": 27635554.88
+      }
+    },
+    {
+      "name": "USDC / cbBTC 1%",
+      "addr": "0x3e66e55e97ce60096f74b7c475e8249f2d31a9fb",
+      "dex": "aerodrome-slipstream",
+      "tvl": 2872041.7111,
+      "vol24": 19458361.4592647,
+      "c": {
+        "stable": "USDC",
+        "vol": "CBBTC",
+        "perp": "BTC",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "CBBTC",
+      "perp": "BTC",
+      "lst": false,
+      "feeRate": 0.00036,
+      "ts": 2000,
+      "vol7avg": 4855307.049277031,
+      "vol30avg": 4229476.7818658445,
+      "days30": 30,
+      "feeApr30": 19.35045883871641,
+      "feeApr7": 22.21372147240337,
+      "feeApr24": 89.02477585425142,
+      "ds": {
+        "tvl": 2881816.36,
+        "vol24": 19532456.45
+      }
+    }
+  ],
+  "near": [
+    {
+      "name": "cbBTC / USDC 0.3%",
+      "addr": "0xec558e484cc9f2210714e345298fdc53b253c27d",
+      "dex": "uniswap-v3-base",
+      "tvl": 4432097.6467,
+      "vol24": 4791152.3583804,
+      "c": {
+        "stable": "USDC",
+        "vol": "CBBTC",
+        "perp": "BTC",
+        "lst": false
+      },
+      "stable": "USDC",
+      "vol": "CBBTC",
+      "perp": "BTC",
+      "lst": false,
+      "feeRate": 0.003,
+      "ts": 60,
+      "vol7avg": 924788.7335805228,
+      "vol30avg": 591761.253386077,
+      "days30": 30,
+      "feeApr30": 14.620133041071842,
+      "feeApr7": 22.847954715633463,
+      "feeApr24": 118.37085395293074,
+      "ds": {
+        "tvl": 4441712.4,
+        "vol24": 4782894.86
+      }
+    }
+  ],
+  "dune": {
+    "0x3e66e55e97ce60096f74b7c475e8249f2d31a9fb": 4773513,
+    "0x3fe04a59ebd38cf06080a6f60a98d124eb59392a": 22743910,
+    "0x4e962bb3889bf030368f56810a9c96b83cb3e778": 119804987,
+    "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59": 152027378
+  }
+}

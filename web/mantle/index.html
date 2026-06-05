@@ -344,7 +344,7 @@ function renderSignal(sig, ts){
   } else $('reject').innerHTML = ''
 }
 
-function renderCapital(cap, ts){
+function renderCapital(cap, ts, nav, deployedUsd){
   $('cap-ts').textContent = cap?.updatedAt ? 'as of '+relTime(cap.updatedAt) : ''
   const el = $('capital')
   if(!cap){ el.innerHTML = '<div class="empty">Capital data unavailable.</div>'; return }
@@ -353,10 +353,16 @@ function renderCapital(cap, ts){
     const m = chainChip[c.chain]||{c:'#444',t:'?',col:'#fff'}
     const name = c.chain.charAt(0).toUpperCase()+c.chain.slice(1)
     const expl = c.chain==='solana'?`https://solscan.io/account/${c.wallet}`:`${EXPLORER}/address/${c.wallet}`
-    return `<div class="caprow"><span class="lbl"><span class="chip" style="background:${m.c};color:${m.col}">${m.t}</span> ${name} <a class="addr" href="${expl}" target="_blank" rel="noopener">${shortHash(c.wallet)} ↗</a></span><span class="val">${fmtUsd(c.totalUsd)}</span></div>`
+    return `<div class="caprow"><span class="lbl"><span class="chip" style="background:${m.c};color:${m.col}">${m.t}</span> ${name} <span class="addr-note">idle</span> <a class="addr" href="${expl}" target="_blank" rel="noopener">${shortHash(c.wallet)} ↗</a></span><span class="val">${fmtUsd(c.totalUsd)}</span></div>`
   }).join('')
-  html += `<div class="caprow captotal"><span class="lbl">Total book</span><span class="val">${fmtUsd(cap.totalUsd)}</span></div>`
-  html += `<div style="margin-top:12px;font-size:11px;color:var(--text-tertiary)">Deployable ${fmtUsd(cap.poolUsd)} · gas reserve ${fmtUsd(cap.gasReserveUsd)}</div>`
+  const idle = Number(cap.totalUsd)||0
+  const dep  = Number(deployedUsd)||0
+  const book = (nav != null) ? Number(nav) : (idle + dep)
+  if(dep > 0){
+    html += `<div class="caprow"><span class="lbl"><span class="chip" style="background:#1FB6FF;color:#000">≈</span> Deployed in LP positions</span><span class="val">${fmtUsd(dep)}</span></div>`
+  }
+  html += `<div class="caprow captotal"><span class="lbl">Total book</span><span class="val">${fmtUsd(book)}</span></div>`
+  html += `<div style="margin-top:12px;font-size:11px;color:var(--text-tertiary)">Idle ${fmtUsd(idle)} · deployed ${fmtUsd(dep)} · deployable ${fmtUsd(cap.poolUsd)} · gas reserve ${fmtUsd(cap.gasReserveUsd)}</div>`
   el.innerHTML = html
 }
 
@@ -430,7 +436,7 @@ async function load(){
     renderReceipts(d.attestations, d.asOf)
     renderPositions(d.positions, d.asOf)
     renderSignal(d.signal, d.asOf)
-    renderCapital(d.capital, d.asOf)
+    renderCapital(d.capital, d.asOf, d.nav, d.deployedUsd)
     renderTreasury(d.treasury)
     renderTrades(d.trades, d.asOf)
     renderIdentity(d.agent)

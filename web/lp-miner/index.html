@@ -727,24 +727,77 @@ body.ops-on .ops{display:block}
 .cb-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-quaternary);margin-bottom:3px}
 .cb-val{font-family:var(--font-mono);font-size:12px;font-weight:500}
 
-/* Net delta line */
-.delta-line{
-  display:flex;align-items:center;gap:8px;
-  margin-top:8px;
-  padding:8px 12px;
-  border:1px solid var(--border-subtle);
-  border-radius:var(--radius-sm);
-  background:var(--surface-overlay);
-  font-size:11px;flex-wrap:wrap;
+/* ── NET DELTA CARD (standalone, between book-summary and positions) ──────── */
+.net-delta-card{
+  margin-top:16px;
+  border:1px solid var(--border-default);
+  border-radius:var(--radius-lg);
+  background:var(--surface-raised);
+  padding:20px 28px;
 }
-.delta-line .dl-key{color:var(--text-quaternary);font-size:9px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
-.delta-line .dl-eq{
+.ndc-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
+}
+.ndc-eyebrow{
+  font-size:10px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text-tertiary);
+}
+/* Zero-centered track */
+.ndc-track-wrap{
+  position:relative;
+  height:8px;
+  border-radius:4px;
+  background:var(--border-emphasis);
+  margin-bottom:10px;
+}
+.ndc-fill{
+  position:absolute;top:0;bottom:0;
+  border-radius:4px;
+  /* width and left/right set by JS */
+}
+.ndc-fill.long-heavy{background:var(--accent);opacity:.8}
+.ndc-fill.short-heavy{background:var(--negative);opacity:.8}
+/* Center tick mark */
+.ndc-center-tick{
+  position:absolute;top:-3px;bottom:-3px;
+  left:50%;
+  width:1px;
+  background:var(--text-tertiary);
+  opacity:.5;
+  transform:translateX(-50%);
+}
+/* Diamond marker */
+.ndc-marker{
+  position:absolute;top:50%;
+  width:10px;height:10px;
+  background:var(--accent);
+  border:1.5px solid var(--surface-raised);
+  transform:translateX(-50%) translateY(-50%) rotate(45deg);
+  /* left set by JS */
+}
+/* Endpoint labels */
+.ndc-labels{
+  display:flex;justify-content:space-between;
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--text-tertiary);
+  margin-bottom:10px;
+}
+.ndc-labels .ndc-center-lbl{
+  color:var(--text-tertiary);
+  font-size:10px;
+}
+/* Summary annotation line */
+.ndc-annotation{
   font-family:var(--font-mono);font-size:11px;
-  color:var(--text-tertiary);flex:1;
+  color:var(--text-secondary);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
 }
-.delta-line .dl-result{
-  font-family:var(--font-mono);font-size:12px;font-weight:600;white-space:nowrap;
+.ndc-annotation .ndc-net-val{
+  font-weight:600;font-size:13px;
 }
+.ndc-annotation .ndc-sep{color:var(--border-emphasis);margin:0 2px}
+.ndc-annotation .ndc-pct{color:var(--text-tertiary)}
 
 /* Benchmark mini-row */
 .benchmark-row{
@@ -863,6 +916,9 @@ footer a:hover{color:var(--accent)}
     </div>
   </div>
 
+  <!-- ── NET DELTA CARD ─────────────────────────────────────────────────── -->
+  <div id="net-delta-card"></div>
+
   <!-- ── POSITIONS ─────────────────────────────────────────────────────── -->
   <div class="section">
     <div class="eyebrow">
@@ -945,7 +1001,7 @@ footer a:hover{color:var(--accent)}
         <summary>Dashboard guide</summary>
         <div class="expl-body">
           <ol>
-            <li><strong>Net result (hero)</strong>:the marked-to-market net result on working capital. This is LP MTM change + hedge unrealized PnL + AERO emissions + funding income minus gas. NOT the blended NAV. Working capital is LP basis deployed plus hedge margin.</li>
+            <li><strong>Net result (hero)</strong>:the marked-to-market net result on working capital. This is LP MTM change + hedge unrealized PnL + swap fees (uncollected, read on-chain) + AERO emissions + funding income minus gas. NOT the blended NAV. Working capital is LP basis deployed plus hedge margin.</li>
             <li><strong>P&amp;L decomposition</strong>:every component that adds or subtracts from the net result, labeled individually. LP MTM tells you how the pool rebalanced. Hedge PnL tells you how the short offset it. The yield line is AERO gauge rewards when the position is staked (organic swap fees then go to voters), or the swap fees the position collects directly when it is unstaked.</li>
             <li><strong>Range bar (per position)</strong>:the centerpiece. Shows the LP's configured price band with the current price of the pool's volatile asset as a marker. The purple band is the in-range zone. The marker turns red if price exits the range. Distance-to-floor is the most actionable risk signal right now.</li>
             <li><strong>Setup column (per card)</strong>:pair, chain, venue, fee tier, staked status, delta-neutral status, composition (the token split shows how much the pool has rebalanced).</li>
@@ -987,7 +1043,7 @@ footer a:hover{color:var(--accent)}
             </div>
             <div class="faq-item">
               <div class="faq-q">What happens if price goes out of range?</div>
-              <div class="faq-a">The LP earns zero fees while out of range. For a static position the close is a manual decision (kill if it stays out of range beyond 24h); for an auto-monitored position the position-monitor files a CLOSE_REOPEN signal after a timeout. Either way, any on-chain transaction needs Gabriel's confirmation.</div>
+              <div class="faq-a">The LP earns zero fees while out of range. The monitor does not auto-recenter. It waits for mean-reversion: after 12 hours continuously out of range it sends an informational alert (hold and evaluate, no close). It only flags a kill on a real trend, when price moves 5% or more beyond the band, or when the hedge mark comes within 3% of its liquidation price. A kill is a flagged recommendation, never an automatic close. Any on-chain transaction needs Gabriel's confirmation.</div>
             </div>
             <div class="faq-item">
               <div class="faq-q">What triggers the hedge drift adjustment?</div>
@@ -1018,9 +1074,9 @@ footer a:hover{color:var(--accent)}
             <div class="gloss-item"><span class="gloss-term">Funding rate</span><span class="gloss-def">Periodic payment between longs and shorts on a perpetual exchange. Positive rate = longs pay shorts (we receive). Negative rate = shorts pay longs (we pay).</span></div>
             <div class="gloss-item"><span class="gloss-term">Divergence after hedge</span><span class="gloss-def">Net IL: LP MTM change + hedge uPnL. What remains after the hedge offset. The true impermanent loss cost.</span></div>
             <div class="gloss-item"><span class="gloss-term">Carry</span><span class="gloss-def">Net income: trading fees and/or AERO emissions + funding received minus gas minus IL from rebalancing. Strategy is +EV when carry is positive.</span></div>
-            <div class="gloss-item"><span class="gloss-term">OOR (Out of Range)</span><span class="gloss-def">Current market price is outside the LP's configured band. No fees accrue while OOR. The position is closed manually (static hedge) or by a kill-switch timeout (auto-monitored).</span></div>
+            <div class="gloss-item"><span class="gloss-term">OOR (Out of Range)</span><span class="gloss-def">Current market price is outside the LP's configured band. No fees accrue while OOR. Sustained OOR (12h+) raises an informational alert; the monitor does not auto-recenter. A close is flagged only on a 5%+ distance move or a hedge-liquidation threat, and always needs Gabriel's confirmation.</span></div>
             <div class="gloss-item"><span class="gloss-term">Hedge drift</span><span class="gloss-def">Gap between the LP's current exposure to the volatile asset and the Hyperliquid short size. Builds as price moves within range. An auto-rehedged position rebalances past its drift threshold; a static hedge is corrected manually.</span></div>
-            <div class="gloss-item"><span class="gloss-term">Kill switch</span><span class="gloss-def">Automated rule that triggers a position close or hedge removal when a risk threshold is breached: OOR timeout, hedge drift, HF breach, or extreme negative funding.</span></div>
+            <div class="gloss-item"><span class="gloss-term">Kill switch</span><span class="gloss-def">A risk rule that flags a position close or hedge removal when a threshold is breached: price 5%+ beyond the band (trend), hedge mark within 3% of liquidation, or extreme negative funding. The monitor only writes the signal and alerts. Execution requires Gabriel's explicit confirmation.</span></div>
             <div class="gloss-item"><span class="gloss-term">Gauge / staking</span><span class="gloss-def">Aerodrome Slipstream gauge contract that custodies the LP NFT and distributes AERO rewards. The NFT shows 0 in your wallet while staked.</span></div>
             <div class="gloss-item"><span class="gloss-term">Live-vs-state reconciled</span><span class="gloss-def">Cross-checks every position against the actual blockchain every 5 min. No position is shown as funded unless the chain confirms it.</span></div>
           </div>
@@ -1153,6 +1209,7 @@ function renderBookSummary(d) {
   const pnlParts = [
     { label: 'LP MTM', value: c.lpMtmChangeUsd, hint: 'pool rebalance' },
     { label: 'Hedge uPnL', value: c.hedgeUPnlUsd, hint: 'short leg' },
+    { label: 'Swap fees', value: c.swapFeesUsd, hint: 'uncollected LP fees' },
     { label: 'AERO emissions', value: c.emissionsUsd, hint: 'gauge rewards' },
     { label: 'Funding', value: c.fundingUsd, hint: '8h perps funding' },
     { label: 'Gas', value: c.gasUsd != null ? -Math.abs(c.gasUsd) : null, hint: 'Base tx costs' },
@@ -1509,19 +1566,7 @@ function renderPositionCard(p) {
       </div>`
   }
 
-  // ── (5) NET DELTA SIGNED ───────────────────────────────────────────────────
-  const nd = p.netDelta
-  let netDeltaHtml = ''
-  if (nd != null) {
-    const netLong = nd.netUnits != null && nd.netUnits > 0
-    const netCls  = netLong ? 'pos' : nd.netUnits < 0 ? 'neg' : 'dim'
-    netDeltaHtml = `
-      <div class="delta-line">
-        <span class="dl-key">Net ${esc(nd.asset || '')} exposure</span>
-        <span class="dl-eq">LP long ${nd.lpLong != null ? Number(nd.lpLong).toFixed(8) : '--'} ${esc(nd.asset || '')} &minus; hedge short ${nd.hedgeShort != null ? Number(nd.hedgeShort).toFixed(5) : '--'}</span>
-        <span class="dl-result ${netCls}">= ${nd.netUnits != null ? (nd.netUnits >= 0 ? '+' : '') + Number(nd.netUnits).toFixed(8) : '--'} ${esc(nd.asset || '')} (${nd.netUsd != null ? (nd.netUsd >= 0 ? '+' : '') + fmtUsd(nd.netUsd) : '--'})</span>
-      </div>`
-  }
+  // ── (5) NET DELTA — moved to standalone card; no strip here any more ─────────
 
   // ── (6) BENCHMARK: vs HODL and vs after-hedge ─────────────────────────────
   const bm = p.benchmark
@@ -1606,7 +1651,6 @@ function renderPositionCard(p) {
     ${yieldStatRows}
     ${aprBlockHtml}
     ${yieldBlockHtml}
-    ${netDeltaHtml}
     ${benchmarkHtml}
     ${costBasisHtml}
   `
@@ -1626,8 +1670,12 @@ function renderPositionCard(p) {
           <div class="pnl-tile-value ${colorClass(pnl.hedgeUPnlUsd)}">${fmtUsd(pnl.hedgeUPnlUsd, true)}</div>
         </div>
         <div class="pnl-tile">
+          <div class="pnl-tile-label">Swap fees</div>
+          <div class="pnl-tile-value ${pnl.swapFeesUsd ? 'pos' : 'dim'}">${fmtUsd(pnl.swapFeesUsd, true)}</div>
+        </div>
+        <div class="pnl-tile">
           <div class="pnl-tile-label">AERO emissions</div>
-          <div class="pnl-tile-value pos">${fmtUsd(pnl.emissionsUsd, true)}</div>
+          <div class="pnl-tile-value ${pnl.emissionsUsd ? 'pos' : 'dim'}">${fmtUsd(pnl.emissionsUsd, true)}</div>
         </div>
         <div class="pnl-tile">
           <div class="pnl-tile-label">Funding income</div>
@@ -1831,22 +1879,22 @@ function renderKillSwitch(d) {
     html += `<div class="ks-row"><span class="ks-safe-row">No kill-switch armed</span></div>`
   }
 
-  // Rows derived off the live position: a static hedge has no auto-rebalance and
-  // its OOR close is manual; rows for legs the position doesn't have (Morpho borrow,
-  // auto-rehedge) are dropped rather than shown as inapplicable thresholds.
+  // Rows derived off the live position. OOR is a three-tier policy (no auto-recenter):
+  // soft alert on sustained time, hard KILL on a distance excursion, hard KILL on hedge-liq
+  // proximity. Rows for legs the position doesn't have (Morpho borrow, auto-rehedge) are
+  // dropped rather than shown as inapplicable thresholds. KILL execution is manual (gated).
   const rows = []
-  if (ks.staticHedge) {
-    rows.push(['OOR kill', 'manual · OOR > 24h (auto-monitor pending)'])
-    rows.push(['Hedge mode', 'static · no rebalance'])
-  } else {
-    rows.push(['OOR timeout', (ks.oorTimeoutMinutes || '--') + ' min'])
-    if (ks.hasHedge) rows.push(['Hedge drift threshold', (ks.hedgeDriftPct || '--') + '%'])
-  }
+  rows.push(['OOR alert (soft)', '> ' + (ks.oorTimeoutMinutes || 720) + ' min · hold & evaluate'])
+  rows.push(['OOR kill (distance)', '≥ ' + (ks.oorDistanceKillPct || 5) + '% beyond band'])
+  if (ks.hasHedge) rows.push(['Hedge liq guard', 'mark within ' + (ks.hedgeLiqProximityPct || 3) + '% of liq'])
+  if (ks.staticHedge) rows.push(['Hedge mode', 'static · no rebalance'])
+  else if (ks.hasHedge) rows.push(['Hedge drift threshold', (ks.hedgeDriftPct || '--') + '%'])
   if (ks.hasMorphoLeg) {
     rows.push(['Morpho HF deleverage', '< ' + (ks.hfDeleverage || '--')])
     rows.push(['Morpho HF emergency', '< ' + (ks.hfEmergency || '--')])
   }
   if (ks.hasHedge) rows.push(['Funding kill (ann.)', (ks.fundingKillAnnualizedPct || '--') + '%'])
+  rows.push(['KILL execution', 'manual · Gabriel confirms'])
   html += rows.map(([k, v]) => `<div class="ks-row"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join('')
   $('ks-content').innerHTML = html
 }
@@ -1910,10 +1958,133 @@ function renderOpsWallet(d) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   RENDER: NET DELTA CARD (standalone, between book-summary and positions)
+───────────────────────────────────────────────────────────────────────── */
+function renderNetDeltaCard(d) {
+  const el = $('net-delta-card')
+  if (!el) return
+
+  // Aggregate netDelta from all open positions. Single-position book: use items[0].
+  // Multi-position: sum across same asset only (keep simple for now; extend later).
+  const items = (d.positions && d.positions.items) || []
+  const openItems = items.filter(p => p.status === 'open' && p.netDelta)
+  if (!openItems.length) { el.innerHTML = ''; return }
+
+  // Build per-asset aggregates
+  const byAsset = {}
+  openItems.forEach(p => {
+    const nd = p.netDelta
+    if (!nd || nd.asset == null) return
+    const a = nd.asset
+    if (!byAsset[a]) byAsset[a] = { asset: a, lpLong: 0, hedgeShort: 0, netUnits: 0, netUsd: 0 }
+    byAsset[a].lpLong     += Number(nd.lpLong || 0)
+    byAsset[a].hedgeShort += Number(nd.hedgeShort || 0)
+    byAsset[a].netUnits   += Number(nd.netUnits || 0)
+    byAsset[a].netUsd     += Number(nd.netUsd || 0)
+  })
+
+  const aggs = Object.values(byAsset)
+  if (!aggs.length) { el.innerHTML = ''; return }
+
+  // Render one row per asset (almost always just one)
+  const rows = aggs.map(nd => {
+    const { asset, lpLong, hedgeShort, netUnits, netUsd } = nd
+
+    // Null/zero guard: if both legs are 0, render a clean empty bar
+    if (!lpLong && !hedgeShort) {
+      return `<div class="net-delta-card">
+        <div class="ndc-header">
+          <span class="ndc-eyebrow">Net delta &middot; ${esc(asset)}</span>
+        </div>
+        <div class="ndc-annotation" style="color:var(--text-quaternary)">No position data yet.</div>
+      </div>`
+    }
+
+    // Determine if we're long-heavy or short-heavy
+    // netUnits > 0 = long-heavy (LP long > hedge short)
+    // netUnits < 0 = short-heavy
+    const netLong = netUnits > 0
+    const netShort = netUnits < 0
+    const netNeutral = Math.abs(netUnits) / Math.max(hedgeShort, 0.000001) <= 0.05
+
+    // Marker position: ratio = netUnits / hedgeShort, capped ±45% from center
+    // center = 50%, positive = right of center, negative = left
+    const ratio = hedgeShort > 0 ? netUnits / hedgeShort : 0
+    const capRatio = Math.max(-0.9, Math.min(0.9, ratio))
+    const markerPct = 50 + (capRatio * 45) // 50% ± 45%
+
+    // Fill bar: from center (50%) toward marker
+    let fillLeft, fillWidth, fillClass
+    if (netUnits >= 0) {
+      fillLeft  = 50
+      fillWidth = Math.abs(markerPct - 50)
+      fillClass = 'long-heavy'
+    } else {
+      fillLeft  = markerPct
+      fillWidth = Math.abs(markerPct - 50)
+      fillClass = 'short-heavy'
+    }
+
+    // Badge
+    let badgeHtml = ''
+    if (netNeutral) {
+      badgeHtml = `<span class="hero-badge green" style="font-size:10px;padding:4px 10px">DELTA-NEUTRAL</span>`
+    } else if (netLong) {
+      badgeHtml = `<span class="hero-badge warn" style="font-size:10px;padding:4px 10px">LONG SKEW</span>`
+    } else {
+      badgeHtml = `<span class="hero-badge warn" style="font-size:10px;padding:4px 10px">SHORT SKEW</span>`
+    }
+
+    // Net value color
+    const netValCls = netNeutral ? 'accent' : netLong ? 'pos' : 'neg'
+
+    // Annotation pct-of-notional
+    // notional ≈ hedgeShort * markPx; fall back to netUsd / (netUnits) estimate
+    const firstPos = openItems[0]
+    const markPx = firstPos && firstPos.hedge && firstPos.hedge.markPx ? Number(firstPos.hedge.markPx) : null
+    const notionalUnits = Math.max(lpLong, hedgeShort)
+    const notionalUsd = markPx ? notionalUnits * markPx : null
+    const pctOfNotional = notionalUsd && netUsd != null ? Math.abs(netUsd / notionalUsd * 100) : null
+
+    const signedNet = (netUnits >= 0 ? '+' : '') + Number(netUnits).toFixed(5)
+    const signedUsd = netUsd != null ? ((netUsd >= 0 ? '+' : '') + fmtUsd(netUsd)) : '--'
+
+    return `
+      <div class="net-delta-card">
+        <div class="ndc-header">
+          <span class="ndc-eyebrow">Net delta &middot; ${esc(asset)}</span>
+          ${badgeHtml}
+        </div>
+        <div class="ndc-track-wrap">
+          <div class="ndc-center-tick"></div>
+          <div class="ndc-fill ${fillClass}" style="left:${fillLeft.toFixed(2)}%;width:${fillWidth.toFixed(2)}%"></div>
+          <div class="ndc-marker" style="left:${markerPct.toFixed(2)}%"></div>
+        </div>
+        <div class="ndc-labels">
+          <span title="LP long exposure">${Number(lpLong).toFixed(5)} ${esc(asset)} LP long</span>
+          <span class="ndc-center-lbl">0 = neutral</span>
+          <span title="Hedge short size">${Number(hedgeShort).toFixed(5)} short</span>
+        </div>
+        <div class="ndc-annotation">
+          <span class="ndc-net-val ${netValCls}">${signedNet} ${esc(asset)}</span>
+          <span class="ndc-sep">=</span>
+          <span class="${netValCls}">${signedUsd} net ${netLong ? 'long' : netShort ? 'short' : 'flat'}</span>
+          ${pctOfNotional != null ? `<span class="ndc-sep">&middot;</span><span class="ndc-pct">${pctOfNotional.toFixed(1)}% of notional</span>` : ''}
+          ${netNeutral ? `<span class="ndc-sep">&middot;</span><span style="color:var(--positive);font-size:10px">hedge intact</span>` : ''}
+        </div>
+      </div>
+    `
+  })
+
+  el.innerHTML = rows.join('')
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    MAIN RENDER
 ───────────────────────────────────────────────────────────────────────── */
 function renderAll(d) {
   renderBookSummary(d)
+  renderNetDeltaCard(d)
   renderPositions(d)
   renderHedge(d)
   renderCapital(d)

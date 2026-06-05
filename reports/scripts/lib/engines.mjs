@@ -68,13 +68,13 @@ export async function callPerplexity(prompt, opts = {}) {
 }
 
 export async function callGemini(prompt, opts = {}) {
-  const key = opts.apiKey || process.env.GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY not set');
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+  const key = opts.apiKey || process.env.GOOGLE_AGENT_PLATFORM_API_KEY || process.env.GEMINI_API_KEY;
+  if (!key) throw new Error('GOOGLE_AGENT_PLATFORM_API_KEY (or GEMINI_API_KEY) not set');
+  const res = await fetch('https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       tools: [{ googleSearch: {} }],
     }),
   });

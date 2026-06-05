@@ -126,7 +126,12 @@ async function apifyRun(body) {
 
 // ── Filter helper ────────────────────────────────────────────────────────────
 const now = Date.now();
-const maxAgeMs = MAX_AGE_HOURS * 60 * 60 * 1000;
+// v3 (2026-06-04): freshness lever. Use selection_rules.tweet_age_max_hours (config-driven,
+// default 6h) instead of the old 24h default, so each 90-min slot replies to a YOUNG tweet.
+// Override with KOL_MAX_AGE_HOURS env if ever needed. Bump tweet_age_max_hours in
+// reply-targets.json (no code change) if slots starve.
+const maxAgeHours = parseInt(process.env.KOL_MAX_AGE_HOURS || '') || selection_rules.tweet_age_max_hours || 6;
+const maxAgeMs = maxAgeHours * 60 * 60 * 1000;
 const topicBlocklist = selection_rules.topic_blocklist.map(t => t.toLowerCase());
 
 function filterTweet(tw, targetMeta, minLikes = 3, minReplies = 1) {
@@ -188,8 +193,22 @@ if (!SKIP_HANDLES) {
       const valid = Array.isArray(tweets) ? tweets : [];
       console.log(`  @${handle}: ${valid.length} raw`);
       for (const tw of valid) {
-        const c = filterTweet(tw, { ...target, source: 'handle' });
-        if (c) allCandidates.push(c);
+        // Fast-window handles (mega-KOLs, tier-2): freshness matters more than early
+        // engagement — a reply only has value before the whale thread buries it. Relax
+        // the engagement floor (0/0) and instead require the tweet be <max_age_minutes old.
+        const c = target.fast_window_only
+          ? filterTweet(tw, { ...target, source: 'handle' }, 0, 0)
+          : filterTweet(tw, { ...target, source: 'handle' });
+        if (!c) continue;
+        if (target.fast_window_only) {
+          const ageMin = (Date.now() - new Date(c.createdAt).getTime()) / 60000;
+          const cap = target.max_age_minutes || 15;
+          if (ageMin > cap) {
+            console.log(`    skip @${handle} — fast-window only, tweet ${Math.round(ageMin)}min old (cap ${cap})`);
+            continue;
+          }
+        }
+        allCandidates.push(c);
       }
     } catch (e) {
       console.error(`  @${handle} scrape failed:`, e.message);
@@ -259,10 +278,19 @@ const uniqueHandleCands = [...bestByHandle.values()];
 // Search tweets come from diverse authors, so they supply the distinct fresh
 // handles the afternoon slots need once the KOL handles are on 12h cooldown.
 const tier1handles = new Set(targets.filter(t => t.tier === 1).map(t => t.handle.toLowerCase()));
+const tierOf = h => (targetMap[h.toLowerCase()]?.tier ?? 2);
 const engScore = c => (c.likes + c.replies * 3) * (tier1handles.has(c.handle.toLowerCase()) ? 1.5 : 1);
 const isSearch = c => String(c.source || '').startsWith('search');
-const handleTier = uniqueHandleCands.filter(c => !isSearch(c)).sort((a, b) => engScore(b) - engScore(a));
-const searchTier = uniqueHandleCands.filter(isSearch).sort((a, b) => engScore(b) - engScore(a));
+// v3 (2026-06-04): mid-tier (tier-1) handles ALWAYS rank above mega-KOL (tier-2)
+// handles, regardless of raw engagement — a visible reply under a 20k account beats
+// a buried reply under a 300k account. Within a tier, sort by engagement.
+// v3 (2026-06-04): within a tier, prefer the FRESHEST tweet (Gabriel's "pick the latest"
+// approach) instead of highest engagement — keeps the 90-min cadence but always replies to
+// a young tweet. Tier still wins first (mid-tier above mega-KOL).
+const recencyOf = c => new Date(c.createdAt).getTime() || 0;
+const handleTier = uniqueHandleCands.filter(c => !isSearch(c))
+  .sort((a, b) => (tierOf(a.handle) - tierOf(b.handle)) || (recencyOf(b) - recencyOf(a)));
+const searchTier = uniqueHandleCands.filter(isSearch).sort((a, b) => recencyOf(b) - recencyOf(a));
 const ranked = [...handleTier, ...searchTier];
 
 // Feed depth is decoupled from the daily reply cap: the pool holds many more

@@ -79,49 +79,60 @@ function sendTelegram(msg) {
 //
 // Returns { totalUsd, tokens: [{ symbol, balance, usdValue }] } or null.
 //
+// byreal-cli wallet balance legitimately takes 11-20s (it queries Solana RPC for
+// the wallet plus each open LP position). The old 20s ceiling was right at that
+// edge, so under RPC load it threw ETIMEDOUT and the whole Solana book vanished
+// from the dashboard. Raised to 120s on 2026-06-04 after an observed ETIMEDOUT on the
+// 20:50 run at box load ~2-4 (the heavy wallet+5-positions query, not contention). One
+// retry. A failure here must never be treated as "balance is zero": see carry-forward in main().
+const SOLANA_FETCH_TIMEOUT_MS = parseInt(process.env.BYREAL_BALANCE_TIMEOUT_MS || '120000', 10)
+const SOLANA_FETCH_ATTEMPTS   = 2
+
 function fetchSolanaBalances() {
-    try {
-        const raw = execSync('byreal-cli wallet balance -o json 2>/dev/null', {
-            timeout: 20_000, encoding: 'utf8',
-        })
-        const data = JSON.parse(raw)
-        // Actual byreal-cli v0.3.6 shape:
-        //   data: {
-        //     address,
-        //     balance: { sol: { amount_sol, amount_usd }, tokens: [{ symbol, amount_ui, amount_usd }] },
-        //     totalUsd: "$19.63"
-        //   }
-        const bal = data.data?.balance
-        if (!bal) return null
-
-        const parseUsd = (v) => {
-            if (typeof v === 'number') return v
-            if (typeof v === 'string') {
-                const m = v.match(/\$?([\d,]+\.?\d*)/)
-                return m ? parseFloat(m[1].replace(/,/g, '')) : 0
-            }
-            return 0
+    const parseUsd = (v) => {
+        if (typeof v === 'number') return v
+        if (typeof v === 'string') {
+            const m = v.match(/\$?([\d,]+\.?\d*)/)
+            return m ? parseFloat(m[1].replace(/,/g, '')) : 0
         }
-
-        const tokens = []
-        if (bal.sol) {
-            tokens.push({ symbol: 'SOL', balance: bal.sol.amount_sol || 0, usdValue: bal.sol.amount_usd || 0, isNative: true })
-        }
-        for (const t of (bal.tokens || [])) {
-            tokens.push({
-                symbol: (t.symbol || '?').toUpperCase(),
-                balance: parseFloat(t.amount_ui || 0),
-                usdValue: parseUsd(t.amount_usd),
-                mint: t.mint,
-                isNative: false,
-            })
-        }
-        const totalUsd = parseUsd(data.data?.totalUsd) || tokens.reduce((s, t) => s + (t.usdValue || 0), 0)
-        return { totalUsd, tokens }
-    } catch (e) {
-        warn(`Solana balance fetch failed: ${e.message}`)
-        return null
+        return 0
     }
+
+    for (let attempt = 1; attempt <= SOLANA_FETCH_ATTEMPTS; attempt++) {
+        try {
+            const raw = execSync('byreal-cli wallet balance -o json 2>/dev/null', {
+                timeout: SOLANA_FETCH_TIMEOUT_MS, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024,
+            })
+            const data = JSON.parse(raw)
+            // Actual byreal-cli v0.3.6 shape:
+            //   data: {
+            //     address,
+            //     balance: { sol: { amount_sol, amount_usd }, tokens: [{ symbol, amount_ui, amount_usd }] },
+            //     totalUsd: "$19.63"
+            //   }
+            const bal = data.data?.balance
+            if (!bal) { warn(`Solana balance fetch attempt ${attempt}: response had no balance object`); continue }
+
+            const tokens = []
+            if (bal.sol) {
+                tokens.push({ symbol: 'SOL', balance: bal.sol.amount_sol || 0, usdValue: bal.sol.amount_usd || 0, isNative: true })
+            }
+            for (const t of (bal.tokens || [])) {
+                tokens.push({
+                    symbol: (t.symbol || '?').toUpperCase(),
+                    balance: parseFloat(t.amount_ui || 0),
+                    usdValue: parseUsd(t.amount_usd),
+                    mint: t.mint,
+                    isNative: false,
+                })
+            }
+            const totalUsd = parseUsd(data.data?.totalUsd) || tokens.reduce((s, t) => s + (t.usdValue || 0), 0)
+            return { totalUsd, tokens }
+        } catch (e) {
+            warn(`Solana balance fetch attempt ${attempt}/${SOLANA_FETCH_ATTEMPTS} failed: ${e.message}`)
+        }
+    }
+    return null
 }
 
 // ─── Balance fetch: Mantle EOA via RPC ──────────────────────────────────────
@@ -203,27 +214,56 @@ function detectDeposits(currentBalances, lastSnapshot) {
 async function main() {
     log(`Starting treasury snapshot — mode: ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`)
 
-    const solana = fetchSolanaBalances()
+    const now = new Date().toISOString()
+    const previous = loadJson(CAPITAL_POOL_PATH, null)   // loaded up front for carry-forward + deposit detection
+
+    const solanaLive = fetchSolanaBalances()
     const mantle = await fetchMantleBalances()
 
-    if (!solana && !mantle) {
-        warn('Both balance fetches failed — aborting')
+    // Carry-forward guard: a transient byreal-cli timeout must NEVER blank the
+    // Solana book (that is the bug that made the dashboard read $1.46 instead of
+    // ~$19). On a failed live read, reuse the last good Solana snapshot and flag
+    // it stale rather than writing null. The dashboard surfaces `stale` instead
+    // of silently dropping the position.
+    let solanaForSnapshot = null
+    let solanaStale = false
+    if (solanaLive) {
+        solanaForSnapshot = {
+            wallet: SOLANA_WALLET,
+            totalUsd: Math.round(solanaLive.totalUsd * 100) / 100,
+            tokens: solanaLive.tokens,
+            stale: false,
+            lastGoodAt: now,
+        }
+    } else if (previous?.solana && previous.solana.totalUsd != null) {
+        solanaForSnapshot = {
+            ...previous.solana,
+            stale: true,
+            staleSince: previous.solana.staleSince || now,
+            lastGoodAt: previous.solana.lastGoodAt || previous.updatedAt || null,
+        }
+        solanaStale = true
+        warn(`Solana balance unavailable — carrying forward last good snapshot ($${previous.solana.totalUsd}) flagged STALE (last good: ${solanaForSnapshot.lastGoodAt})`)
+    }
+
+    if (!solanaForSnapshot && !mantle) {
+        warn('Both balance fetches failed and no prior Solana snapshot to carry forward — aborting')
         process.exit(1)
     }
 
-    const totalUsd = (solana?.totalUsd || 0) + (mantle?.totalUsd || 0)
+    const totalUsd = (solanaForSnapshot?.totalUsd || 0) + (mantle?.totalUsd || 0)
     const poolUsd = Math.max(0, totalUsd - GAS_RESERVE_USD)
 
     const snapshot = {
         version: 1,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now,
         gasReserveUsd: GAS_RESERVE_USD,
         totalUsd: Math.round(totalUsd * 100) / 100,
         poolUsd: Math.round(poolUsd * 100) / 100,
-        solana: solana ? {
-            wallet: SOLANA_WALLET,
-            totalUsd: Math.round(solana.totalUsd * 100) / 100,
-            tokens: solana.tokens,
+        solanaStale,
+        solana: solanaForSnapshot ? {
+            ...solanaForSnapshot,
+            totalUsd: Math.round(solanaForSnapshot.totalUsd * 100) / 100,
         } : null,
         mantle: mantle ? {
             wallet: MANTLE_WALLET,
@@ -236,15 +276,15 @@ async function main() {
     }
 
     log(`Total USD: $${snapshot.totalUsd} | Pool (post gas reserve): $${snapshot.poolUsd}`)
-    if (solana) log(`  Solana: $${snapshot.solana.totalUsd} (${solana.tokens.length} tokens)`)
+    if (snapshot.solana) log(`  Solana: $${snapshot.solana.totalUsd} (${(snapshot.solana.tokens||[]).length} tokens)${solanaStale ? ' [STALE — carried forward]' : ''}`)
     if (mantle) log(`  Mantle: $${snapshot.mantle.totalUsd} (MNT ${snapshot.mantle.mntBalance}, mETH ${snapshot.mantle.methBalance})`)
 
     // ── Deposit detection ───────────────────────────────────────────────────
+    // Only run on a FRESH live read — carried-forward data has no new signal.
     let newDeposits = []
-    if (!NO_DEPOSITS && solana) {
-        const previous = loadJson(CAPITAL_POOL_PATH, null)
+    if (!NO_DEPOSITS && solanaLive) {
         const previousSolana = previous?.solana
-        newDeposits = detectDeposits(solana, previousSolana)
+        newDeposits = detectDeposits(solanaLive, previousSolana)
         if (newDeposits.length) {
             log(`💰 Detected ${newDeposits.length} deposit(s):`)
             for (const d of newDeposits) log(`  +${d.amount.toFixed(2)} ${d.symbol} ($${d.usdValue.toFixed(2)})`)

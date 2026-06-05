@@ -19,10 +19,10 @@ from pathlib import Path
 
 
 def get_api_key():
-    """Get API key from environment."""
-    key = os.environ.get("GEMINI_API_KEY")
+    """Get API key from environment. Prefers GOOGLE_AGENT_PLATFORM_API_KEY (Vertex AI Express)."""
+    key = os.environ.get("GOOGLE_AGENT_PLATFORM_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not key:
-        print("Error: GEMINI_API_KEY environment variable not set", file=sys.stderr)
+        print("Error: GOOGLE_AGENT_PLATFORM_API_KEY (or GEMINI_API_KEY) environment variable not set", file=sys.stderr)
         sys.exit(1)
     return key
 
@@ -50,17 +50,17 @@ def generate_image(prompt, output_path, input_image_path=None):
     """Generate or edit an image using Gemini API."""
     api_key = get_api_key()
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key={api_key}"
-    
+    url = "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-3.1-flash-image-preview:generateContent"
+
     # Build request parts
     parts = [{"text": prompt}]
-    
+
     # Add input image if provided (for editing)
     if input_image_path:
         if not os.path.exists(input_image_path):
             print(f"Error: Input image not found: {input_image_path}", file=sys.stderr)
             sys.exit(1)
-        
+
         img_data = load_image_as_base64(input_image_path)
         mime_type = detect_mime_type(input_image_path)
         parts.append({
@@ -69,17 +69,17 @@ def generate_image(prompt, output_path, input_image_path=None):
                 "data": img_data
             }
         })
-    
+
     payload = {
-        "contents": [{"parts": parts}],
+        "contents": [{"role": "user", "parts": parts}],
         "generationConfig": {
             "responseModalities": ["TEXT", "IMAGE"]
         }
     }
-    
-    headers = {"Content-Type": "application/json"}
+
+    headers = {"Content-Type": "application/json", "x-goog-api-key": api_key}
     data = json.dumps(payload).encode()
-    
+
     req = urllib.request.Request(url, data=data, headers=headers)
     
     try:

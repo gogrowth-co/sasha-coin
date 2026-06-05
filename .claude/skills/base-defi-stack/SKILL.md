@@ -63,8 +63,11 @@ DAI:    0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb  (18 decimals)
 Factory:                    0x33128a8fC17869897dcE68Ed026d694621f6FDfD
 NonfungiblePositionManager: 0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f6
 SwapRouter02:               0x2626664c2603336E57B271c5C0b26F421741e481
-QuoterV2:                   0x3d4e44Eb1374240CE5F1B136041212F30e7E0d11
+QuoterV2:                   0x222cA98F00eD15B1faE10B61c277703a194cf5d2
 ```
+
+> **QuoterV2 address fix (2026-06-04, on-chain verified):** The Base QuoterV2 is **`0x222cA98F00eD15B1faE10B61c277703a194cf5d2`** (21KB code; `quoteExactInputSingle` returns a sane quote — verified on publicnode/mainnet.base.org/drpc). The address previously listed here, `0x3d4e44Eb1374240CE5F1B136041212F30e7E0d11`, has **NO code on Base** (it's the Ethereum-mainnet-style address) — calling it returns `0x` → ethers throws "could not decode result data". It burned a step during the WETH/USDC migration (DEC-007).
+> **Fallback (no quoter needed):** compute swap min-out directly from the target pool's `slot0` price — `expectedOut = amountIn × poolPrice × (1 − feeTier) ; minOut = expectedOut × (1 − slippage)` — then send `SwapRouter02.exactInputSingle` with an explicit `gasLimit` + a pre-send `staticCall` guard. This is what `scripts/migrate-lp-swap.js` uses; it has no external-quoter dependency. (Or use LiFi `/v1/quote`, which returns a ready-to-sign `transactionRequest` — see the cross-project research note.) **Always `ethers.getAddress()`-validate any address copied from docs** — the old QuoterV2 string also had wrong EIP-55 casing.
 
 ### Fee Tiers & Tick Spacing
 ```
@@ -273,8 +276,11 @@ async function getHealthFactor(marketId, userAddress) {
 
 ## 7. Update Sources
 
+**Off-chain pool data (volume / TVL / APR):** this skill gives you the on-chain ground truth (`fee()`, `liquidity()`, gauge `rewardRate()`). The off-chain halves — 24h/7d **volume** and **TVL** — come from **GeckoTerminal (`reserve_in_usd` + `volume_usd`) or DexScreener**, never from a label (Aerodrome Slipstream fees are dynamic, so labels are wrong). For **exact historical daily volume + tick-level in-range depth on Base**, query **The Graph** — Uniswap v3 (`5zvR82...`) and Aerodrome Base Slipstream (`GENunSHWLBXm59mBSgPzQ8metBEp9YDfdqwFr91Av1UM`) subgraphs expose `poolDayDatas{date volumeUSD tvlUSD}` and `ticks{tickIdx liquidityGross liquidityNet}`. Compute fee APR yourself with **7d-avg volume × on-chain `fee()` ÷ in-range TVL** and cross-check realized APR against **Revert `/v1/positions?network=base&pool=0x...`**. Full endpoint/field spec, rate limits, subgraph IDs, and the weekly integrity check: `docs/integrations/lp-data-sources-api-reference.md`.
+
 | Source | URL |
 |---|---|
+| **LP data-source API spec (volume/TVL/APR + The Graph subgraph IDs)** | `docs/integrations/lp-data-sources-api-reference.md` (weekly-verified) |
 | Base chain docs | https://docs.base.org |
 | Uniswap v3 Base deployments | https://docs.uniswap.org/contracts/v3/reference/deployments/base-deployments |
 | Aerodrome docs | https://docs.aerodrome.finance |

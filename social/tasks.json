@@ -1,6 +1,6 @@
 {
   "version": "2.1",
-  "lastUpdated": "2026-05-27T14:45:00.000Z",
+  "lastUpdated": "2026-06-02",
   "tasks": [
     {
       "id": "onb-01",
@@ -153,7 +153,7 @@
       "category": "dashboard",
       "status": "todo",
       "priority": "medium",
-      "notes": "New endpoint: return boolean presence status for each required env var (BUFFER_ACCESS_TOKEN, BUFFER_CHANNEL_ID, BUFFER_ORGANIZATION_ID, X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET, APIFY_TOKEN). Never return values \u2014 only true/false per key.",
+      "notes": "New endpoint: return boolean presence status for each required env var (BUFFER_ACCESS_TOKEN, BUFFER_CHANNEL_ID, BUFFER_ORGANIZATION_ID, X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET, APIFY_TOKEN). Never return values — only true/false per key.",
       "files": [
         "task-server.js"
       ],
@@ -272,7 +272,7 @@
       "category": "content",
       "status": "in-progress",
       "priority": "high",
-      "notes": "Visual profile written from reference images \u2192 images/references/visual-profile.md and VPS /data/.openclaw/workspace/content/sasha-references/visual-profile.md. STILL NEEDED: upload actual .jpg reference files to VPS. Use: scp -i ~/.ssh/hostinger_vps <image_path> root@187.77.42.134:/docker/openclaw-h3mk/data/.openclaw/workspace/content/sasha-references/ Files needed: ref-01-headshot.jpg, ref-02-fullbody-studio.jpg, ref-03-character-sheet.jpg, ref-04-brand-sheet.jpg",
+      "notes": "Visual profile written from reference images → images/references/visual-profile.md and VPS /data/.openclaw/workspace/content/sasha-references/visual-profile.md. STILL NEEDED: upload actual .jpg reference files to VPS. Use: scp -i ~/.ssh/hostinger_vps <image_path> root@187.77.42.134:/docker/openclaw-h3mk/data/.openclaw/workspace/content/sasha-references/ Files needed: ref-01-headshot.jpg, ref-02-fullbody-studio.jpg, ref-03-character-sheet.jpg, ref-04-brand-sheet.jpg",
       "created": "2026-05-13",
       "dueDate": null,
       "approvalStatus": "not-needed",
@@ -280,7 +280,7 @@
     },
     {
       "id": "SASHA-CE-001",
-      "title": "Daily X cadence \u2014 Week 21 (May 19-25) \u00b7 7 posts",
+      "title": "Daily X cadence — Week 21 (May 19-25) · 7 posts",
       "type": "content-piece",
       "status": "in-progress",
       "priority": "high",
@@ -316,7 +316,7 @@
     },
     {
       "id": "SASHA-CE-002",
-      "title": "X thread \u2014 Sasha's take on AI agent wallets",
+      "title": "X thread — Sasha's take on AI agent wallets",
       "type": "content-piece",
       "status": "todo",
       "priority": "high",
@@ -331,7 +331,7 @@
       "dueDate": "2026-05-22",
       "statusChangedDate": "2026-05-17",
       "created": "2026-05-17",
-      "notes": "Thread from Sasha's POV on why AI agents need native wallets. 6-8 tweets. Narrative arc: problem \u2192 current workarounds \u2192 why it breaks \u2192 Sasha's vision.",
+      "notes": "Thread from Sasha's POV on why AI agents need native wallets. 6-8 tweets. Narrative arc: problem → current workarounds → why it breaks → Sasha's vision.",
       "artifacts": {
         "research": null,
         "outline": null,
@@ -343,7 +343,7 @@
     },
     {
       "id": "SASHA-CE-003",
-      "title": "X thread \u2014 Sasha market analysis: DeFAI sector",
+      "title": "X thread — Sasha market analysis: DeFAI sector",
       "type": "content-piece",
       "status": "todo",
       "priority": "medium",
@@ -358,7 +358,7 @@
       "dueDate": "2026-05-30",
       "statusChangedDate": "2026-05-17",
       "created": "2026-05-17",
-      "notes": "Sasha's first 'market analyst' thread. DeFAI landscape \u2014 top 5 protocols, who wins, who fades. Data-first tone.",
+      "notes": "Sasha's first 'market analyst' thread. DeFAI landscape — top 5 protocols, who wins, who fades. Data-first tone.",
       "artifacts": {
         "research": null,
         "outline": null,
@@ -370,7 +370,7 @@
     },
     {
       "id": "SASHA-CE-004",
-      "title": "X post batch \u2014 Reply-first engagement Week 21",
+      "title": "X post batch — Reply-first engagement Week 21",
       "type": "content-piece",
       "status": "in-progress",
       "priority": "high",
@@ -397,7 +397,7 @@
     },
     {
       "id": "SASHA-CE-005",
-      "title": "Daily X cadence \u2014 Week 22 (May 26-30) \u00b7 5 posts",
+      "title": "Daily X cadence — Week 22 (May 26-30) · 5 posts",
       "type": "content-piece",
       "status": "in-progress",
       "priority": "high",
@@ -439,7 +439,7 @@
       "statusChangedDate": "2026-05-19",
       "created": "2026-05-19",
       "campaign": "sasha-thread-cadence",
-      "arc": "Week 1 \u2014 Becoming Real",
+      "arc": "Week 1 — Becoming Real",
       "threadType": "Protocol Dissection",
       "artifacts": {
         "draft_x": "social/x/sasha-thread-2026-05-20-virtuals-dissection.md",
@@ -470,7 +470,7 @@
       "statusChangedDate": "2026-05-19",
       "created": "2026-05-19",
       "campaign": "sasha-thread-cadence",
-      "arc": "Week 1 \u2014 Becoming Real",
+      "arc": "Week 1 — Becoming Real",
       "threadType": "Builder Log",
       "artifacts": {
         "draft_x": "social/x/sasha-thread-2026-05-22-builder-log-week1.md",
@@ -485,7 +485,7 @@
     },
     {
       "id": "CE-S-003",
-      "title": "Thread: 7 Questions \u2014 Is This Agent Actually Autonomous?",
+      "title": "Thread: 7 Questions — Is This Agent Actually Autonomous?",
       "type": "content-piece",
       "channel": "x",
       "channels": [
@@ -501,7 +501,7 @@
       "statusChangedDate": "2026-05-19",
       "created": "2026-05-19",
       "campaign": "sasha-thread-cadence",
-      "arc": "Week 1 \u2014 Becoming Real",
+      "arc": "Week 1 — Becoming Real",
       "threadType": "Framework/Education",
       "artifacts": {
         "draft_x": "social/x/sasha-thread-2026-05-24-7-questions-agent-autonomy.md",
@@ -521,7 +521,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "writing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",
@@ -547,7 +549,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "writing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",
@@ -566,6 +570,18 @@
       },
       "projectSlug": "sasha-coin",
       "parentId": null
+    },
+    {
+      "id": "casper-01",
+      "title": "Casper Agentic Buildathon — minimal-real entry (Testnet + repo + demo)",
+      "category": "runtime",
+      "status": "todo",
+      "priority": "high",
+      "notes": "DEV HANDOFF from marketing/. Build spec: docs/casper-buildathon-build-spec.md. Decision support: research/casper-agentic-buildathon-brief-2026-06-02.md. Scope = minimal-but-real: one Odra contract on Casper Testnet + Sasha autonomously calling it each cycle (transaction-producing component) via cspr-click skill + Casper MCP, optional x402 paid-data call, Casper panel on the existing dashboard, PUBLIC open-source repo (secret scan first), demo video. Win on narrative + CSPR.fans community vote, not engineering. Submission deadline 2026-06-30; finals Jul 6-19. BLOCKER: content engine (gemini-2.5-flash) is dead -> vote campaign needs it fixed or hand-driven. Phase 0 gate: do NOT start building until Gabriel confirms the path. Content/video/vote-campaign route back to marketing/.",
+      "created": "2026-06-02",
+      "dueDate": "2026-06-30",
+      "approvalStatus": "pending",
+      "statusChangedDate": "2026-06-02"
     }
   ],
   "schemaVersion": "2.1",
@@ -577,7 +593,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "writing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",
@@ -602,7 +620,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "writing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",
@@ -630,7 +650,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "editing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",
@@ -654,7 +676,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "editing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",
@@ -678,7 +702,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "editing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",
@@ -702,7 +728,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "editing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",
@@ -726,7 +754,9 @@
       "status": "in-progress",
       "priority": "high",
       "channel": "x",
-      "channels": ["x"],
+      "channels": [
+        "x"
+      ],
       "pipelineStage": "editing",
       "approvalStatus": "pending",
       "qaStatus": "not-run",

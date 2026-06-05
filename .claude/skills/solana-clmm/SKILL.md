@@ -220,9 +220,12 @@ AMM v4:       675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8
 ```
 Orca API:      https://api.orca.so/v2/solana/whirlpool          # pool list + APR
 Raydium API:   https://api.raydium.io/v2/ammV3/ammPools          # CLMM pools
-DefiLlama:     https://yields.llama.fi/pools (chain=Solana)      # cross-protocol
+GeckoTerminal: api.geckoterminal.com/api/v2/networks/solana/...  # accurate volume + reserve_in_usd (TVL)
+DexScreener:   api.dexscreener.com/token-pairs/v1/solana/{mint}  # fast broad scan, volume + liquidity
+DefiLlama:     https://yields.llama.fi/pools (chain=Solana)      # DISCOVERY ONLY — never trust its CL apyBase
 Birdeye:       https://public-api.birdeye.so/defi/pools          # requires API key
 ```
+**Accurate stack (do not rank capital on DefiLlama APY):** discover broadly, then take **volume + TVL from GeckoTerminal/DexScreener**, compute fee APR with **7d-avg volume × fee tier ÷ TVL** (fee tier from Orca/Raydium pool config, not a label), and cross-check realized fee APR against **Revert** where available. Full endpoint/field spec + weekly integrity check: `docs/integrations/lp-data-sources-api-reference.md`. Note: Revert coverage for Solana is **unconfirmed/likely absent**, and **The Graph is practically EVM-only** (no maintained public Orca/Raydium CLMM subgraph — Substreams modules exist but are self-hosted). So for Solana, lean on GeckoTerminal + DexScreener + Orca/Raydium SDKs + on-chain; The Graph's tick/history advantage applies to Base/Ethereum only.
 
 ### pool-scanner.js for Solana
 ```bash

@@ -70,3 +70,7 @@ content/kol-feed*.json
 content/reply-targets.json
 content/scheduled-posts.json
 content/mantle-signal.json
+
+# Firecrawl scrape cache (runtime junk)
+.firecrawl/
+.playwright-cli/

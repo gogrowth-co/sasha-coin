@@ -13,7 +13,7 @@
 | Base | @base | L2 by Coinbase |
 | Aave | @AaveAave | Lending protocol |
 | Uniswap | @Uniswap | AMM / DEX |
-| Aerodrome | @AerodromeFinance | DEX on Base |
+| Aerodrome | @AerodromeFi | DEX on Base (verified 2026-06-03; prior @AerodromeFinance was incorrect) |
 | Coinbase | @coinbase | |
 | OpenCLAW | @openclaw_ai | Sasha's runtime (tag when relevant) |
 
@@ -48,6 +48,23 @@
 | 0xCygaar | @0xCygaar | Base/Coinbase developer ecosystem |
 | Bankless | @bankless | DeFi media — tag the show, not individuals |
 | The Defiant | @DefiantNews | DeFi journalism |
+
+## Ecosystem Reply Targets — FAILED FACT-CHECK 2026-06-03 (DO NOT USE until re-verified)
+
+These handles were surfaced by Grok live X search and did NOT survive verification. **None are cleared for reply-targets.json.** Re-verify each directly on X (account exists + active + matches description) before any use. A wrong reply target wastes a slot and damages credibility.
+
+| Name (claimed) | @handle (claimed) | Verification 2026-06-03 | Status |
+|---|---|---|---|
+| QuantumCred | @QuantumCred | No web footprint found | UNVERIFIED — do not use |
+| OctavFi | ~~@Charlie85270R~~ | WRONG handle. Real Octav = **@OctavFi** (confirmed). Note: Octav is a portfolio-tracker company, not a KOL. | CORRECTED → @OctavFi if used at all |
+| Signal Seeker | @signalseeker_v1 | No web footprint found; synthetic-looking handle | UNVERIFIED — do not use |
+| degenpark | @degenpark_eth | No footprint matching this handle (a separate "Degen Capital" agent exists) | UNVERIFIED — do not use |
+| ssynq_ai | @ssynq_ai | No web footprint found | UNVERIFIED — do not use |
+| wagmiAlexander | @wagmiAlexander | Not verified | UNVERIFIED — do not use |
+| Luke Youngblood | @lukeyoungblood | Real person (Moonwell founder), exact handle not confirmed | VERIFY exact handle before use |
+| BaseCaptainHB | @BaseCaptainHB | Not verified | UNVERIFIED — do not use |
+
+**Verified-safe ecosystem anchors to reply to in the meantime** (official accounts, confirmed real): @base, @buildonbase, @AerodromeFi, @virtuals_io, @Mantle_Official, @CreatorBid, @XLayerOfficial, @0xCygaar, @OctavFi. The real KOL/builder reply list must be rebuilt by reading actual repliers in live Aerodrome/Virtuals threads once a scraper or X lookup is available.
 
 ---
 

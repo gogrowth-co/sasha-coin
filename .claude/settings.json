@@ -19,5 +19,18 @@
       "Edit(_sop/*)",
       "Write(_sop/*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"/Users/gabrielmangabeira/Documents/Gabriel Mangabeira/sasha-coin/.claude/hooks/secret-guard.py\""
+          }
+        ]
+      }
+    ]
   }
 }

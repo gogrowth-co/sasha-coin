@@ -28,12 +28,15 @@ External tools and APIs Sasha depends on. Updated when wiring or rotating creden
 | Trenches API | $SASHA price + trending tokens | none (public) | `Clawlett/clawlett/scripts/trenches.js`, future `price-monitor` |
 | Basescan | Wallet activity scan | optional API key | future `wallet-monitor` |
 | Base RPC | Onchain reads | public RPC | `Clawlett/clawlett/scripts/balance.js` |
+| The Graph | CL subgraph data: tick-level depth + exact daily volume/fees/TVL (Base/Ethereum) | `THE_GRAPH_API_KEY` (32 hex, Bearer) | `scripts/signals/lp-data-source-verifier.mjs`, future pool-scanner v2 |
+
+**LP pool data stack (DefiLlama, GeckoTerminal, DexScreener, Revert, The Graph):** full endpoint/field spec + what to trust is in `docs/integrations/lp-data-sources-api-reference.md`, auto-verified weekly by `scripts/signals/lp-data-source-verifier.mjs` (launchd `com.mangaos.lp-datasource-check`). The Graph is authed so only the local verifier checks it; the other four are also re-checked by the cloud routine.
 
 ## Image generation
 
 | Tool | Purpose | Auth env | Skill |
 |---|---|---|---|
-| Gemini API | Image generation | `GOOGLE_API_KEY` | `gemini-image-gen`, `gemini-image-simple`, `gemini-nano-banana` |
+| Gemini API | Image generation + reply generation | `GEMINI_API_KEY` (`GEMINI_REPLY_MODEL`) | `gemini-image-gen`, `gemini-image-simple`, `gemini-nano-banana`, `scripts/morning-reply-run.js` |
 | Nanobanana | Higher-quality images | (TBD) | `nano-banana-pro` (pending) |
 
 ## Onchain
@@ -57,5 +60,20 @@ External tools and APIs Sasha depends on. Updated when wiring or rotating creden
 | `wallet-monitor` | hourly | `wallet-monitor` | planned (Phase 2) |
 | `price-monitor` | every 30 min | `price-monitor` | planned (Phase 2) |
 
+## Integration registry (machine-readable)
+`docs/integrations/registry.json` is the source of truth for every external integration (env-var NAMES only, `live_action_risk`, fallback, smoke test, `owner_skill`). Maintained by the `sasha-ops-hardening` skill. Verify freshness with `node scripts/check-integration-docs.mjs`.
+
+## Reliability / API skills (.claude/skills/sasha-*)
+| Skill | Owns |
+|---|---|
+| `sasha-xlayer-oracle-keeper` | X Layer RPC, Uniswap v4 oracle/hook, signal push |
+| `sasha-signal-fusion` | Allora/Elfa/Polymarket/OpenRouter/Gemini/CoinGecko/DefiLlama signal pipeline |
+| `sasha-social-agent` | Buffer, X API, Apify, ADB, Typefully — daily post + reply plumbing |
+| `sasha-defi-execution` | Byreal, Hyperliquid, LiFi, Clawlett, Mantle/Base/Solana/Arbitrum RPC, treasury |
+| `sasha-distribution-liveness` | read-only liveness audit (`scripts/audit-sasha-distribution.mjs`) |
+| `sasha-ops-hardening` | registry upkeep, docs watchdog, secret hygiene, VPS reliability triage |
+
+Runtime mirrors of the first four (slim) live in `skills/sasha-*` for VPS deploy.
+
 ## Secrets storage
-All real values live in `/docker/openclaw-h3mk/data/.openclaw/.env` on VPS. The local `.env.example` documents required keys with empty values. Never commit `.env` itself.
+All real values live in `/docker/openclaw-h3mk/data/.openclaw/.env` on VPS. The local `.env.example` documents required keys with empty values. `.env`/`.env.bak` are gitignored and were never committed (verified 2026-06-03). Registry/skills/reports reference env-var NAMES only, never values. Never commit `.env` itself.

@@ -88,7 +88,14 @@ See `_context/ecosystem-handles.md` for verified @handles of protocols, projects
 - "Hot take: ..." (just say the take)
 - "I think maybe..." (uncertain hedges)
 
+## Fact-check gate (HARD RULE — runs before the self-edit checklist)
+
+Before writing OR posting any reply, original post, or thread: verify every number, price, %, APR, $ figure, balance, holder count, and factual claim against ground truth at that moment. Ground truth = on-chain explorer (Basescan / Solscan / Mantle explorer), a live price feed, or a primary source. If it cannot be verified live, omit it or describe the position qualitatively. When in doubt, do not post the number.
+
+**Assumed-price trap:** `state/portfolio-history.json` and `state/capital-pool.json` compute USD using hardcoded `mntPriceAssumed` / `ethPriceAssumed`. Their dollar figures are ESTIMATES, not facts. Never post a USD treasury figure or P&L sourced from them as if it were real. "I checked it's in the file" is not fact-checking.
+
 ## Self-edit checklist before posting
+- [ ] FACT-CHECK GATE passed (above): every number/claim verified live against on-chain or primary source; no assumed-price figures posted as fact
 - [ ] First-person singular only (I, my, me — never we)
 - [ ] No em dashes
 - [ ] No banned words

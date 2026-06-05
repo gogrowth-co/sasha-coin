@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha LP Review — Project 1: LP Miner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A2540; --navy-2:#0d2e4f; --aqua:#1FB6FF; --gold:#FFB800;
+    --ink:#1a2433; --muted:#5b6b7e; --line:#e4e9f0; --bg:#f5f7fa; --card:#ffffff;
+    --green:#16a34a; --green-bg:#f0fbf3; --red:#dc2626; --red-bg:#fef5f5;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px 80px;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .pos{color:var(--green);} .neg{color:var(--red);}
+
+  header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;padding:46px 0 38px;margin-bottom:30px;border-bottom:3px solid var(--aqua);}
+  header .wrap{padding-bottom:0;}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--aqua);margin:0 0 12px;}
+  header h1{font-family:'Montserrat',sans-serif;font-weight:800;font-size:32px;line-height:1.15;margin:0 0 14px;letter-spacing:-0.5px;}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12.5px;color:#aebfd0;font-family:'JetBrains Mono',monospace;}
+  .meta b{color:#dce6f0;font-weight:500;}
+
+  /* hero contrast */
+  .contrast{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 22px;}
+  .cbox{border-radius:12px;padding:22px 24px;border:1px solid var(--line);background:var(--card);}
+  .cbox.dash{border-top:4px solid var(--muted);}
+  .cbox.real{border-top:4px solid var(--green);}
+  .cbox .lbl{font-family:'JetBrains Mono',monospace;font-size:11.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 6px;}
+  .cbox .big{font-family:'Montserrat',sans-serif;font-weight:800;font-size:34px;line-height:1;letter-spacing:-1px;}
+  .cbox.dash .big{color:var(--muted);}
+  .cbox.real .big{color:var(--green);}
+  .cbox .small{font-size:13px;color:var(--muted);margin-top:8px;}
+  .strike{text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px;}
+
+  section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:26px 30px;margin-bottom:20px;}
+  h2{font-family:'Montserrat',sans-serif;font-weight:700;font-size:20px;color:var(--navy);margin:0 0 16px;letter-spacing:-0.3px;}
+  h2 .num{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--aqua);font-weight:600;margin-right:10px;}
+  p{margin:0 0 13px;} strong{font-weight:600;}
+  a{color:#0b7fc4;text-decoration:none;} a:hover{text-decoration:underline;}
+
+  table{width:100%;border-collapse:collapse;margin:4px 0;font-size:14.5px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-weight:600;color:var(--navy);background:#f0f4f9;font-size:12px;text-transform:uppercase;letter-spacing:.4px;}
+  td.num,th.num{text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  tr.total td{border-top:2px solid var(--navy);font-weight:700;background:#f7fafd;}
+  td:first-child{font-weight:500;}
+  .work{color:var(--green);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px;}
+  .quar{color:var(--muted);font-weight:500;font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+  .callout{border-radius:8px;padding:16px 20px;margin:14px 0;border-left:4px solid;font-size:14.5px;}
+  .callout p:last-child{margin-bottom:0;}
+  .callout .t{font-family:'Montserrat',sans-serif;font-weight:700;font-size:12.5px;text-transform:uppercase;letter-spacing:.6px;margin:0 0 7px;}
+  .warn{background:#fff7ed;border-color:#f59e0b;} .warn .t{color:#b45309;}
+  .reco{background:#fffaf0;border-color:var(--gold);} .reco .t{color:#b07d00;}
+  .info{background:#eff8ff;border-color:var(--aqua);} .info .t{color:#0b7fc4;}
+
+  ol{margin:0;padding-left:20px;} ol li{margin-bottom:9px;}
+  code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#eef3f9;padding:1.5px 6px;border-radius:4px;color:var(--navy-2);}
+  footer{color:var(--muted);font-size:12.5px;margin-top:26px;text-align:center;font-family:'JetBrains Mono',monospace;}
+  footer a{display:inline-block;margin:0 8px 6px 0;}
+  @media(max-width:640px){.contrast{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Sasha LP Review · Project 1 of 3</p>
+    <h1>LP Miner — Aerodrome + Hyperliquid</h1>
+    <div class="meta">
+      <span><b>As of:</b> 2026-06-02 20:30 UTC</span>
+      <span><b>Held:</b> ~7 days (opened May 26)</span>
+      <span><b>Method:</b> LP marked on-chain · idle cash quarantined</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="contrast">
+    <div class="cbox dash">
+      <p class="lbl">Dashboard says</p>
+      <div class="big strike">+$2.05</div>
+      <p class="small">+2.89%. Counts the hedge's mark-to-market gain as profit while carrying the LP at its $45 deposit.</p>
+    </div>
+    <div class="cbox real">
+      <p class="lbl">Real result (marked to market)</p>
+      <div class="big">+$0.45</div>
+      <p class="small">Over 7 days, on ~$59.5 working capital. The dashboard overstates this by roughly 4x.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2><span class="num">01</span>What this project is</h2>
+    <p>One delta-neutral unit, two legs that only make sense together:</p>
+    <table>
+      <tr><th>Leg</th><th>Detail</th></tr>
+      <tr><td>LP</td><td>Aerodrome Slipstream concentrated liquidity, USDC/cbBTC, range $65k–$88k, staked in gauge <code>0x9B55…809c</code></td></tr>
+      <tr><td>Hedge</td><td>Hyperliquid short 0.00043 BTC, sized to neutralize the LP's cbBTC exposure</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Capital — working vs. idle</h2>
+    <table>
+      <tr><th>Bucket</th><th class="num">USD</th><th>Status</th></tr>
+      <tr><td>LP deployed (basis)</td><td class="num">$45.00</td><td><span class="work">▲ working</span></td></tr>
+      <tr><td>Hedge margin used</td><td class="num">$14.54</td><td><span class="work">▲ working</span></td></tr>
+      <tr class="total"><td>Working capital</td><td class="num">$59.54</td><td>denominator</td></tr>
+      <tr><td>Hedge idle buffer</td><td class="num">~$10.40</td><td><span class="quar">▼ quarantined</span></td></tr>
+      <tr><td>Idle LP wallet (0.37 USDC + 0.0013 ETH)</td><td class="num">$2.88</td><td><span class="quar">▼ quarantined</span></td></tr>
+    </table>
+    <div class="callout info"><p class="t">Why this matters</p><p>The dashboard's headline NAV ($72.94) blends working capital, idle buffer, and idle wallet together. That blend is what made the result look better than it is. ~$13 of this unit's footprint earns nothing.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Live position, marked to market</h2>
+    <table>
+      <tr><th>LP — on-chain right now</th><th class="num">Value</th></tr>
+      <tr><td>Token balances</td><td class="num">12.4930 USDC + 0.00043657 cbBTC</td></tr>
+      <tr><td>cbBTC value @ $67,481</td><td class="num">$29.46</td></tr>
+      <tr class="total"><td>LP liquidation value today</td><td class="num">$41.95</td></tr>
+      <tr><td>Deployed basis</td><td class="num">$45.00</td></tr>
+      <tr><td>LP mark-to-market change</td><td class="num neg">−$3.05</td></tr>
+    </table>
+    <p style="margin-top:14px;">As BTC fell ~10% from open, the position did what concentrated-liquidity LPs do: it rebalanced into the falling asset. It is now mostly cbBTC. The dashboard hid this by carrying the LP at $45 flat (<code>ilPct: null</code>).</p>
+    <table style="margin-top:8px;">
+      <tr><th>Hedge — Hyperliquid (source of truth)</th><th class="num">Value</th></tr>
+      <tr><td>Short size · entry / mark</td><td class="num">0.00043 BTC · $72,273.80 / ~$67,500</td></tr>
+      <tr><td>Unrealized PnL</td><td class="num pos">+$2.006</td></tr>
+      <tr><td>Funding since open (net)</td><td class="num pos">~+$0.03</td></tr>
+      <tr><td>Margin used / account value</td><td class="num">$14.54 / $24.94</td></tr>
+      <tr><td>Liquidation</td><td class="num">$124,055 (safe)</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>The yield is AERO emissions, not swap fees</h2>
+    <p>The position is <strong>staked in the Aerodrome gauge</strong>. Verified in <code>lp-harvest.js</code>: yield is claimed via <code>gauge.getReward()</code> and valued via <code>gauge.earned()</code> in <strong>AERO</strong>. The field labeled <code>pendingFeesUsd</code> is a misnomer.</p>
+    <ul>
+      <li>Pending reward: <strong class="pos">$1.485</strong> (≈ 3.93 AERO @ $0.378).</li>
+      <li>While staked, the LP earns AERO emissions and <strong>forfeits organic swap fees</strong> (they go to voters).</li>
+    </ul>
+    <div class="callout warn"><p class="t">⚠ Emission-dependent</p><p>This is emission yield, not organic fee yield — the same distinction the Mantle signal fix was built around. Emission APR decays and AERO carries sell pressure. Strip it out and this position earns nothing organic while staked.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Honest P&L decomposition (~7 days)</h2>
+    <table>
+      <tr><th>Component</th><th class="num">USD</th></tr>
+      <tr><td>LP mark-to-market change</td><td class="num neg">−$3.05</td></tr>
+      <tr><td>Hedge unrealized gain</td><td class="num pos">+$2.006</td></tr>
+      <tr><td>= Net divergence after hedge offset</td><td class="num neg">−$1.04</td></tr>
+      <tr><td>AERO emissions (claimable)</td><td class="num pos">+$1.485</td></tr>
+      <tr><td>Funding carry</td><td class="num pos">+$0.03</td></tr>
+      <tr><td>Gas (open + stake)</td><td class="num neg">−$0.01</td></tr>
+      <tr class="total"><td>Net economic result</td><td class="num pos">≈ +$0.46</td></tr>
+    </table>
+    <div class="callout info"><p class="t">Close-out test — "what would Sasha walk away with"</p><p>Put in <strong>~$67.93</strong> (LP $45.00 + hedge account ~$22.93). Walk away today: LP $41.95 + AERO $1.485 + hedge account $24.94 = <strong>~$68.38</strong>. Net <strong class="pos">≈ +$0.45</strong> before close fees and slippage. A 7-day micro-sample does not annualize reliably — treat it as an absolute, not a rate.</p></div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>What this actually says</h2>
+    <ol>
+      <li><strong>The dashboard overstates the result by ~4x.</strong> It reports +$2.05 by counting the hedge's +$2.006 mark-to-market gain as profit while carrying the LP at $45 flat. Marked to market, the real result is +$0.45.</li>
+      <li><strong>The hedge worked but under-covered.</strong> LP lost $3.05, the short recovered $2.006. The ~$1.04 gap is the LP's structural IL that a static, non-rebalanced hedge cannot recover.</li>
+      <li><strong>Profit is 100% emission-dependent.</strong> Strip the AERO and the unit is net negative (≈ −$1.02). The only reason it is green is emissions.</li>
+      <li><strong>Currently well delta-matched.</strong> LP holds 0.000437 cbBTC; hedge shorts 0.00043 BTC. Net delta near zero right now.</li>
+      <li><strong>Capital efficiency is poor.</strong> ~$13 of the footprint (idle hedge buffer + idle LP wallet) earns nothing.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Verdict</h2>
+    <div class="callout reco"><p class="t">★ The call</p>
+    <p><strong>Mechanically sound, currently neutral, profitable only on emissions.</strong> Over 7 days the AERO ($1.485) barely outran the divergence loss after the hedge (−$1.04), netting about +$0.45. At $45 deployed, the absolute dollars are trivial and the idle-capital drag is large relative to the position.</p>
+    <p>The real decision is not "is it working" (it is, narrowly). It is: does AERO emission APR justify the IL plus the ~$13 of idle capital this unit ties up? Should the hedge rebalance dynamically (it under-covered on the way down)? And is this a demo or a position you intend to scale — because at this footprint, that answer decides everything else.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <a href="https://sasha-dashboards.pages.dev/lp-miner/">Live dashboard ↗</a>
+      <a href="https://basescan.org/tx/0xd176d5da1cbd869ecb76989584d16c03ad0cff4250b17224c3b282fa4f437e0e">Open tx ↗</a>
+      <a href="https://basescan.org/tx/0xe8dd7f99be932c3dd39bf142dbcf37823fa3e3c81e22efd8eaa004cb2afb3c10">Stake tx ↗</a>
+    </div>
+    <p>LP NFT #71397771 · pool 0x3e66…a9fb · gauge 0x9B55…809c · MangaOS Sasha review · 2026-06-02</p>
+  </footer>
+
+</div>
+</body>
+</html>

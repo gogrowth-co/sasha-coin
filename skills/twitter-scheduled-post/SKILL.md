@@ -70,7 +70,7 @@ If ERROR after retry: append to `state/post-errors.json` and skip this run.
 
 ## State updates (VPS-only — do not commit, do not sync back to git)
 
-After a successful post, write to `/data/.openclaw/state/`:
+After a successful post, write to `/data/.openclaw/workspace/state/` (the canonical runtime state dir — unified 2026-06-03; the legacy `/data/.openclaw/state/` social files were archived to `*.stale-20260603`). The relative `state/...` paths above resolve here when run from the workspace:
 
 **`calendar-state.json`** — track what Sasha used:
 ```json

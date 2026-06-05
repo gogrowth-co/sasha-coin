@@ -5,6 +5,8 @@ description: Weekly protocol update monitoring for all protocols Sasha's liquidi
 
 # Protocol Changelog Monitor — Expert Reference
 
+> **Two monitors, do not confuse them.** This skill watches **protocol SDKs/contracts** (Orca, Raydium, Uniswap, Aerodrome, Morpho, Hyperliquid, Base, Solana, Byreal). The **data-source APIs** that feed the pool scanner (DefiLlama, GeckoTerminal, DexScreener, Revert) are watched by a separate automated job — `scripts/signals/lp-data-source-verifier.mjs`, run weekly by launchd `com.mangaos.lp-datasource-check` (Mondays 09:05). It probes those four APIs, diffs against a baseline, stamps and drift-logs `docs/integrations/lp-data-sources-api-reference.md`, and pings the fleet dashboard. **Section 6 below** covers them; don't hand-check them here unless the verifier flags drift.
+
 ## 1. Protocols and Update Sources
 
 | Protocol | Role | GitHub | npm | Social |
@@ -151,3 +153,27 @@ VPS cron (add to openclaw.json):
 | Morpho oracle/market change | base-defi-stack |
 | Hyperliquid API breaking change | hyperliquid-perps |
 | Mantle hard fork | mantle-agent |
+| DefiLlama/GeckoTerminal/DexScreener/Revert endpoint or field change | lp-data-sources-api-reference.md (auto-flagged by the verifier, §6) |
+
+---
+
+## 6. Data-Source API Monitor (automated)
+
+The pool scanner depends on four off-chain data APIs. These are **not** hand-checked in the weekly procedure above — they are probed automatically and the reference doc is kept honest by the verifier.
+
+| API | What we use it for | Drift risk |
+|---|---|---|
+| DefiLlama (`yields.llama.fi`, `coins.llama.fi`) | pool discovery + token prices | low (stable, public) |
+| GeckoTerminal (`api.geckoterminal.com/api/v2`) | accurate volume + TVL; OpenAPI at `/docs/v2/swagger.json` | low-med (versioned schema — verifier diffs the path set + version) |
+| DexScreener (`api.dexscreener.com`) | fast volume + liquidity scan | low (public, stable) |
+| Revert (`api.revert.finance/v1/positions`) | realized fee APR cross-check | **HIGH — undocumented**; can change silently. The verifier's top watch target. |
+| The Graph (`gateway.thegraph.com`, Bearer key) | tick-level depth + exact daily volume/fees/TVL (Base/Ethereum) | med — per-subgraph schema can change on upgrade; **authed (key) so only the LOCAL verifier checks it, not the cloud routine**. Verified subgraphs: Uniswap v3 ETH `5zvR82...`, Aerodrome Base `GENunSHW...`. Key must be 32 hex. |
+
+**The job:** `node scripts/signals/lp-data-source-verifier.mjs` (`--dry-run` to preview, `--rebaseline` to accept current live state as the new normal).
+- Probes each API's documented endpoints + field shape; for GeckoTerminal it diffs the machine-readable `swagger.json` (version + path set).
+- Compares to `state/lp-data-source-baseline.json`.
+- Always stamps `**Last auto-verified:**` in `docs/integrations/lp-data-sources-api-reference.md` and writes `reports/lp-data-source-check-YYYY-MM-DD.{json,md}`.
+- On drift: appends a dated entry to the doc's **Drift log**, pings Telegram (VPS) + the fleet dashboard (local).
+- **When drift fires:** read the report, fix the prose spec in the reference doc, then `--rebaseline` to clear the alert. The script never rewrites the spec itself.
+
+**Schedule:** launchd `com.mangaos.lp-datasource-check`, Mondays 09:05 (runner `~/bin/run-lp-datasource-check.sh`, log `~/Library/Logs/lp-datasource-check.log`).

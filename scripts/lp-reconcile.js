@@ -50,7 +50,14 @@ const CHAIN_IDS = { base: 8453, mantle: 5000 }
 
 // Aerodrome Slipstream / Uniswap-v3-style NFT position manager on Base
 const AERO_NPM = '0x827922686190790b37229fd06084350E74485b72'
-const NPM_ABI = ['function positions(uint256) view returns (uint96 nonce,address operator,address token0,address token1,int24 tickSpacing,int24 tickLower,int24 tickUpper,uint128 liquidity,uint256 f0,uint256 f1,uint128 o0,uint128 o1)']
+const NPM_ABI = [
+    'function positions(uint256) view returns (uint96 nonce,address operator,address token0,address token1,int24 tickSpacing,int24 tickLower,int24 tickUpper,uint128 liquidity,uint256 f0,uint256 f1,uint128 o0,uint128 o1)',
+    // collect — read uncollected fees via staticCall(from=owner): the NPM pokes the pool internally and returns current owed. Pure eth_call.
+    'function collect((uint256 tokenId,address recipient,uint128 amount0Max,uint128 amount1Max)) returns (uint256 amount0,uint256 amount1)',
+    // ownerOf — derive staked/unstaked from chain truth (gauge owns NFT ⇒ staked) rather than the state flag.
+    'function ownerOf(uint256 tokenId) view returns (address)',
+]
+const MAX_UINT128 = (1n << 128n) - 1n
 // CL pool slot0 (sqrtPriceX96 + current tick) — Uniswap v3 / Aerodrome Slipstream identical
 const POOL_ABI = ['function slot0() view returns (uint160 sqrtPriceX96,int24 tick,uint16 observationIndex,uint16 observationCardinality,uint16 observationCardinalityNext,bool unlocked)']
 // Aerodrome Slipstream CLGauge — pending emissions for a staked NFT (AERO, 18 dec)
@@ -190,8 +197,18 @@ async function reconcileBasePosition(provider, position, prices, openPrice) {
         const t0 = TOKENS[String(pos.token0).toLowerCase()]
         const t1 = TOKENS[String(pos.token1).toLowerCase()]
 
+        // On-chain staked derivation: the gauge holds the NFT when staked, the LP wallet when not.
+        // Falls back to the state flag if the read fails. This makes the staked label chain-truth.
+        let stakedOnChain = null, onChainOwner = null
+        try {
+            onChainOwner = await npm.ownerOf(BigInt(position.nftTokenId))
+            stakedOnChain = onChainOwner.toLowerCase() !== LP_BASE_WALLET.toLowerCase()
+        } catch (e) { warn(`ownerOf read failed for ${position.id}: ${e.message.slice(0, 40)}`) }
+        const isStaked = stakedOnChain ?? Boolean(position.staked)
+
         const out = {
             funded, liveLiquidity: liquidity.toString(), tickLower, tickUpper,
+            onChainOwner, stakedOnChain,
             currentTick: null, currentPrice: null, inRange: null,
             composition: null, lpValueUsd: null,
             hedgedAssetAmount: null,            // non-stable token amount in the LP (for net delta)
@@ -260,6 +277,27 @@ async function reconcileBasePosition(provider, position, prices, openPrice) {
                 out.emissionsAmount = round4(aero)
                 out.emissionsUsd = round2(aero * (prices.aero || 0))
             } catch (e) { warn(`gauge.earned read failed for ${position.id}: ${e.message.slice(0, 50)}`) }
+        }
+
+        // ── Uncollected swap fees (unstaked / fee-collect positions) ──
+        // collect.staticCall(from=owner): the NPM burns 0 to poke the pool, updates tokensOwed to current
+        // fee growth, and returns the collectable amount. Pure eth_call — no tx, no gas, no signature.
+        // Skip when staked: the NFT is owned by the gauge (auth would fail) and organic fees accrue to voters.
+        if (funded && t0 && t1 && !isStaked) {
+            try {
+                const res = await npm.collect.staticCall(
+                    { tokenId: BigInt(position.nftTokenId), recipient: LP_BASE_WALLET, amount0Max: MAX_UINT128, amount1Max: MAX_UINT128 },
+                    { from: LP_BASE_WALLET }
+                )
+                const f0 = Number(res[0]) / 10 ** t0.decimals
+                const f1 = Number(res[1]) / 10 ** t1.decimals
+                const fp0 = prices[t0.priceKey] ?? 0, fp1 = prices[t1.priceKey] ?? 0
+                out.swapFeesPendingUsd = round2(f0 * fp0 + f1 * fp1)
+                out.swapFeesPending = {
+                    token0: { symbol: t0.symbol, amount: round4(f0) ?? Number(f0.toFixed(8)), usd: round2(f0 * fp0) },
+                    token1: { symbol: t1.symbol, amount: Number(f1.toFixed(8)), usd: round2(f1 * fp1) },
+                }
+            } catch (e) { warn(`collect.staticCall (fees) failed for ${position.id}: ${e.message.slice(0, 50)}`) }
         }
 
         return out
@@ -382,6 +420,8 @@ async function main() {
                 hodlUsd: v.hodlUsd ?? null, ilVsHodlUsd: v.ilVsHodlUsd ?? null, entryComposition: v.entryComposition ?? null,
                 emissionsToken: v.emissionsToken ?? null, emissionsAmount: v.emissionsAmount ?? null,
                 emissionsUsd: v.emissionsUsd ?? null,
+                swapFeesPendingUsd: v.swapFeesPendingUsd ?? null, swapFeesPending: v.swapFeesPending ?? null,
+                stakedOnChain: v.stakedOnChain ?? null, onChainOwner: v.onChainOwner ?? null,
                 gasUsd,
                 reason: v.reason,
                 checkedAt: new Date().toISOString(),
@@ -400,7 +440,10 @@ async function main() {
             it.funded = v.funded; it.liveLiquidity = v.liveLiquidity; it.divergence = v.divergence
             it.lpValueUsd = v.lpValueUsd; it.composition = v.composition
             it.emissionsToken = v.emissionsToken; it.emissionsAmount = v.emissionsAmount; it.emissionsUsd = v.emissionsUsd
-            it.swapFeesUsd = it.staked ? 0 : null   // staked ⇒ organic fees go to voters; yield is emissions
+            if (v.stakedOnChain != null) it.staked = v.stakedOnChain   // chain truth (gauge vs LP wallet) wins over the state flag
+            it.onChainOwner = v.onChainOwner ?? null
+            it.swapFeesUsd = it.staked ? 0 : (v.swapFeesPendingUsd ?? null)   // staked ⇒ organic fees go to voters; unstaked ⇒ real on-chain uncollected fees
+            it.swapFeesPending = it.staked ? null : (v.swapFeesPending ?? null)
             it.gasUsd = v.gasUsd
             it.reconciledAt = v.checkedAt
 
@@ -440,14 +483,15 @@ async function main() {
             if (v.lpValueUsd != null && it.deployedBasisUsd != null) {
                 const lpMtmChangeUsd = round2(v.lpValueUsd - it.deployedBasisUsd)
                 const emissionsUsd = v.emissionsUsd || 0
+                const swapFeesUsd = it.swapFeesUsd || 0   // uncollected swap fees (unstaked yield), real on-chain
                 const gasUsd = v.gasUsd || 0
                 const divergenceAfterHedgeUsd = round2(lpMtmChangeUsd + hedgeUPnlUsd)
-                const netResultUsd = round2(lpMtmChangeUsd + hedgeUPnlUsd + emissionsUsd + fundingUsd - gasUsd)
+                const netResultUsd = round2(lpMtmChangeUsd + hedgeUPnlUsd + emissionsUsd + swapFeesUsd + fundingUsd - gasUsd)
                 const workingCapitalUsd = round2((it.deployedBasisUsd || 0) + marginUsedUsd)
                 it.pnl = {
                     lpMtmChangeUsd, hedgeUPnlUsd,
                     divergenceAfterHedgeUsd,           // honest IL-after-hedge
-                    emissionsUsd: round2(emissionsUsd), fundingUsd, gasUsd: round2(gasUsd),
+                    emissionsUsd: round2(emissionsUsd), swapFeesUsd: round2(swapFeesUsd), fundingUsd, gasUsd: round2(gasUsd),
                     netResultUsd, workingCapitalUsd,
                     returnPct: workingCapitalUsd > 0 ? Math.round((netResultUsd / workingCapitalUsd) * 10000) / 100 : null,
                 }
@@ -570,12 +614,12 @@ async function main() {
         divergenceAfterHedgeUsd: priced.length ? sum('divergenceAfterHedgeUsd') : null,
         components: priced.length ? {
             lpMtmChangeUsd: sum('lpMtmChangeUsd'), hedgeUPnlUsd: sum('hedgeUPnlUsd'),
-            emissionsUsd: sum('emissionsUsd'), fundingUsd: sum('fundingUsd'), gasUsd: sum('gasUsd'),
+            emissionsUsd: sum('emissionsUsd'), swapFeesUsd: sum('swapFeesUsd'), fundingUsd: sum('fundingUsd'), gasUsd: sum('gasUsd'),
         } : null,
         navUsd,
         fundingAnnPct: dash.hedge?.position?.fundingAnnPct ?? null,
         deltaNeutral, killArmed, status,
-        note: 'Hero = LP mark-to-market change + hedge PnL + emissions + funding − gas, on working capital. NAV is secondary.',
+        note: 'Hero = LP mark-to-market change + hedge PnL + swap fees + emissions + funding − gas, on working capital. NAV is secondary.',
     }
     log(`overall: NET $${netResultUsd} (${returnPct}% on $${workingCapitalUsd} working, ${periodDays}d) | LP MTM $${lpValueUsd} vs basis $${deployedBasisUsd} | NAV $${navUsd} | ${status}`)
 

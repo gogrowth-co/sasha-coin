@@ -3,12 +3,17 @@
  * position-monitor.js — LP position health monitor
  *
  * Checks all open LP positions and evaluates kill-switch conditions:
- *   - OOR timeout: position out-of-range for >240 minutes
+ *   - OOR (three-tier, no auto-recenter):
+ *       soft  — OOR >= 720 min continuous -> OOR_ALERT (informational, killSwitch:false, NO auto-close)
+ *       hard  — price >= 5% beyond the breached band -> KILL (trend; fires regardless of timer)
+ *       hard  — hedge mark within 3% of liquidation -> KILL (margin protection; regardless of timer)
  *   - Hedge drift: Hyperliquid short differs from amount0 by >5%
  *   - HF breach: Morpho health factor < 1.20 (deleverage) or < 1.05 (emergency)
  *   - Funding kill: Hyperliquid funding rate < -54.75% annualized for 3+ consecutive periods
  *
  * On any breach: writes content/lp-rebalance-signal.json, sends Telegram alert.
+ * MONITOR ONLY — it never closes/rebalances. Execution of any KILL stays gated on
+ * Gabriel's confirmation via lp-rebalancer.js. OOR_ALERT is notify-only (no on-chain action).
  *
  * Usage:
  *   node scripts/position-monitor.js               # check all positions
@@ -44,7 +49,9 @@ const SIGNAL_PATH    = path.join(WORKSPACE, 'content', 'lp-rebalance-signal.json
 // ─── Kill switch thresholds ───────────────────────────────────────────────────
 
 const KILL = {
-    oorTimeoutMinutes: 240,      // position OOR for 4h -> close+reopen
+    oorTimeoutMinutes:    720,   // OOR for 12h -> informational OOR_ALERT (no auto-recenter; hold & evaluate)
+    oorDistanceKillPct:   5,     // price >= 5% beyond the breached band -> KILL (a deep excursion = trend, fires regardless of timer)
+    hedgeLiqProximityPct: 3,     // hedge mark within 3% of its liquidation price -> KILL (protect margin), regardless of timer
     hedgeDriftPct:     0.05,     // 5% drift from target hedge size
     hfDeleverage:      1.20,     // Morpho HF -> reduce borrow
     hfEmergency:       1.05,     // Morpho HF -> close entire position
@@ -167,9 +174,9 @@ async function getBasePositionState(position) {
     }
 }
 
-// ─── Hyperliquid: get ETH funding rate ────────────────────────────────────────
+// ─── Hyperliquid: get funding rate + mark price for a perp (default ETH) ──────
 
-async function getHlFundingRate() {
+async function getHlFundingRate(coin = 'ETH') {
     try {
         const body = JSON.stringify({ type: 'metaAndAssetCtxs' })
         const data = await new Promise((resolve, reject) => {
@@ -189,10 +196,12 @@ async function getHlFundingRate() {
             req.end()
         })
         const [meta, ctxs] = data
-        const ethIdx = meta.universe.findIndex(a => a.name === 'ETH')
-        const rate8h = parseFloat(ctxs[ethIdx].funding)
+        const idx = meta.universe.findIndex(a => a.name === coin)
+        if (idx === -1) { log(`  HL: perp ${coin} not found`); return null }
+        const rate8h = parseFloat(ctxs[idx].funding)
+        const markPx = parseFloat(ctxs[idx].markPx)   // live mark used for liq-proximity guard
         const annualized = rate8h * 3 * 365 * 100
-        return { rate8h, annualized, ethIdx }
+        return { rate8h, annualized, markPx, coin, idx }
     } catch (e) {
         log(`  HL funding fetch failed: ${e.message}`)
         return null
@@ -251,19 +260,34 @@ async function evaluatePosition(position) {
         }
     }
 
-    // OOR tracking
+    // OOR tracking — three-tier, no auto-recenter (per docs/lp-oor-policy-update-spec.md).
+    // The timer no longer recenters; it alerts. Only a real trend (distance) or a hedge-liq
+    // threat triggers a (still-gated) close. CLOSE_REOPEN is removed from this auto-path —
+    // it remains available only for a deliberate, manually-invoked recenter via lp-rebalancer.
     if (!state.inRange) {
         if (!position.firstOorAt) {
             position.firstOorAt = new Date().toISOString()
         }
         const oorMinutes = (Date.now() - new Date(position.firstOorAt).getTime()) / 60_000
         state.oorMinutes = oorMinutes
-        log(`  OOR for ${oorMinutes.toFixed(0)} min (threshold: ${KILL.oorTimeoutMinutes} min)`)
-        if (oorMinutes >= KILL.oorTimeoutMinutes) {
-            actions.push({ type: 'CLOSE_REOPEN', reason: `OOR for ${oorMinutes.toFixed(0)} min`, killSwitch: false })
+        const oorSide = state.currentPrice < state.lowerPrice ? 'low' : 'high'
+        const beyondPct = oorSide === 'low'
+            ? (state.lowerPrice - state.currentPrice) / state.lowerPrice * 100
+            : (state.currentPrice - state.upperPrice) / state.upperPrice * 100
+        const distKill = position.oorDistanceKillPct ?? KILL.oorDistanceKillPct
+        const timeout  = position.oorTimeoutMinutes  ?? KILL.oorTimeoutMinutes
+        state.oorBeyondPct = beyondPct
+        log(`  OOR ${oorMinutes.toFixed(0)} min, ${beyondPct.toFixed(1)}% beyond ${oorSide} band (timer: ${timeout} min, distance-kill: ${distKill}%)`)
+        if (beyondPct >= distKill) {
+            // Hard — trend: deep excursion past the band. Fires regardless of the timer.
+            // confirmGated: the rebalancer must NOT auto-execute this from cron — Gabriel confirms (see lp-rebalancer --confirm-kill).
+            actions.push({ type: 'KILL', reason: `OOR-${oorSide} ${beyondPct.toFixed(1)}% beyond band (trend)`, killSwitch: true, confirmGated: true })
+        } else if (oorMinutes >= timeout) {
+            // Soft — sustained OOR: informational only. Default = hold and wait for reversion.
+            actions.push({ type: 'OOR_ALERT', reason: `OOR ${oorMinutes.toFixed(0)}min, ${beyondPct.toFixed(1)}% beyond (${oorSide}) — evaluate hold vs close`, killSwitch: false })
         }
     } else {
-        position.firstOorAt = null  // reset OOR timer
+        position.firstOorAt = null  // reset OOR timer — a wick that reverts cancels the timer
     }
 
     // Fee claim — per-position threshold overrides global
@@ -293,9 +317,9 @@ async function evaluatePosition(position) {
         }
     }
 
-    // Funding rate kill switch (applies to all positions with hedge)
+    // Funding rate kill switch + hedge-liq proximity guard (positions with a hedge)
     if (position.hedgeSize && position.hedgeSize > 0) {
-        const funding = await getHlFundingRate()
+        const funding = await getHlFundingRate(position.hedgePerp || 'ETH')
         if (funding) {
             log(`  HL funding: ${funding.rate8h.toFixed(6)} (${funding.annualized.toFixed(1)}% ann)`)
             position.fundingHistory = position.fundingHistory || []
@@ -306,6 +330,21 @@ async function evaluatePosition(position) {
             const consecutiveKill = last3.length === 3 && last3.every(r => r.rate * 3 * 365 * 100 < KILL.fundingKillAnn)
             if (consecutiveKill) {
                 actions.push({ type: 'CLOSE_HEDGE', reason: `Funding kill: ${funding.annualized.toFixed(1)}% ann`, killSwitch: true })
+            }
+
+            // Hard — hedge protection: mark within X% of liquidation -> KILL (regardless of OOR timer).
+            const liqPx = position.hedgeLiquidationPx || position.hedgeLiq || 0
+            const markPx = funding.markPx
+            if (liqPx > 0 && markPx > 0) {
+                const liqProxPct = position.hedgeLiqProximityPct ?? KILL.hedgeLiqProximityPct
+                const proximityPct = Math.abs(markPx - liqPx) / liqPx * 100
+                state.hedgeMarkPx = markPx
+                state.hedgeLiqDistancePct = proximityPct   // computed distance (distinct from the config threshold)
+                log(`  Hedge mark ${markPx.toFixed(2)} vs liq ${liqPx} — ${proximityPct.toFixed(1)}% away (threshold: ${liqProxPct}%)`)
+                if (proximityPct <= liqProxPct) {
+                    // confirmGated: rebalancer must NOT auto-execute from cron — Gabriel confirms.
+                    actions.push({ type: 'KILL', reason: `Hedge mark ${markPx.toFixed(0)} within ${proximityPct.toFixed(1)}% of liq ${liqPx}`, killSwitch: true, confirmGated: true })
+                }
             }
         }
     }

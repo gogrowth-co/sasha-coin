@@ -505,6 +505,8 @@ function estimateFeeApr(volume24h, tvl, feeTier) {
 // Capital efficiency multiplier = pool_width / your_range_width (approx)
 ```
 
+**Where the inputs come from (do not improvise):** `volume24h` and `tvl` from **GeckoTerminal `reserve_in_usd` + `volume_usd` or DexScreener** (both proven accurate); on **Base/Ethereum** prefer **The Graph** `poolDayDatas` for exact per-day `volumeUSD`/`tvlUSD` (any window, no polling) and `ticks{tickIdx liquidityGross liquidityNet}` for the **in-range liquidity** that belongs in the denominator (`fee_APR = volume_7d_avg × fee_rate / in_range_TVL × 365`); `feeTier` from **on-chain `fee()`** (labels lie — Aerodrome Slipstream fees are dynamic), never from a GeckoTerminal/DexScreener label. **Use 7-day-average daily volume, not 24h** (24h overstates in volatile weeks — validated 41% vs 17% on Sasha's own pool). Cross-check the result against Revert's realized `fee_apr`. **Never use DefiLlama `apyBase` for CL** (it gave 783% vs ~38% on-chain on the same pool); and note The Graph's `feesUSD` is DERIVED (`volume × feeTier`), not realized — use it for the volume, not as a fee oracle. Full endpoint/field spec + the weekly-verified data stack: [`docs/integrations/lp-data-sources-api-reference.md`](../../../docs/integrations/lp-data-sources-api-reference.md). The math behind the 7d-avg rule: [`research/lp-data-sources-methodology-2026-06-02.md`](../../../research/lp-data-sources-methodology-2026-06-02.md).
+
 ---
 
 ## 13. End-to-End Worked Example
@@ -582,6 +584,8 @@ const monthlyFees = dailyFees * 30  // $102.7/month
 
 | Resource | URL |
 |---|---|
+| **LP data-source API spec (volume/TVL/fee/APR sources)** | `docs/integrations/lp-data-sources-api-reference.md` (weekly-verified) |
+| **Data-stack methodology (why DefiLlama lies, 7d-avg rule)** | `research/lp-data-sources-methodology-2026-06-02.md` |
 | Uniswap v3 whitepaper | https://uniswap.org/whitepaper-v3.pdf |
 | Uniswap v3 math explainer | https://blog.uniswap.org/uniswap-v3-math-primer |
 | Orca SDK | https://github.com/orca-so/whirlpools |

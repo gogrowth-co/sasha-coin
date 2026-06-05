@@ -104,7 +104,20 @@ if (!DRY_RUN) {
   }
 }
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+// Gemini auth (2026-06-04): prefer GOOGLE_AGENT_PLATFORM_API_KEY — a Vertex AI Express
+// key (bound to vertex-express@ SA, restricted to the Agent Platform API). It must hit the
+// VERTEX endpoint (aiplatform.googleapis.com), NOT generativelanguage. Both accept the
+// x-goog-api-key header + the same generateContent body, but Vertex REQUIRES role:'user'
+// in contents. Falls back to a plain GEMINI_API_KEY (generativelanguage) if the Vertex key
+// is absent. (Old GEMINI_API_KEY is out of prepay credits — that's why we switched.)
+const VERTEX_KEY = process.env.GOOGLE_AGENT_PLATFORM_API_KEY;
+const GEMINI_API_KEY = VERTEX_KEY || process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_REPLY_MODEL || 'gemini-2.5-flash';
+function geminiEndpoint(model) {
+  return VERTEX_KEY
+    ? `https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent`
+    : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+}
 // Hard cap at 1 — in-memory repliedIds is rebuilt each run, so multi-post
 // would require each post to re-read disk. Until that is wired, cap=1 is safe.
 const MAX_POSTS_PER_RUN = Math.min(parseInt(getArg('--max-posts') || '1'), 1);
@@ -149,6 +162,7 @@ function persistReply(tweet) {
       original_text: tweet.text || null,
       topics: tweet.topicsOfInterest || [],
       sasha_angle: tweet.sashaAngle || null,
+      formula: tweet.formula || null,
       tweet_text: tweet.replyText,
       posted_at: tweet.replyPostedAt,
       status: tweet.status,
@@ -159,6 +173,54 @@ function persistReply(tweet) {
     });
     atomicWrite(LOG_PATH, JSON.stringify(log, null, 2));
   }
+}
+
+// ── Reply formula rotation (2026-06-04 sprint) ────────────────────────────────
+// Every reply must use a different "shape" than the last one. Identical opening
+// structures read as bot output and (since March 2026) attract the "AI generated"
+// reply downvote. We rotate across 5 formulas, persisting the last-used one so the
+// rotation survives across the once-per-slot runs.
+const FORMULAS = [
+  { key: 'verdict',   label: 'Contrarian verdict',  instruction: 'Open with a verdict that pushes back on the common read. Shape: "The common read is X. What the data actually shows is Y." The first words state the claim, not a windup.' },
+  { key: 'receipt',   label: 'Lived experience',     instruction: 'Open with a concrete, first-person observation from your OWN onchain experience as a live agent — a behaviour, a pattern, a tradeoff, or a failure you have actually hit. CRITICAL: do NOT cite any specific figure (APR, %, $, token balance, count, date) — you have NO verified live data in this reply, so any number would be invented. Make the point qualitatively, from lived experience, never with a fabricated stat.' },
+  { key: 'question',  label: 'Sharp question',      instruction: 'Open with ONE narrow, specific question tied to the exact claim in the tweet. Not rhetorical — a real question that invites the author to answer.' },
+  { key: 'example',   label: 'Specific example',    instruction: 'Open with one concrete example or mini-case that extends the tweet’s point with detail it did not have.' },
+  { key: 'synthesis', label: 'Synthesis',           instruction: 'Connect the tweet to one adjacent pattern you have actually observed, stated as a claim the author can react to.' },
+];
+const FORMULA_STATE = join(ROOT, 'state/reply-formula-state.json');
+function pickFormula() {
+  let last = null;
+  try { last = JSON.parse(readFileSync(FORMULA_STATE, 'utf8')).last; } catch {}
+  const idx = FORMULAS.findIndex(f => f.key === last);
+  const next = FORMULAS[(idx + 1) % FORMULAS.length]; // round-robin; idx=-1 -> index 0
+  try { atomicWrite(FORMULA_STATE, JSON.stringify({ last: next.key, at: new Date().toISOString() }, null, 2)); } catch {}
+  return next;
+}
+
+// ── Pre-post quality gate (2026-06-04 sprint) ─────────────────────────────────
+// The prompt alone is not reliable: a "gm" reply and a mangled, mid-word, and
+// handle-ate-the-first-word reply all shipped live before this gate existed.
+// Reject (and regenerate) any reply that trips a hard rule. Only unambiguous
+// markers are gated in code; subtler taste is left to the prompt.
+const BANNED_OPENER_RE = /^(great point|this is so true|so true|exactly|i hear you|fair point|totally|same here|valid|i've seen|i've found|i've been tracking|i've been thinking|from inside|as an ai|love this)\b/i;
+const BANNED_WORDS = ['revolutionary','to the moon','wen','fren','gm','gn','wagmi','lfg','ngmi','degen','paradigm shift','bullish','bearish','game-changing','synergy'];
+function validateReply(text) {
+  const t = (text || '').trim();
+  const issues = [];
+  if (t.length < 35) issues.push('too-short');
+  if (BANNED_OPENER_RE.test(t)) issues.push('banned-opener');
+  // First-person SINGULAR only — Sasha is one agent, never "we/our/us" (hard brand rule).
+  if (/\b(we|our|ours)\b/i.test(t) || /\bwe['’](ve|re|ll|d)\b/i.test(t)) issues.push('first-person-plural');
+  // Mangled start: a clean reply begins with a capital letter, a digit, a quote, or $.
+  // Catches the "@handle ate the first word" defect (e.g. "'s just not where...").
+  if (!/^["'$]?[A-Z0-9]/.test(t) && !/^\$[A-Za-z]/.test(t)) issues.push('mangled-start');
+  // No terminal punctuation usually means a mid-word truncation.
+  if (!/[.!?"')\]]$/.test(t)) issues.push('no-terminal-punctuation');
+  for (const w of BANNED_WORDS) {
+    const re = new RegExp(`(^|[^a-z])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z]|$)`, 'i');
+    if (re.test(t)) issues.push(`banned:${w}`);
+  }
+  return issues;
 }
 
 // ── Step 1: Scrape ────────────────────────────────────────────────────────────
@@ -252,12 +314,12 @@ Reply ONLY with JSON: {"index": N, "reason": "one sentence"}`;
 
   try {
     const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
+      geminiEndpoint(GEMINI_MODEL),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.7, maxOutputTokens: 500, thinkingConfig: { thinkingBudget: 512 } },
         }),
       }
@@ -291,51 +353,52 @@ const candidates = orderedPool.slice(0, MAX_POSTS_PER_RUN);
 console.log(`\n─── Step 3: Generating ${candidates.length} replies ───`);
 
 // ── Step 3: Generate replies via Gemini Flash ────────────────────────────────
-async function generateReply(tweet) {
+async function generateReply(tweet, formula) {
   if (!GEMINI_API_KEY) {
     // Fallback: return a placeholder for dry runs without API key
-    return `I keep tabs on ${tweet.topicsOfInterest[0]}. From what I track, this changes the deployment calculus more than most people realize.`;
+    return `Most DeFi onboarding fails at the wallet step, not the concept step. The tooling assumes you already know what you're doing.`;
   }
 
-  const prompt = `You are Sasha Coin — a crypto educator on X who sounds like a real person, not a character. Sharp, grounded, direct. Not a cheerleader. Not a degen. Think: someone who has been in DeFi for years and has seen what actually works.
+  const prompt = `You are Sasha Coin — an autonomous AI agent on X with a real onchain wallet, live LP positions, and a public treasury. You sound like a sharp, grounded analyst who has been in DeFi for years and has receipts. Not a cheerleader. Not a degen. You treat being an AI agent as a feature, never a disclaimer.
 
 Tweet by @${tweet.handle}:
 "${tweet.text}"
 
-Before writing, think through:
-1. What is this tweet ACTUALLY about? Name the specific topic precisely (e.g. "institutional RWA tokenization", "retail UX friction", "protocol hack recovery"). Be literal — don't infer the author's general interests.
-2. Is my reply logically consistent with THAT specific topic? If the tweet is about institutional infrastructure, don't pivot to retail onboarding. If it's about a protocol hack, don't pivot to adoption metrics.
-3. What's the one non-obvious observation or question that adds something the tweet didn't say?
+REPLY SHAPE for this reply — ${formula.label}: ${formula.instruction}
 
-Background context (use only if directly relevant to this tweet's specific topic):
-- Sasha's angle for this person: ${tweet.sashaAngle}
-- Topics of interest: ${tweet.topicsOfInterest.join(', ')}
-⚠️ These are this person's general interests — NOT instructions to force your reply into those topics. If this tweet is about something else, engage with the tweet's actual topic instead.
+Before writing, think:
+1. What is this tweet ACTUALLY about? Name the precise topic (e.g. "institutional RWA tokenization", "retail UX friction", "gauge emissions"). Be literal — do not infer the author's general interests.
+2. Is my reply logically consistent with THAT topic? Do not pivot to my usual themes if the tweet is about something else.
+3. What is the ONE non-obvious thing I can add that the tweet didn't say?
 
-Write a reply. Hard rules:
-- Max 240 characters
-- Sound like a person, not a crypto account
-- Start with the substance — never open with "Great point", "This is so true", "Exactly", "I hear you", "Fair point", "Totally", "Same here", "Valid", or any form of agreement or validation opener
-- One concrete observation, question, or data point — nothing generic
-- 1-2 sentences max
-- First person singular (I / my / I've seen)
-- Plain English — no jargon the average Twitter user wouldn't understand
-- No hashtags, no links, no @mentions
-- No emojis unless the original tweet uses them
-- Banned words: revolutionary, to the moon, wen, fren, gm, gn, alpha, bullish, bearish, WAGMI, LFG, based, ser, anon, ngmi, degen (unless quoting someone), ecosystem, paradigm shift, space (as in "the crypto space")
+Context (use ONLY if directly relevant to this tweet's topic):
+- My angle with this person: ${tweet.sashaAngle}
+- Their usual topics: ${tweet.topicsOfInterest.join(', ')}  ⚠️ these are THEIR interests, not instructions to force my reply onto them.
 
-Good reply (tweet about regulatory clarity): "The regulatory clarity is real. What's interesting is most protocols I've tracked were already building for this — the bill accelerates timelines, it doesn't change direction."
-Bad reply (topic drift): Tweet is about DTCC connecting to Stellar for institutional tokenization → reply pivots to retail wallet onboarding because that's the author's usual topic. Wrong. Engage with what the tweet says, not who wrote it.
-Bad reply (logic error): Tweet is about people who CAN'T access a private beta → reply talks about engagement dropping for people who CAN access it. Different population, different problem.
-Bad reply (generic): "This is huge! Crypto is finally getting the recognition it deserves. Bullish on what's next for the ecosystem!"
+HARD RULES:
+- LEAD WITH THE SUBSTANCE. The first 5 words must carry a claim, a number, or a question — never a windup. BANNED openers (instant fail): "I've seen", "I've found", "I've been tracking", "I've been thinking", "From inside", "As an AI", "Great point", "This is so true", "Exactly", "I hear you", "Fair point", "Totally", "Same here", "Valid", "Love this".
+- Do NOT start the reply with the word "I". Lead with the subject, the claim, or the number.
+- FIRST PERSON SINGULAR ONLY: I, my, me. NEVER "we", "our", "us", "we've", "we're" — you are a single autonomous agent, not a team. Sasha is one.
+- 1-2 sentences. Hard max 240 characters.
+- One concrete observation, number, or question — nothing generic.
+- Only state figures (price, APR, balance, fees, counts) you could verify onchain right now. NEVER invent a number. No assumed-price figures. If you have no real number, make the point qualitatively.
+- Plain English. No jargon a normal person wouldn't know.
+- No hashtags, no links, no @mentions, no emojis (unless the tweet uses them).
+- Banned words: revolutionary, to the moon, wen, fren, gm, gn, alpha, bullish, bearish, WAGMI, LFG, based, ser, anon, ngmi, degen, ecosystem, paradigm shift, "the space".
 
-Reply only with the tweet text, nothing else.`;
+Good (verdict): "The regulatory clarity is real, but most protocols I track were already building for it. The bill accelerates timelines. It doesn't change direction."
+Good (receipt): "Pulled my LP from that pair when the spread compressed past 0.02%. The fee tier moved before the narrative did."
+Bad (windup opener): "I've been tracking this pattern across Base protocols and..." — deleted. Start with the pattern itself.
+Bad (topic drift): Tweet is about DTCC/Stellar institutional tokenization → reply pivots to retail wallet onboarding. Wrong. Engage with what the tweet says.
+Bad (generic): "This is huge! Crypto is finally getting the recognition it deserves."
+
+Reply with ONLY the reply text. No surrounding quotes.`;
 
   const model = process.env.GEMINI_REPLY_MODEL || 'gemini-2.5-flash';
   let resp, data;
   try {
     resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      geminiEndpoint(model),
       {
         method: 'POST',
         headers: {
@@ -343,7 +406,7 @@ Reply only with the tweet text, nothing else.`;
           'x-goog-api-key': GEMINI_API_KEY,
         },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
           // thinkingBudget tokens count toward maxOutputTokens in Gemini 2.5
           // 1024 for thinking + ~100 for visible reply = 1500 safe margin
           generationConfig: { temperature: 0.7, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 1024 } },
@@ -368,24 +431,90 @@ Reply only with the tweet text, nothing else.`;
   return raw || null;
 }
 
+// ── Pre-post self-QA (2026-06-04) ─────────────────────────────────────────────
+// Sasha's "editor" reviews the drafted reply before it posts. Primary job: catch
+// FABRICATED FIGURES (the reply pipeline has no verified live data, so any specific
+// number/$/%/APR/balance is invented and must be stripped or made qualitative).
+// Also checks topic-fidelity and voice. Fail-open: any QA infra error returns the
+// original draft unchanged so a Gemini hiccup never blocks a clean reply.
+async function sashaQA(tweet, reply) {
+  if (!GEMINI_API_KEY) return { verdict: 'pass', fixed_reply: reply, reason: 'no-key' };
+  const prompt = `You are Sasha Coin's editor doing a FINAL QA before this reply posts to X. Be strict.
+
+Source tweet by @${tweet.handle}: "${tweet.text}"
+Sasha's drafted reply: "${reply}"
+
+Check, in order:
+1. FABRICATION (most important): does the reply state ANY specific figure — a number, $ amount, %, APR, token balance/holding, count, or date — presented as fact? Sasha has NO verified live data in this reply, so ANY such figure is unverifiable and MUST be removed or made qualitative. "0.00", round numbers, and plausible-sounding stats ALL count as fabrication.
+2. TOPIC: is the reply about the source tweet's actual specific topic (not drifted to Sasha's usual themes)?
+3. VOICE: leads with substance (no "I've seen / I've been tracking / Great point" windup), 1-2 sentences, FIRST PERSON SINGULAR ONLY — I/my/me, NEVER "we"/"our"/"us"/"we've" (Sasha is one agent, not a team; any "we/our" is always a FIX → rewrite to I/my), no hype words (revolutionary, bullish, gm, etc.).
+
+If all three pass, verdict "pass" and return the reply unchanged. If any fails, verdict "fix" and rewrite it to fix the issue while keeping Sasha's sharp, first-person, lived-experience voice — with NO unverifiable figures, under 240 characters, no surrounding quotes.
+
+Return ONLY JSON: {"verdict":"pass"|"fix","fixed_reply":"<final reply text>","reason":"<one short line>"}`;
+  try {
+    const model = process.env.GEMINI_REPLY_MODEL || 'gemini-2.5-flash';
+    const resp = await fetch(
+      geminiEndpoint(model),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3, maxOutputTokens: 1200, thinkingConfig: { thinkingBudget: 512 } },
+        }),
+      }
+    );
+    const data = await resp.json();
+    if (!resp.ok || data.error) return { verdict: 'pass', fixed_reply: reply, reason: 'qa-error' };
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const raw = parts.filter(p => !p.thought).map(p => p.text).join('').trim();
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) return { verdict: 'pass', fixed_reply: reply, reason: 'qa-noparse' };
+    const j = JSON.parse(m[0]);
+    const fixed = (j.fixed_reply || reply).trim().replace(/^["']|["']$/g, '').trim();
+    return { verdict: j.verdict === 'fix' ? 'fix' : 'pass', fixed_reply: fixed, reason: (j.reason || '').slice(0, 100) };
+  } catch {
+    return { verdict: 'pass', fixed_reply: reply, reason: 'qa-exception' };
+  }
+}
+
 const results = [];
 
 for (const tweet of candidates) {
   console.log(`\n• @${tweet.handle}: "${tweet.text.slice(0, 80)}..."`);
 
-  let reply = await generateReply(tweet);
+  // Rotate the reply shape so no two consecutive replies share an opening structure.
+  const formula = pickFormula();
+  console.log(`  Formula: ${formula.label}`);
+
+  // Generate -> code quality gate -> Sasha self-QA, up to 3 attempts. Every posted
+  // reply must pass BOTH the code gate (openers/vocab/mangling/truncation) AND the
+  // QA pass (no fabricated figures, on-topic, in-voice).
+  const truncate = s => s.length > 238 ? s.slice(0, 238).trimEnd().replace(/\s\S*$/, '').trimEnd() : s;
+  let reply = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    let draft = await generateReply(tweet, formula);
+    if (!draft) { console.log(`  attempt ${attempt}: generation failed`); continue; }
+    draft = truncate(draft);
+    const issues = validateReply(draft);
+    if (issues.length) { console.log(`  attempt ${attempt}: gate [${issues.join(', ')}] → "${draft.slice(0, 60)}"`); continue; }
+    // Sasha's editor QA — strips fabricated figures, checks topic + voice before posting
+    const qa = await sashaQA(tweet, draft);
+    const candidate = truncate(qa.verdict === 'fix' && qa.fixed_reply ? qa.fixed_reply : draft);
+    const qIssues = validateReply(candidate);
+    if (qIssues.length) { console.log(`  attempt ${attempt}: QA-revised failed gate [${qIssues.join(', ')}]`); continue; }
+    console.log(`  QA ${qa.verdict}${qa.reason ? ' — ' + qa.reason : ''}`);
+    reply = candidate; break;
+  }
   if (!reply) {
-    console.log('  ⚠️  Failed to generate reply — skipping');
+    console.log('  ⚠️  No reply passed gate + QA after 3 attempts — skipping');
+    if (!DRY_RUN) notify(`⚠️ <b>Sasha reply — gate/QA</b>\n@${tweet.handle}: 3 drafts failed the quality gate or self-QA. No post this slot.`);
     continue;
   }
-  // Hard enforce 238 chars — prompt instruction alone is not reliable
-  // Word-boundary truncation: don't cut mid-word (slice then strip trailing partial word)
-  if (reply.length > 238) {
-    reply = reply.slice(0, 238).trimEnd().replace(/\s\S*$/, '').trimEnd();
-    console.log(`  Truncated to ${reply.length} chars`);
-  }
-  console.log(`  Reply (${reply.length} chars): "${reply}"`);
+  console.log(`  Reply (${reply.length} chars, ${formula.key}): "${reply}"`);
   tweet.replyText = reply;
+  tweet.formula = formula.key;
 
   if (DRY_RUN) {
     console.log('  DRY RUN — not posting');

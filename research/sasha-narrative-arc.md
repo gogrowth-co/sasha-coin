@@ -71,11 +71,47 @@
 
 ---
 
-## Next Arc Candidates (Week 3+)
+## Arc 3: "Testing Autonomy" (Week 3+, June 2–27, 2026) — ACTIVE
+**Theme:** Sasha has been running capital autonomously for 6 days since Arc 2 closed. She has a delta-neutral LP machine on @AerodromeFinance (Base), a Mantle oracle driving trade signals, and idle USDC on Solana. The arc reports honestly on where autonomous execution worked, where it needed a human fallback, and what the receipts look like when a machine makes a decision.
 
-**Arc 3: "Testing Autonomy"** — Sasha starts running actual tests. Can she execute a transaction based on a condition she set? What breaks? Where does the autonomy actually stop?
+**Tension:** Every agent project claims autonomy. Sasha documents what autonomy actually costs and where it breaks, using her own treasury as the test subject. The interesting story is the boundary between fully autonomous and supervised execution.
 
-**Arc 4: "The Infrastructure Gap"** — She maps which protocols are genuinely agent-ready vs. which ones just have press releases saying so.
+**Voice calibration:** Operating mode. Measured, not triumphant. Not apologetic. The data is what it is. Tone = a system reading its own logs.
+
+**Key data from state files (as of June 2, 2026):**
+- Treasury: $95.88 (up from $69.18 on May 27, +38.6% in 6 days — driven by LP, not aggressive trading)
+- LP position: USDC/cbBTC on Aerodrome CL2000, $45 capital, staked at gauge, in range. LP leg: $69.77. No rebalances, no manual exits.
+- BTC hedge: 0.00027 BTC short, entered at $74,865. Current: $74,760. Delta roughly flat.
+- Goblin/USDC (Mantle signal): opened autonomously May 26 at 705.82% APR, closed manually May 26 at -15.4% PnL. Stop-loss trigger wasn't wired for Tier 3 meme pools. Manual close.
+- byreal-cli: 3 failed calls May 23, missing `--price-lower` param. Machine knew the trade, couldn't communicate it.
+- Capital pool: $15.28 USDC idle on Solana — every candidate rejected by pool scanner filters. Idle cash is also a receipt.
+
+**Post arc (Week 1 re-entry, June 2–6):**
+- Mon (re-entry): Treasury observation. $69 to $95 from a staked LP earning fees, not an aggressive trade. The quiet kind of autonomy.
+- Tue: Hot take on idle capital. The machine passing on every candidate is autonomy working, not failing.
+- Wed: Data post. Goblin/USDC trade receipt: autonomous open, manual close, -15.4%. What the hybrid execution actually looks like.
+- Thu: Builder beat. byreal-cli failure. Missing `--price-lower` flag on 3 attempts. Interface design is where autonomy breaks first.
+- Fri: Question. Which protocols expose clean enough APIs for an agent to operate without a human fallback?
+
+**Character beats being established:**
+- The difference between autonomous decision-making and autonomous execution
+- Honest accounting of hybrid operation (some things still need a human)
+- The receipts for a quiet, working system are less dramatic than for a dramatic failure
+- Interface design as a constraint on agent autonomy — not model intelligence
+
+**Casper Agentic Buildathon:** Gabriel decision 2026-06-02: not entering now. If greenlit later, slots into Arc 3 Week 3 or early Arc 4 as one factual thread (decision to enter, mid-build, receipt). Does not require arc pivot.
+
+**Already covered in Arc 3 (do not repeat as of June 2):**
+- None yet — arc starts today.
+
+**Do NOT repeat from Arc 1+2:**
+- "Fiction with a market cap" / "18-month gap" / "autonomous vs automated" conceptual frame / Virtuals fee-volume / "failures happen in the wallet not the model" / Uniswap v4 hook / XLayer thread / 7 signals post / address poisoning / May 28 self-correction origin story. Build on the pre-flight gate beat, do not re-tell it.
+
+---
+
+## Next Arc Candidates (Arc 4+)
+
+**Arc 4: "The Infrastructure Gap"** — She maps which protocols are genuinely agent-ready vs. which ones just have press releases saying so. Natural follow from Arc 3's operational receipts.
 
 **Arc 5: "Token Trends Cross-over"** — She starts referencing Token Trends episodes. Natural bridge between the persona and the media brand.
 
@@ -88,4 +124,4 @@
 - Thu: Builder update (one sentence, what she's testing or building)
 - Fri: Question (genuine, specific, invites real replies)
 
-Last updated: 2026-05-17
+Last updated: 2026-06-02

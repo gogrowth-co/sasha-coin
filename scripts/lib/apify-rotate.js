@@ -30,6 +30,13 @@ const DEFAULT_PATHS = [
   join(homedir(), '.config/apify/keys'),
 ].filter(Boolean);
 
+// Client-side hard timeout per Apify call. The run-sync endpoint caps the actor
+// run server-side at ?timeout=120; but a stalled CONNECTION (no response at all)
+// would otherwise hang fetch forever — observed: a phone scrape hung 19+ min.
+// 150s > the 120s server cap, so legit long runs complete while a true hang aborts
+// and rotates to the next key. Override with APIFY_FETCH_TIMEOUT_MS.
+const FETCH_TIMEOUT_MS = parseInt(process.env.APIFY_FETCH_TIMEOUT_MS || '') || 150000;
+
 function findKeysFile() {
   for (const p of DEFAULT_PATHS) {
     if (existsSync(p)) return p;
@@ -110,8 +117,10 @@ export async function apifyFetch(url, options = {}) {
     const labeled = `key#${i + 1}${comment ? ' ' + comment : ''}`;
     tried.push(labeled);
     const finalUrl = injectToken(url, key);
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), FETCH_TIMEOUT_MS);
     try {
-      const r = await fetch(finalUrl, options);
+      const r = await fetch(finalUrl, { ...options, signal: ac.signal });
       if (isRotateTriggerStatus(r.status) || (await isRotateTriggerBody(r))) {
         const body = await r.clone().text();
         if (process.env.APIFY_ROTATE_VERBOSE) {
@@ -131,11 +140,16 @@ export async function apifyFetch(url, options = {}) {
       }
       return r;
     } catch (e) {
-      lastErr = e;
+      // AbortError => the call hung past FETCH_TIMEOUT_MS; treat as a rotate trigger.
+      lastErr = e.name === 'AbortError'
+        ? new Error(`Apify call timed out after ${FETCH_TIMEOUT_MS}ms on ${labeled} (rotating)`)
+        : e;
       if (process.env.APIFY_ROTATE_VERBOSE) {
-        console.error(`apify-rotate: ${labeled} threw: ${e.message}`);
+        console.error(`apify-rotate: ${labeled} threw: ${lastErr.message}`);
       }
       continue;
+    } finally {
+      clearTimeout(timer);
     }
   }
 

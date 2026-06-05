@@ -38,6 +38,9 @@
     "erc8004:status": "node scripts/erc8004-register.js --status",
     "treasury": "node scripts/mantle-treasury.js --action status",
     "treasury:compound": "node scripts/mantle-treasury.js --action compound --execute",
+    "audit:dist": "node scripts/audit-sasha-distribution.mjs",
+    "audit:dist:full": "node scripts/audit-sasha-distribution.mjs --ssh --buffer",
+    "docs:check": "node scripts/check-integration-docs.mjs",
     "deploy:testnet": "node scripts/deploy-contract.js --network testnet",
     "deploy:mainnet": "node scripts/deploy-contract.js --network mainnet",
     "test": "echo \"Error: no test specified\" && exit 1"

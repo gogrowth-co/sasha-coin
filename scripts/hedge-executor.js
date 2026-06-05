@@ -289,6 +289,11 @@ async function main() {
   let stateDirty = false
   for (const pos of open) {
     log(`\nPosition ${pos.id} (${pos.symbol})`)
+    // Static hedge: explicitly opt this position out of all cron hedge actions
+    // (reconcile/rebalance, funding-kill close, DO_CLOSE). The hedge is held STATIC by
+    // design; funding-kill + KILL policy are MANUAL. This is robust even if the pool is
+    // later added to POOL_REGISTRY — do NOT rely on the registry omission alone.
+    if (pos.staticHedge) { log(`  staticHedge=true — cron leaves this position's hedge untouched (no reconcile, no rebalance, no auto-close). Manual KILL policy applies.`); continue }
     const delta = await computeLpDelta(pos)
     if (!delta) continue
     const m = await perpMeta(info, delta.hlPerp)

@@ -1,24 +1,24 @@
 {
-  "asOf": "2026-06-03T02:23:18.022Z",
+  "asOf": "2026-06-05T02:07:53.672Z",
   "agent": {
     "name": "Sasha",
     "xHandle": "SashaCoin95",
     "xUrl": "https://x.com/SashaCoin95"
   },
-  "totalUsd": 95.88,
-  "pointCount": 8,
+  "totalUsd": 91.49,
+  "pointCount": 9,
   "experiments": [
     {
       "key": "lp",
       "name": "LP Miner",
       "thesis": "Multi-chain liquidity book with on-chain kill-switches",
       "kind": "money",
-      "valueUsd": 69.73,
-      "deployedUsd": 45,
-      "idleUsd": 13.81,
-      "netResultUsd": -0.83,
-      "returnPct": -1.4,
-      "emissionsUsd": 0.17,
+      "valueUsd": 65.34,
+      "deployedUsd": 40.28,
+      "idleUsd": 21.3,
+      "netResultUsd": 0.01,
+      "returnPct": 0.02,
+      "emissionsUsd": 0,
       "positions": 1,
       "unfunded": 0,
       "status": "live",
@@ -55,6 +55,10 @@
         {
           "at": "2026-06-03T02:23:18.022Z",
           "v": 69.73
+        },
+        {
+          "at": "2026-06-05T02:07:53.672Z",
+          "v": 65.34
         }
       ],
       "audience": "You are the judge here",
@@ -104,6 +108,10 @@
         {
           "at": "2026-06-03T02:23:18.022Z",
           "v": 20.28
+        },
+        {
+          "at": "2026-06-05T02:07:53.672Z",
+          "v": 20.28
         }
       ],
       "audience": "Judges: is this a real autonomous on-chain agent?",
@@ -150,6 +158,10 @@
         },
         {
           "at": "2026-06-03T02:23:18.022Z",
+          "v": 5.87
+        },
+        {
+          "at": "2026-06-05T02:07:53.672Z",
           "v": 5.87
         }
       ],

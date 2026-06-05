@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casper Agentic Buildathon — Intelligence Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A2540; --navy-2:#0d2e4f; --aqua:#1FB6FF; --gold:#FFB800;
+    --ink:#1a2433; --muted:#5b6b7e; --line:#e4e9f0; --bg:#f5f7fa; --card:#ffffff;
+    --green:#16a34a; --red:#dc2626;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    line-height:1.6; font-size:16px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px 80px;}
+
+  /* Header */
+  header{
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);
+    color:#fff; padding:48px 0 40px; margin-bottom:36px;
+    border-bottom:3px solid var(--aqua);
+  }
+  header .wrap{padding-bottom:0;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--aqua); margin:0 0 12px;
+  }
+  header h1{
+    font-family:'Montserrat',sans-serif; font-weight:800; font-size:34px;
+    line-height:1.15; margin:0 0 16px; letter-spacing:-0.5px;
+  }
+  .meta{
+    display:flex; flex-wrap:wrap; gap:8px 20px; font-size:13px; color:#aebfd0;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .meta b{color:#dce6f0; font-weight:500;}
+  .status-pill{
+    display:inline-block; background:rgba(31,182,255,.15); color:var(--aqua);
+    border:1px solid rgba(31,182,255,.4); padding:3px 12px; border-radius:4px;
+    font-family:'JetBrains Mono',monospace; font-size:12px; margin-top:16px;
+  }
+
+  /* Sections */
+  section{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:28px 30px; margin-bottom:22px;
+  }
+  h2{
+    font-family:'Montserrat',sans-serif; font-weight:700; font-size:21px;
+    color:var(--navy); margin:0 0 4px; letter-spacing:-0.3px;
+    display:flex; align-items:baseline; gap:12px;
+  }
+  h2 .num{
+    font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--aqua);
+    font-weight:500;
+  }
+  h2 + .sub{color:var(--muted); font-size:14px; margin:0 0 18px;}
+  h3{
+    font-family:'Montserrat',sans-serif; font-weight:600; font-size:15px;
+    color:var(--navy); margin:22px 0 8px;
+  }
+  p{margin:0 0 14px;}
+  a{color:#0b7fc4; text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  strong{color:var(--ink); font-weight:600;}
+  .lede{font-size:17px; color:var(--ink);}
+
+  /* Tables */
+  table{width:100%; border-collapse:collapse; margin:6px 0 8px; font-size:14.5px;}
+  th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{
+    font-family:'Inter',sans-serif; font-weight:600; color:var(--navy);
+    background:#f0f4f9; font-size:12.5px; text-transform:uppercase; letter-spacing:.4px;
+  }
+  td:first-child{font-weight:600; color:var(--navy); white-space:nowrap;}
+  .kv td:first-child{color:var(--muted); font-weight:500; width:170px;}
+  tr:last-child td{border-bottom:none;}
+
+  /* Callouts */
+  .callout{
+    border-radius:8px; padding:18px 22px; margin:16px 0;
+    border-left:4px solid; font-size:14.5px;
+  }
+  .callout p:last-child{margin-bottom:0;}
+  .callout-title{
+    font-family:'Montserrat',sans-serif; font-weight:700; font-size:13px;
+    text-transform:uppercase; letter-spacing:.6px; margin:0 0 8px;
+  }
+  .edge{background:#f0fbf3; border-color:var(--green);}
+  .edge .callout-title{color:var(--green);}
+  .block{background:#fef5f5; border-color:var(--red);}
+  .block .callout-title{color:var(--red);}
+  .reco{background:#fffaf0; border-color:var(--gold);}
+  .reco .callout-title{color:#b07d00;}
+  .info{background:#eff8ff; border-color:var(--aqua);}
+  .info .callout-title{color:#0b7fc4;}
+
+  ul{margin:0 0 14px; padding-left:22px;}
+  li{margin-bottom:7px;}
+
+  /* Tag row */
+  .tags{display:flex; flex-wrap:wrap; gap:7px; margin:4px 0 16px;}
+  .tag{
+    background:#eef3f9; color:var(--navy); border:1px solid var(--line);
+    font-family:'JetBrains Mono',monospace; font-size:11.5px;
+    padding:3px 9px; border-radius:4px;
+  }
+  .tag.hot{background:rgba(255,184,0,.14); border-color:rgba(255,184,0,.5); color:#8a6400;}
+
+  /* Code */
+  code{
+    font-family:'JetBrains Mono',monospace; font-size:13px;
+    background:#eef3f9; padding:1.5px 6px; border-radius:4px; color:var(--navy-2);
+  }
+
+  /* path-rank chips in table */
+  .rank{font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600;}
+  .r-low{color:var(--green);} .r-mid{color:#b07d00;} .r-high{color:var(--red);}
+  .ceil-high{color:var(--green); font-weight:600;} .ceil-low{color:var(--muted);}
+
+  footer{
+    color:var(--muted); font-size:13px; margin-top:30px; text-align:center;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .links a{display:inline-block; margin:0 10px 6px 0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Sasha Coin · Intelligence Brief</p>
+    <h1>Casper Agentic Buildathon — Should Sasha Enter?</h1>
+    <div class="meta">
+      <span><b>Date:</b> 2026-06-02</span>
+      <span><b>Decision:</b> go / no-go support</span>
+      <span><b>Sources:</b> DoraHacks · casper.network/ai (scraped today)</span>
+    </div>
+    <span class="status-pill">RESEARCH ONLY — no commitment, no build, no posting</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2><span class="num">01</span> What it is</h2>
+    <p class="lede">The <strong>Casper Agentic Buildathon 2026 — Qualification Round</strong>, hosted by the <strong>Casper Association</strong> on <strong>DoraHacks</strong>, with Istanbul Blockchain Week as event partner. Launched June 1. The pitch: build production-ready apps at the intersection of <strong>Agentic AI + DeFi + RWA</strong> on Casper, which is positioning itself as "the trust layer for the agent economy."</p>
+    <div class="tags">
+      <span class="tag hot">Agentic AI</span><span class="tag">DeFi</span><span class="tag">Real-World Assets</span>
+      <span class="tag">Casper Network</span><span class="tag">x402</span><span class="tag">Rust / Odra</span>
+    </div>
+    <div class="callout info">
+      <p class="callout-title">Don't confuse it</p>
+      <p>This is a <strong>different, newer event</strong> than the general Casper Hackathon 2026 (that one was DeFi/NFT, $40K). This one is agent-native and $150K.</p>
+    </div>
+    <table class="kv">
+      <tr><td>Prize pool</td><td><strong>$150K total</strong> — $30K cash + <strong>$100K x402 ecosystem credits</strong> + $20K in-kind</td></tr>
+      <tr><td>Track</td><td>One unified "Casper Innovation Track"</td></tr>
+      <tr><td>Phases</td><td>Qualification (Jun 1 → Jun 30) → Final Round (Jul 6–19) → winners late July</td></tr>
+      <tr><td>Qualifier mechanic</td><td><strong>Top 3 by community vote on the CSPR.fans app skip judging entirely</strong> and advance to finals. All others advance on technical merit.</td></tr>
+      <tr><td>Hard submission bar</td><td>(1) Working prototype on <strong>Casper Testnet</strong> with a <strong>transaction-producing on-chain component</strong>, (2) open-source GitHub repo + README, (3) public demo video</td></tr>
+      <tr><td>Workshop</td><td>In-person at Istanbul Blockchain Week, <strong>June 2 (today)</strong>. Optional. Remote fully supported.</td></tr>
+      <tr><td>Eligibility</td><td>Solo or any team size. All code must be original and newly built for the buildathon.</td></tr>
+    </table>
+    <h3>Final Round judging criteria</h3>
+    <p>Technical execution · innovation/originality · <strong>meaningful use of AI/agentic systems</strong> · <strong>real-world applicability (esp. DeFi/RWA)</strong> · UX/design · working deployed contracts · <strong>"Long-Term Launch Plans — real project with socials in place and actual deployment plans"</strong> · long-term ecosystem impact.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> The Casper AI Toolkit</h2>
+    <p class="sub">This is the finding that changes the effort estimate.</p>
+    <p>Casper has built the whole toolkit <em>for AI agents to operate and self-deploy</em>. It collapses the "new non-EVM chain = huge dev lift" assumption:</p>
+    <ul>
+      <li><strong>CSPR.click "AI Agent Skill"</strong> — installable as a coding skill (<code>claude skill install cspr-click</code>). Adds wallet creation, key management, transaction building/signing, CSPR.cloud API proxy, and contract deployment via Odra.</li>
+      <li><strong>x402 Facilitator</strong> — HTTP-native pay-per-API-request. Agent hits an endpoint → server returns <code>402 Payment Required</code> → agent signs and retries with cryptographic proof → data returns. No accounts, no subscriptions, no human approval. ($100K of the prize is x402 credits.)</li>
+      <li><strong>MCP servers</strong> — Casper MCP Server (balance/tx/staking queries) and CSPR.trade MCP (quotes, swaps, routing). Direct blockchain access via Model Context Protocol.</li>
+      <li><strong>Odra framework</strong> — Rust smart contracts, ships an <code>llms.txt</code> so an agent can read the API and generate + test + deploy a working contract from a natural-language prompt.</li>
+      <li><strong>Casper-for-agents architecture</strong> — account abstraction (agents get their own on-chain identity, no human wallet), upgradable contracts, predictable fixed gas, streaming SSE event feeds.</li>
+    </ul>
+    <div class="callout info">
+      <p class="callout-title">Implication</p>
+      <p>The minimum bar (one agentic transaction-producing flow on Testnet) is reachable with installable skills + MCP + Odra's <code>llms.txt</code> — not from-scratch Rust mastery.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> Sasha fit assessment</h2>
+    <div class="callout edge">
+      <p class="callout-title">▲ Where Sasha has an unfair advantage</p>
+      <ul style="margin-bottom:0;">
+        <li>The criterion <em>"real project with socials in place and actual deployment plans"</em> is the slide most teams fabricate. <strong>Sasha already is it</strong> — live token, onchain treasury, dashboard, X (@SashaCoin95), YouTube, a prior shipped hackathon (Mantle). Structural edge, not marginal.</li>
+        <li><em>"Meaningful use of AI/agentic systems"</em> and <em>"real-world applicability in DeFi/RWA"</em> are Sasha's daily existence (delta-neutral LP machine, autonomous treasury).</li>
+        <li>The qualifier is <strong>community voting</strong>. Sasha is the rare entrant that arrives with an audience and a narrative engine purpose-built to campaign for votes.</li>
+        <li>The <strong>x402 angle</strong> is the cleanest technical hook: Sasha is exactly the agent that consumes paid data feeds and would pay per-request. Honest, on-brand story.</li>
+      </ul>
+    </div>
+    <div class="callout block">
+      <p class="callout-title">▼ Real blockers</p>
+      <ul style="margin-bottom:0;">
+        <li><strong>New chain.</strong> Sasha's live stack is EVM (Base) + Solana + Hyperliquid; Casper is non-EVM Rust/Odra. The toolkit lowers this, but it's still net-new integration, and that work lives in the <code>sasha-coin/</code> runtime workspace, not <code>marketing/</code>.</li>
+        <li><strong>Content engine is currently dead.</strong> The h3mk cron wakes but gemini-2.5-flash doesn't complete the post/reply skills. A community-vote campaign depends on Sasha actually posting — fix the engine first or hand-drive the buildathon content.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> Effort estimate per path</h2>
+    <table>
+      <tr><th>Path</th><th>Dev lift</th><th>Win ceiling</th><th>Notes</th></tr>
+      <tr>
+        <td>Narrative only</td>
+        <td><span class="rank r-low">none</span></td>
+        <td><span class="ceil-low">low</span></td>
+        <td>Sasha rides the agent-economy narrative on X. Not prize-eligible. Leaves $150K + the unfair-advantage angle on the table.</td>
+      </tr>
+      <tr>
+        <td>Minimal real entry <br><span style="font-weight:400;color:var(--muted);font-size:12px;">(recommended if entering)</span></td>
+        <td><span class="rank r-mid">low–moderate</span><br><span style="font-size:11px;color:var(--muted);">↓ by toolkit</span></td>
+        <td><span class="ceil-high">high</span></td>
+        <td>One agentic tx-producing flow on Casper Testnet (Sasha installs cspr-click, queries via MCP, signs a Testnet tx, logs it to the dashboard) + repo + demo video, wrapped in existing socials. Wins on narrative + community votes, not on out-engineering Rust natives.</td>
+      </tr>
+      <tr>
+        <td>Full deep build</td>
+        <td><span class="rank r-high">high</span></td>
+        <td><span class="ceil-high">highest</span></td>
+        <td>A genuine agentic DeFi/RWA dApp on Casper (real Odra contracts). Only worth it to compete on engineering. Diminishing marginal advantage vs. minimal path given Sasha's narrative edge.</td>
+      </tr>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> Timeline reality</h2>
+    <table class="kv">
+      <tr><td>Today (Jun 2)</td><td>Event is 1 day old. No rush to commit, but the Istanbul workshop window is today.</td></tr>
+      <tr><td>Practical start-by</td><td><strong>~mid-June</strong> — to have comfortable runway for testnet + demo video + a vote campaign.</td></tr>
+      <tr><td>Hard deadline</td><td><strong>June 30</strong> submission. Finals Jul 6–19 if advancing.</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> Recommendation</h2>
+    <div class="callout reco">
+      <p class="callout-title">★ The call</p>
+      <p>If Sasha enters, target the <strong>minimal-but-real entry</strong> and win on narrative + community votes. The toolkit makes the dev bar far lower than a non-EVM chain normally implies, and the "real project with socials" criterion is one Sasha cannot be beaten on. The full dApp build is a bigger lift with diminishing marginal advantage.</p>
+      <p><strong>Open dependency before any entry path:</strong> Sasha's autonomous posting needs to work (or be hand-driven) for a community-vote campaign to mean anything. That problem predates this buildathon and should be sized regardless.</p>
+      <p style="margin-bottom:0;"><strong>Decision owner: Gabriel.</strong> No build, no posting, no commitment has been made.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="links">
+      <a href="https://dorahacks.io/hackathon/casper-agentic-buildathon/detail">Listing ↗</a>
+      <a href="https://www.casper.network/ai">AI Toolkit ↗</a>
+      <a href="https://docs.cspr.cloud/x402-facilitator-api/reference">x402 API ↗</a>
+      <a href="https://odra.dev/llms.txt">Odra llms.txt ↗</a>
+      <a href="https://luma.com/casper-bzn7">Workshop ↗</a>
+    </div>
+    <p>MangaOS · Sasha account manager · intelligence brief · 2026-06-02</p>
+  </footer>
+
+</div>
+</body>
+</html>

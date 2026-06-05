@@ -1,0 +1,761 @@
+{
+  "schema_version": "1.0",
+  "description": "Source of truth for every external integration Sasha depends on. Maintained by sasha-ops-hardening. env_vars hold NAMES ONLY (never values). Live keys live in local .env (gitignored) and the VPS .env (/docker/openclaw-h3mk/data/.openclaw/.env).",
+  "last_full_review": "2026-06-03",
+  "enums": {
+    "category": [
+      "onchain-exec",
+      "identity-oracle",
+      "signal-data",
+      "social-distribution",
+      "infra-ops",
+      "research-utility"
+    ],
+    "live_action_risk": [
+      "none",
+      "read",
+      "write",
+      "sign",
+      "post",
+      "trade"
+    ]
+  },
+  "owner_skills": [
+    "sasha-xlayer-oracle-keeper",
+    "sasha-signal-fusion",
+    "sasha-social-agent",
+    "sasha-defi-execution",
+    "sasha-distribution-liveness",
+    "sasha-ops-hardening"
+  ],
+  "integrations": [
+    {
+      "name": "X Layer RPC",
+      "category": "onchain-exec",
+      "purpose": "OKX X Layer (zkEVM L2) JSON-RPC for reading/writing the Sasha dynamic-fee hook + oracle.",
+      "docs_url": "https://web3.okx.com/xlayer/docs/developer/build-on-xlayer/network-information",
+      "llms_url": null,
+      "env_vars": [
+        "XLAYER_RPC_URL",
+        "XLAYER_TESTNET_RPC_URL",
+        "XLAYER_CHAIN_ID",
+        "XLAYER_TESTNET_CHAIN_ID",
+        "XLAYER_AGENT_PK"
+      ],
+      "files": [
+        "scripts/push-signal-to-xlayer.js",
+        "scripts/xlayer-pool-state.js",
+        "scripts/init-xlayer-pool.js",
+        "scripts/deploy-xlayer-hook.js",
+        "scripts/xlayer-add-liquidity.js"
+      ],
+      "endpoint": "https://rpc.xlayer.tech",
+      "live_action_risk": "sign",
+      "fallback_behavior": "Read-only state fetch retries; signal push uses --force for liveness. Gas estimate with 50% buffer. On CurrencyNotSettled, decode and re-quote.",
+      "smoke_test_command": "node scripts/xlayer-pool-state.js",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-xlayer-oracle-keeper",
+      "notes": "Mainnet chainId 196 (0xC4) rpc.xlayer.tech. Testnet chainId 1952 (0x7A0) testrpc.xlayer.tech/terigon (NOT legacy 195). Confirmed vs official OKX docs 2026-06."
+    },
+    {
+      "name": "Uniswap v4 (PoolManager + Hook + Oracle)",
+      "category": "identity-oracle",
+      "purpose": "Sasha's on-chain risk signal lives in SashaOracle and drives SashaDynamicFeeHook fees on a Uniswap v4 pool on X Layer.",
+      "docs_url": "https://docs.uniswap.org/contracts/v4/overview",
+      "llms_url": null,
+      "env_vars": [
+        "XLAYER_POOL_MANAGER",
+        "XLAYER_ORACLE_ADDRESS",
+        "XLAYER_HOOK_ADDRESS",
+        "XLAYER_POOL_ID"
+      ],
+      "files": [
+        "contracts/SashaOracle.sol",
+        "contracts/SashaDynamicFeeHook.sol",
+        "scripts/push-signal-to-xlayer.js"
+      ],
+      "endpoint": "https://rpc.xlayer.tech",
+      "live_action_risk": "sign",
+      "fallback_behavior": "Oracle setFee writes are idempotent; the 2h --force cron keeps updatedAt fresh so the fee never goes stale (<6h fallback).",
+      "smoke_test_command": "node scripts/push-signal-to-xlayer.js --dry-run",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-xlayer-oracle-keeper",
+      "notes": "PoolManager 0x360e68faccca8ca495c1b759fd9eee466db9fb32. No v4 PositionManager on X Layer."
+    },
+    {
+      "name": "Allora Network",
+      "category": "signal-data",
+      "purpose": "Reputation-weighted decentralized inference (SOL/USD log-return + price-target topics) — Judge #1 in the signal fusion.",
+      "docs_url": "https://docs.allora.network/",
+      "llms_url": null,
+      "env_vars": [
+        "ALLORA_API_KEY"
+      ],
+      "files": [
+        "scripts/signals/allora.js",
+        "scripts/mantle-signal.js"
+      ],
+      "endpoint": "https://api.allora.network/v2/allora/consumer/",
+      "live_action_risk": "read",
+      "fallback_behavior": "On error/timeout, fall back to CoinGecko spot for SOL/USD and mark this judge as degraded (do not zero the fused signal).",
+      "smoke_test_command": "node scripts/signals/allora.js",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-signal-fusion",
+      "notes": "Topics 3 and 17."
+    },
+    {
+      "name": "Elfa AI",
+      "category": "signal-data",
+      "purpose": "Smart-account mention tracking + trending tokens (SOL/MNT/USDC) — Judge #2 in the signal fusion.",
+      "docs_url": "https://docs.elfa.ai/",
+      "llms_url": null,
+      "env_vars": [
+        "ELFA_API_KEY"
+      ],
+      "files": [
+        "scripts/signals/elfa.js",
+        "scripts/mantle-signal.js"
+      ],
+      "endpoint": "https://api.elfa.ai/v2/aggregations/trending-tokens",
+      "live_action_risk": "read",
+      "fallback_behavior": "On error, mark judge degraded and proceed with remaining sources. Cached endpoints doc in .firecrawl/elfa-endpoints.md.",
+      "smoke_test_command": "node scripts/signals/elfa.js",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-signal-fusion"
+    },
+    {
+      "name": "Polymarket Gamma API",
+      "category": "signal-data",
+      "purpose": "Real-money prediction-market odds for risk-off detection (Solana exploit/hack probabilities) — Judge #3.",
+      "docs_url": "https://docs.polymarket.com/developers/gamma-markets-api/overview",
+      "llms_url": null,
+      "env_vars": [],
+      "files": [
+        "scripts/signals/polymarket.js",
+        "scripts/mantle-signal.js"
+      ],
+      "endpoint": "https://gamma-api.polymarket.com/events",
+      "live_action_risk": "read",
+      "fallback_behavior": "Public API, no auth. On error, mark judge degraded. NOTE: docs.polymarket.com bot-blocks automated GET (docs-check shows fetch-failed); the page is valid in a browser.",
+      "smoke_test_command": "node scripts/signals/polymarket.js",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-signal-fusion"
+    },
+    {
+      "name": "OpenRouter",
+      "category": "signal-data",
+      "purpose": "LLM routing for social-bias extraction from Sasha's recent posts in the signal pipeline (model google/gemini-2.5-flash).",
+      "docs_url": "https://openrouter.ai/docs",
+      "llms_url": "https://openrouter.ai/docs/llms-full.txt",
+      "env_vars": [
+        "OPENROUTER_API_KEY"
+      ],
+      "files": [
+        "scripts/mantle-signal.js"
+      ],
+      "endpoint": "https://openrouter.ai/api/v1",
+      "live_action_risk": "read",
+      "fallback_behavior": "Falls back to OPENAI_API_KEY if set; if both absent, social-bias judge is skipped (degraded, not fatal).",
+      "smoke_test_command": "node scripts/mantle-signal.js --dry-run",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-signal-fusion"
+    },
+    {
+      "name": "Gemini API",
+      "category": "signal-data",
+      "purpose": "Reply generation (gemini-2.5-flash) and image generation (gemini-3.x flash image) for Sasha.",
+      "docs_url": "https://ai.google.dev/gemini-api/docs",
+      "llms_url": null,
+      "env_vars": [
+        "GEMINI_API_KEY",
+        "GEMINI_REPLY_MODEL"
+      ],
+      "files": [
+        "scripts/morning-reply-run.js",
+        "scripts/generate-image.js",
+        "skills/gemini-image-gen/",
+        "skills/gemini-nano-banana/"
+      ],
+      "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/",
+      "live_action_risk": "read",
+      "fallback_behavior": "On 429/5xx, retry with backoff; reply generation aborts the single reply rather than posting a low-quality fallback.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-signal-fusion",
+      "notes": "Uses GEMINI_API_KEY in scripts (tool-registry previously mislabeled this GOOGLE_API_KEY)."
+    },
+    {
+      "name": "CoinGecko",
+      "category": "signal-data",
+      "purpose": "Fallback spot price for SOL/USD and general token price lookups.",
+      "docs_url": "https://docs.coingecko.com/reference/introduction",
+      "llms_url": null,
+      "env_vars": [],
+      "files": [
+        "scripts/signals/allora.js"
+      ],
+      "endpoint": "https://api.coingecko.com/api/v3/simple/price",
+      "live_action_risk": "read",
+      "fallback_behavior": "Public API; rate-limit (429) backs off. Used only as a fallback price source.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-signal-fusion"
+    },
+    {
+      "name": "DefiLlama",
+      "category": "signal-data",
+      "purpose": "Real-time token prices (coins.llama.fi) and yield-pool scanning (yields.llama.fi) for the LP pool scanner and position marks.",
+      "docs_url": "https://defillama.com/docs/api",
+      "llms_url": null,
+      "env_vars": [],
+      "files": [
+        "scripts/pool-scanner.js",
+        "scripts/position-monitor.js",
+        "scripts/lp-reconcile.js",
+        "scripts/lp-opener.js",
+        "scripts/xlayer-pool-state.js"
+      ],
+      "endpoint": "https://coins.llama.fi/prices/current/",
+      "live_action_risk": "read",
+      "fallback_behavior": "Public API. Price failures cause position-monitor to skip the mark-to-market for that asset rather than emit a bad rebalance signal. Cached docs in .firecrawl/defillama-api-docs.md.",
+      "smoke_test_command": "node scripts/pool-scanner.js --dry-run",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-signal-fusion",
+      "notes": "Also consumed by sasha-defi-execution (position-monitor)."
+    },
+    {
+      "name": "Buffer GraphQL",
+      "category": "social-distribution",
+      "purpose": "Queue/auto-schedule X posts for Sasha's channel. Persona posts + weekly yield tweet land here.",
+      "docs_url": "https://buffer.com/developers/api",
+      "llms_url": null,
+      "env_vars": [
+        "BUFFER_ACCESS_TOKEN",
+        "BUFFER_CHANNEL_ID",
+        "BUFFER_ORGANIZATION_ID",
+        "BUFFER_ACCESS_TOKEN_SASHA_COIN",
+        "BUFFER_CHANNEL_ID_SASHA_COIN_X",
+        "BUFFER_ORGANIZATION_ID_SASHA_COIN"
+      ],
+      "files": [
+        "post_to_buffer.js",
+        "post_to_buffer_scheduled.js",
+        "skills/twitter-scheduled-post/SKILL.md",
+        "scripts/weekly-yield-tweet.js"
+      ],
+      "endpoint": "https://api.buffer.com",
+      "live_action_risk": "post",
+      "fallback_behavior": "createPost returns a union (PostActionSuccess | MutationError); read only id/text/message. On 'duplicate', rewrite once then append to state/post-errors.json. NEVER select PostPublishingError.code on the queue-READ query (removed from schema -> HTTP 400).",
+      "smoke_test_command": "node post_to_buffer.js --text 'smoke' --dry-run",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-social-agent",
+      "notes": "Live probe 2026-06-03: endpoint+auth healthy (HTTP 200). Real post failures are from box-level spawnSync ETIMEDOUT, not GraphQL."
+    },
+    {
+      "name": "X (Twitter) API v2",
+      "category": "social-distribution",
+      "purpose": "Direct tweet/reply posting (the VPS-side reply path goes through tweet.js).",
+      "docs_url": "https://docs.x.com/x-api",
+      "llms_url": null,
+      "env_vars": [
+        "X_API_KEY",
+        "X_API_SECRET",
+        "X_ACCESS_TOKEN",
+        "X_ACCESS_SECRET"
+      ],
+      "files": [
+        "scripts/tweet.js",
+        "skills/twitter-reply-gal/SKILL.md"
+      ],
+      "endpoint": "https://api.twitter.com/2/",
+      "live_action_risk": "post",
+      "fallback_behavior": "On 429 stop immediately (no retry) + Telegram alert. On 403 alert with payload. Append posted id to replied-tweets.json on success.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-social-agent",
+      "notes": "Reply-path conflict: twitter-reply-gal (VPS) uses this; local morning-reply-run.js uses ADB. See sasha-social-agent/references/reply-paths.md."
+    },
+    {
+      "name": "Apify",
+      "category": "social-distribution",
+      "purpose": "Scrape recent tweets from the KOL shortlist + keyword search for reply candidates.",
+      "docs_url": "https://docs.apify.com/api/v2",
+      "llms_url": null,
+      "env_vars": [
+        "APIFY_TOKEN",
+        "APIFY_API_KEY",
+        "APIFY_KEYS_FILE",
+        "APIFY_ROTATE_VERBOSE"
+      ],
+      "files": [
+        "scripts/kol-scraper.js",
+        "scripts/lib/apify-rotate.js"
+      ],
+      "endpoint": "https://api.apify.com/v2/acts/",
+      "live_action_risk": "read",
+      "fallback_behavior": "Key rotation via apify-rotate.js on quota/429. On total failure, reply run skips (no candidates) rather than erroring the engine.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-social-agent",
+      "notes": "Actor kaitoeasyapi/twitter-x-data-tweet-scraper (~$0.00025/tweet)."
+    },
+    {
+      "name": "ADB (Android Debug Bridge)",
+      "category": "social-distribution",
+      "purpose": "Native reply posting via a physical phone running the X app (no API cost). LOCAL-ONLY path (cannot run on the VPS).",
+      "docs_url": "https://developer.android.com/tools/adb",
+      "llms_url": null,
+      "env_vars": [
+        "ADB_PATH",
+        "SASHA_PHONE_ADB",
+        "SASHA_TMPDIR"
+      ],
+      "files": [
+        "scripts/adb-reply.js",
+        "scripts/morning-reply-run.js"
+      ],
+      "endpoint": null,
+      "live_action_risk": "post",
+      "fallback_behavior": "3 ADB reconnect retries; optimistic pre-write of tweet id to replied-tweets.json before the post so a kill mid-post still dedupes. Returns ok|unconfirmed|subscribers_only|error.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-social-agent",
+      "notes": "Bridge trigger (sasha-bridge-trigger.log) last fired 2026-05-21."
+    },
+    {
+      "name": "Typefully",
+      "category": "social-distribution",
+      "purpose": "Draft/thread management for Sasha (MCP). Currently non-blocking; future scheduled posting.",
+      "docs_url": "https://support.typefully.com/",
+      "llms_url": null,
+      "env_vars": [
+        "TYPEFULLY_API_KEY_SASHA_COIN",
+        "TYPEFULLY_DEBUG"
+      ],
+      "files": [
+        "skills/typefully-publish/",
+        "skills/social-media-scheduler/"
+      ],
+      "endpoint": "https://mcp.typefully.com/mcp",
+      "live_action_risk": "post",
+      "fallback_behavior": "Not on the autonomous path. Manual/assisted use only.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-social-agent"
+    },
+    {
+      "name": "Byreal CLI",
+      "category": "onchain-exec",
+      "purpose": "Solana CLMM DEX: pool query, position open/close/claim, token swap, auto-compound.",
+      "docs_url": "https://docs.byreal.io/",
+      "llms_url": null,
+      "env_vars": [
+        "SOLANA_AGENT_WALLET",
+        "SOLANA_RPC_URL"
+      ],
+      "files": [
+        "scripts/byreal-trade.js",
+        "skills/byreal-mantle/",
+        ".claude/skills/byreal-cli/SKILL.md"
+      ],
+      "endpoint": null,
+      "live_action_risk": "trade",
+      "fallback_behavior": "Solana keypair stored host-side (~/.config/byreal/keys/id.json). --base must be a held pool mint; size in base-token units; --slippage 200; --auto-swap. Dry-run default.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution",
+      "notes": "byreal-cli + keys run on the HOST as root (cron /etc/cron.d/sasha-trade), not inside the container."
+    },
+    {
+      "name": "Hyperliquid",
+      "category": "onchain-exec",
+      "purpose": "Delta-neutral perp short to hedge the volatile leg of LP positions; funding-rate kill switch.",
+      "docs_url": "https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api",
+      "llms_url": null,
+      "env_vars": [
+        "HL_PRIVATE_KEY",
+        "HL_WALLET_ADDRESS"
+      ],
+      "files": [
+        "scripts/hedge-executor.js",
+        "scripts/hl-deposit.js",
+        "scripts/position-monitor.js",
+        "scripts/lp-reconcile.js",
+        ".claude/skills/hyperliquid-perps/SKILL.md"
+      ],
+      "endpoint": "https://api.hyperliquid.xyz/info",
+      "live_action_risk": "trade",
+      "fallback_behavior": "HEDGE_LIVE_OK=1 gates live orders to the sasha-hedge cron only. Rehedge >5% drift. Funding kill switch < -54.75% annualized. Min order value $10 (orders below are skipped).",
+      "smoke_test_command": "node scripts/hedge-executor.js --dry-run",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution",
+      "notes": "EIP-712 signing chainId 1337. Funding via Arbitrum USDC bridge."
+    },
+    {
+      "name": "LiFi",
+      "category": "onchain-exec",
+      "purpose": "Cross-chain bridge quotes (Solana -> Mantle) for sourcing MNT liquidity / mETH compounding.",
+      "docs_url": "https://docs.li.fi/",
+      "llms_url": null,
+      "env_vars": [
+        "LIFI_API_KEY"
+      ],
+      "files": [
+        "scripts/bridge-to-mantle.js"
+      ],
+      "endpoint": "https://li.quest/v1/quote",
+      "live_action_risk": "read",
+      "fallback_behavior": "Quote-only (read). Actual bridge execution is a separate gated, confirmation-required step. API key optional (rate-limit boost).",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution"
+    },
+    {
+      "name": "Clawlett wallet (Gnosis Safe + Zodiac Roles + CoW + KyberSwap + CNS)",
+      "category": "onchain-exec",
+      "purpose": "Multi-sig custody + permissioned execution for on-chain trading on Base/BNB; MEV-protected swaps; Trenches token actions.",
+      "docs_url": "https://docs.safe.global/",
+      "llms_url": null,
+      "env_vars": [
+        "WALLET_CONFIG_DIR",
+        "BASE_RPC_URL"
+      ],
+      "files": [
+        "Clawlett/clawlett/scripts/balance.js",
+        "Clawlett/clawlett/scripts/swap.js",
+        "Clawlett/clawlett/scripts/cow.js",
+        "Clawlett/clawlett/scripts/trenches.js",
+        "Clawlett/clawlett/SKILL.md"
+      ],
+      "endpoint": "https://mainnet.base.org",
+      "live_action_risk": "sign",
+      "fallback_behavior": "ALL on-chain execution requires explicit Gabriel confirmation per Clawlett SKILL.md policy. Owner config in Clawlett/config/base/wallet.json (VPS-only, never committed).",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution",
+      "notes": "AgentKeyFactoryV3 0x2EA0010c..., KyberSwap 0x6131B5..., CoW Settlement 0x9008D1..., ZodiacHelpers 0x38441B..., CNS 0x299319e0...."
+    },
+    {
+      "name": "Mantle RPC + ERC-8004 identity + mETH treasury",
+      "category": "identity-oracle",
+      "purpose": "On-chain reads/writes on Mantle: ERC-8004 agent identity + attestation, mETH staking/yield treasury.",
+      "docs_url": "https://docs.mantle.xyz/",
+      "llms_url": null,
+      "env_vars": [
+        "MANTLE_RPC_URL",
+        "MANTLE_TESTNET_RPC_URL",
+        "MANTLE_AGENT_PK",
+        "MANTLE_AGENT_WALLET"
+      ],
+      "files": [
+        "scripts/erc8004-register.js",
+        "scripts/erc8004-write.js",
+        "scripts/mantle-treasury.js",
+        ".claude/skills/mantle-agent/SKILL.md"
+      ],
+      "endpoint": "https://rpc.mantle.xyz",
+      "live_action_risk": "sign",
+      "fallback_behavior": "Identity Registry at 0x8004...; self-transfer attestation after LP actions. mETH stake() is MAINNET-only (buy mETH on a Mantle DEX via LiFi on L2).",
+      "smoke_test_command": "node scripts/mantle-treasury.js --action report",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution"
+    },
+    {
+      "name": "Base RPC",
+      "category": "onchain-exec",
+      "purpose": "Base mainnet reads: token balances, Aerodrome Slipstream LP state, Gnosis Safe reads.",
+      "docs_url": "https://docs.base.org/",
+      "llms_url": null,
+      "env_vars": [
+        "BASE_RPC_URL",
+        "BASE_RPC_URLS",
+        "ALCHEMY_BASE_RPC"
+      ],
+      "files": [
+        "scripts/position-monitor.js",
+        "scripts/lp-reconcile.js",
+        "scripts/position-sizer.js",
+        ".claude/skills/base-defi-stack/SKILL.md"
+      ],
+      "endpoint": "https://mainnet.base.org",
+      "live_action_risk": "read",
+      "fallback_behavior": "Multiple RPC fallbacks (publicnode, llamarpc, Alchemy). Read-only position snapshots.",
+      "smoke_test_command": "node scripts/position-monitor.js --dry-run",
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution"
+    },
+    {
+      "name": "Solana RPC",
+      "category": "onchain-exec",
+      "purpose": "Byreal position reads + wallet balance checks.",
+      "docs_url": "https://solana.com/docs/rpc",
+      "llms_url": null,
+      "env_vars": [
+        "SOLANA_RPC_URL"
+      ],
+      "files": [
+        "scripts/bridge-to-mantle.js",
+        "scripts/position-sizer.js"
+      ],
+      "endpoint": "https://api.mainnet-beta.solana.com",
+      "live_action_risk": "read",
+      "fallback_behavior": "Read-only. Balance fetches shell out to byreal-cli; under box load these can hit spawnSync ETIMEDOUT (see sasha-ops-hardening).",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution"
+    },
+    {
+      "name": "Arbitrum RPC",
+      "category": "onchain-exec",
+      "purpose": "USDC bridge funding path into Hyperliquid (Bridge2).",
+      "docs_url": "https://docs.arbitrum.io/",
+      "llms_url": null,
+      "env_vars": [],
+      "files": [
+        "scripts/hl-deposit.js"
+      ],
+      "endpoint": "https://arb1.arbitrum.io/rpc",
+      "live_action_risk": "sign",
+      "fallback_behavior": "Deposit-only, gated. Public RPC with fallbacks.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution"
+    },
+    {
+      "name": "Trenches API",
+      "category": "signal-data",
+      "purpose": "$SASHA token price + trending tokens on the Trenches launch platform.",
+      "docs_url": "https://www.trenches.lol/",
+      "llms_url": null,
+      "env_vars": [
+        "TRENCHES_API_URL"
+      ],
+      "files": [
+        "Clawlett/clawlett/scripts/trenches.js"
+      ],
+      "endpoint": null,
+      "live_action_risk": "read",
+      "fallback_behavior": "Read-only price/pump tracking.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-defi-execution",
+      "notes": "docs_url unverified — confirm canonical Trenches developer docs."
+    },
+    {
+      "name": "Telegram Bot API",
+      "category": "infra-ops",
+      "purpose": "Primary Gabriel <-> Sasha channel + all script alert notifications + the phone command bridge.",
+      "docs_url": "https://core.telegram.org/bots/api",
+      "llms_url": null,
+      "env_vars": [
+        "TERMUX_BRIDGE_TOKEN",
+        "COMMANDER_CHAT_ID",
+        "BRIDGE_SECRET",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID"
+      ],
+      "files": [
+        "scripts/morning-reply-run.js",
+        "scripts/byreal-trade.js"
+      ],
+      "endpoint": "https://api.telegram.org/",
+      "live_action_risk": "post",
+      "fallback_behavior": "Fire-and-forget; send errors swallowed so alerting never blocks the pipeline. Falls back TELEGRAM_BOT_TOKEN/CHAT_ID if bridge vars absent.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening"
+    },
+    {
+      "name": "Dune + Sim",
+      "category": "infra-ops",
+      "purpose": "On-chain analytics dashboards/queries for Sasha's wallet + positions.",
+      "docs_url": "https://docs.dune.com/",
+      "llms_url": null,
+      "env_vars": [
+        "DUNE_API_KEY"
+      ],
+      "files": [
+        "reports/",
+        ".claude/skills/dune-analytics/SKILL.md"
+      ],
+      "endpoint": "https://api.dune.com/api/v1/",
+      "live_action_risk": "read",
+      "fallback_behavior": "REST API creates auto-archived queries; MCP locked to manga82 account. Read-only analytics.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening",
+      "notes": "Use agent EOA 0xba3BB32 as FROM address for queries, not the Safe."
+    },
+    {
+      "name": "ElevenLabs",
+      "category": "infra-ops",
+      "purpose": "Voice synthesis for podcast/video samples (canonical voice 'Jessica').",
+      "docs_url": "https://elevenlabs.io/docs",
+      "llms_url": "https://elevenlabs.io/docs/llms.txt",
+      "env_vars": [
+        "ELEVENLABS_API_KEY"
+      ],
+      "files": [
+        "scripts/generate-elevenlabs-podcast-sample.mjs"
+      ],
+      "endpoint": "https://api.elevenlabs.io/v1/",
+      "live_action_risk": "read",
+      "fallback_behavior": "Content-side utility. Voice id cgSgspJ2msm6clMCkdW9.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening",
+      "notes": "Content production belongs in the marketing workspace; this is a dev utility."
+    },
+    {
+      "name": "Google OAuth (Workspace)",
+      "category": "infra-ops",
+      "purpose": "OAuth token generation for Google Workspace integrations (docs/sheets) — infra only, not on the autonomous path.",
+      "docs_url": "https://developers.google.com/identity/protocols/oauth2",
+      "llms_url": null,
+      "env_vars": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_REFRESH_TOKEN"
+      ],
+      "files": [
+        "skills/google-workspace/scripts/get-token.py"
+      ],
+      "endpoint": "https://oauth2.googleapis.com/token",
+      "live_action_risk": "none",
+      "fallback_behavior": "Currently unused by runtime scripts.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening",
+      "notes": "Docs API (docs.googleapis.com) is disabled project-wide; use Drive HTML import path for any doc output."
+    },
+    {
+      "name": "GitHub API",
+      "category": "infra-ops",
+      "purpose": "Repo access / release tracking (not on the autonomous posting path).",
+      "docs_url": "https://docs.github.com/rest",
+      "llms_url": null,
+      "env_vars": [
+        "GITHUB_TOKEN",
+        "GITHUB_REPO"
+      ],
+      "files": [],
+      "endpoint": "https://api.github.com",
+      "live_action_risk": "write",
+      "fallback_behavior": "Not automated. Manual/CI use.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening"
+    },
+    {
+      "name": "Firecrawl",
+      "category": "research-utility",
+      "purpose": "Scrape protocol docs / yield data / hackathon info for research; caches to .firecrawl/.",
+      "docs_url": "https://docs.firecrawl.dev/",
+      "llms_url": "https://docs.firecrawl.dev/llms.txt",
+      "env_vars": [
+        "FIRECRAWL_API_KEY"
+      ],
+      "files": [
+        ".firecrawl/"
+      ],
+      "endpoint": "https://api.firecrawl.dev/v1/",
+      "live_action_risk": "read",
+      "fallback_behavior": "Research-only. Outputs cached as markdown.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening"
+    },
+    {
+      "name": "ScreenshotOne",
+      "category": "research-utility",
+      "purpose": "Above-the-fold screenshots of web pages for visual intelligence / assets.",
+      "docs_url": "https://screenshotone.com/docs/",
+      "llms_url": null,
+      "env_vars": [
+        "SCREENSHOTONE_ACCESS_KEY"
+      ],
+      "files": [
+        ".claude/skills/screenshot-taker/"
+      ],
+      "endpoint": "https://api.screenshotone.com/take",
+      "live_action_risk": "read",
+      "fallback_behavior": "Research/asset utility.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening"
+    },
+    {
+      "name": "YepAPI",
+      "category": "research-utility",
+      "purpose": "Search API utility (research).",
+      "docs_url": "https://yep.com/",
+      "llms_url": null,
+      "env_vars": [
+        "YEPAPI_KEY"
+      ],
+      "files": [],
+      "endpoint": null,
+      "live_action_risk": "read",
+      "fallback_behavior": "Research-only; not on the autonomous path.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening",
+      "notes": "docs_url unverified — confirm canonical YepAPI developer docs or mark deprecated if unused."
+    },
+    {
+      "name": "HasData",
+      "category": "research-utility",
+      "purpose": "Web data / SERP extraction utility (research).",
+      "docs_url": "https://docs.hasdata.com/",
+      "llms_url": null,
+      "env_vars": [
+        "HASDATA_API_KEY"
+      ],
+      "files": [],
+      "endpoint": "https://api.hasdata.com/",
+      "live_action_risk": "read",
+      "fallback_behavior": "Research-only; not referenced by runtime scripts. Candidate for removal if unused.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening"
+    },
+    {
+      "name": "Supabase content MCP (mangabeira-content)",
+      "category": "infra-ops",
+      "purpose": "Push/publish content to mangabeira.net. CROSS-WORKSPACE — owned by the marketing workspace, listed here for completeness.",
+      "docs_url": "https://supabase.com/docs/guides/functions",
+      "llms_url": null,
+      "env_vars": [
+        "MCP_CONTENT_SECRET"
+      ],
+      "files": [],
+      "endpoint": null,
+      "live_action_risk": "post",
+      "fallback_behavior": "Not part of Sasha's runtime. Draft-first, publish on explicit approval.",
+      "smoke_test_command": null,
+      "last_checked": "2026-06-03",
+      "owner_skill": "sasha-ops-hardening",
+      "workspace": "marketing"
+    },
+    {
+      "name": "The Graph",
+      "category": "signal-data",
+      "purpose": "CL subgraph data for the LP pool scanner: tick-level in-range liquidity + exact per-pool daily/hourly history (volumeUSD/feesUSD/tvlUSD) on Base/Ethereum. The realized-fee-APR + concentration source the aggregators are built on.",
+      "docs_url": "https://thegraph.com/docs/en/",
+      "llms_url": null,
+      "env_vars": [
+        "THE_GRAPH_API_KEY"
+      ],
+      "files": [
+        "scripts/signals/lp-data-source-verifier.mjs"
+      ],
+      "endpoint": "https://gateway.thegraph.com/api/subgraphs/id/{SUBGRAPH_ID}",
+      "live_action_risk": "read",
+      "fallback_behavior": "Authed (Bearer key, 32 hex). Free tier 100k queries/mo. If key absent or gateway down, the verifier marks The Graph degraded (not drift) and the scanner falls back to GeckoTerminal/DexScreener + on-chain. EVM-only in practice (no usable Solana CLMM subgraph). feesUSD is derived (volume x feeTier), not realized.",
+      "smoke_test_command": "node scripts/signals/lp-data-source-verifier.mjs --dry-run",
+      "last_checked": "2026-06-04",
+      "owner_skill": "sasha-signal-fusion",
+      "notes": "Verified subgraphs: Uniswap v3 ETH 5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV, Aerodrome Base GENunSHWLBXm59mBSgPzQ8metBEp9YDfdqwFr91Av1UM. Stored key arrived 151 chars (junk-suffixed); verifier trims to first 32 hex. Authed, so only the LOCAL verifier checks it, not the cloud routine. Spec: docs/integrations/lp-data-sources-api-reference.md section 5."
+    }
+  ]
+}

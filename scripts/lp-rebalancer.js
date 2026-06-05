@@ -4,12 +4,15 @@
  *
  * Called when position-monitor.js writes content/lp-rebalance-signal.json.
  *
- * Three rebalance actions:
- *   CLOSE_REOPEN  — OOR timeout: close, claim fees, reopen at current price +/- half-width
+ * Action types:
+ *   OOR_ALERT     — notify-only: sustained OOR (>=12h). NO on-chain action. Hold & evaluate.
+ *   CLOSE_REOPEN  — manual recenter only (no longer emitted by the OOR auto-path): close, claim, reopen
  *   CLAIM_FEES    — fees above threshold: claim without closing
  *   DELEVERAGE    — HF falling: repay portion of Morpho loan
  *
- * Kill-switch: executes CLOSE_POSITION only, no reopen. Fires Telegram alert.
+ * Kill-switch (killSwitch:true): executes CLOSE_POSITION only, no reopen. Fires Telegram alert.
+ * KILL execution stays gated on Gabriel's explicit confirmation (run with --execute) — the
+ * monitor only writes the signal; nothing closes autonomously.
  *
  * Usage:
  *   node scripts/lp-rebalancer.js                    # dry-run (default)
@@ -31,6 +34,10 @@ const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..'
 
 const args = process.argv.slice(2)
 const EXECUTE      = args.includes('--execute')
+// confirm-gated KILLs (from the OOR-distance / hedge-liq monitor guards) NEVER auto-execute from the
+// cron. They require an explicit human gate: --confirm-kill flag OR LP_KILL_OK=1 env (the */30 cron
+// passes neither). Until then the rebalancer alerts "pending confirmation" and leaves the signal intact.
+const CONFIRM_KILL = args.includes('--confirm-kill') || process.env.LP_KILL_OK === '1'
 const POSITION_ARG = (() => { const i = args.indexOf('--position'); return i !== -1 ? args[i+1] : null })()
 const CHAIN_ARG    = (() => { const i = args.indexOf('--chain');    return i !== -1 ? args[i+1] : null })()
 
@@ -242,6 +249,7 @@ async function main() {
     if (!actions.length) { log('No matching actions — done'); process.exit(0) }
 
     const results = []
+    let pendingConfirmation = false   // true if a confirm-gated KILL was held back (keep the signal, don't mutate state)
     const store = loadJson(POSITIONS_PATH)
 
     for (const action of actions) {
@@ -250,13 +258,31 @@ async function main() {
         const monitorData = signal.positions?.find(p => p.id === action.positionId)
         if (monitorData) Object.assign(position, monitorData)
 
+        // Confirm-gated KILL: never auto-execute from cron. Alert + hold for a manual --confirm-kill run.
+        if (action.killSwitch && action.confirmGated && !CONFIRM_KILL) {
+            pendingConfirmation = true
+            log(`⛔ KILL for ${action.positionId} is confirm-gated — NOT auto-executing (run with --confirm-kill to execute). Reason: ${action.reason}`)
+            sendTelegram(
+                `🚨 <b>[KILL PENDING CONFIRMATION]</b> ${position.symbol} (${position.chain})\n` +
+                `Reason: ${action.reason}\n` +
+                `The monitor flagged a KILL. It will NOT auto-execute.\n` +
+                `To execute: <code>node scripts/lp-rebalancer.js --execute --confirm-kill --position ${action.positionId}</code>`
+            )
+            const gatedResult = { positionId: action.positionId, success: false, action: 'KILL_PENDING_CONFIRMATION', skipped: true, reason: action.reason }
+            results.push(gatedResult)
+            appendLog({ symbol: position.symbol, chain: position.chain, ...gatedResult, executed: false })
+            continue
+        }
+
         let result
         try {
             if (action.killSwitch)           result = await killPosition(position, action.reason, !EXECUTE)
+            else if (action.type === 'OOR_ALERT')    result = { success: true, action: 'OOR_ALERT', noop: true, reason: action.reason }
             else if (action.type === 'CLOSE_REOPEN') result = await closeAndReopen(position, !EXECUTE)
             else if (action.type === 'CLAIM_FEES')   result = await claimFees(position, !EXECUTE)
             else if (action.type === 'DELEVERAGE')   result = await deleverage(position, action.currentHf || 1.0, !EXECUTE)
             else { warn(`Unknown action: ${action.type}`); continue }
+            if (action.type === 'OOR_ALERT') log(`OOR_ALERT (notify-only, no on-chain action) — ${action.positionId}: ${action.reason}`)
         } catch(e) {
             warn(`Action ${action.type} for ${action.positionId} threw: ${e.message}`)
             result = { success: false, error: e.message }
@@ -265,10 +291,12 @@ async function main() {
         appendLog({ positionId: action.positionId, symbol: position.symbol, chain: position.chain, ...result, executed: EXECUTE })
     }
 
-    if (EXECUTE && results.some(r => r.success)) {
+    if (EXECUTE && results.some(r => r.success) && !pendingConfirmation) {
         updatePositionsState(results)
         fs.unlinkSync(SIGNAL_PATH)
         log('Cleared lp-rebalance-signal.json')
+    } else if (pendingConfirmation) {
+        log('Signal retained — a confirm-gated KILL is pending. Re-run with --confirm-kill to execute, or it will refresh next monitor cycle.')
     }
 
     const ok = results.filter(r => r.success).length
