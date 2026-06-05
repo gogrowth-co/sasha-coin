@@ -74,3 +74,7 @@ content/mantle-signal.json
 # Firecrawl scrape cache (runtime junk)
 .firecrawl/
 .playwright-cli/
+
+# Regenerated dashboard data (VPS produces every 5 min; not source-controlled)
+web/data/portfolio.json
+web/*/data/dashboard.json

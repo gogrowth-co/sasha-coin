@@ -58,4 +58,5 @@ Clawlett/clawlett/scripts/config/
 state/
 
 # Mantle hackathon — dynamic generated signal file (regenerated on VPS each run)
-content/mantle-signal.json
+content/mantle-signal.jsonweb/data/portfolio.json
+web/*/data/dashboard.json
