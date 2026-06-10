@@ -170,16 +170,23 @@ function fetchPrices() {
 
 // Idle (undeployed) LP capital sitting in the Base wallet.
 async function reconcileBaseWallet(provider) {
-    try {
-        const prices = await fetchPrices()
-        const eth = parseFloat(ethers.formatEther(await provider.getBalance(LP_BASE_WALLET)))
-        const usdc = new ethers.Contract(BASE_USDC, ERC20_ABI, provider)
-        const cbbtc = new ethers.Contract(BASE_CBBTC, ERC20_ABI, provider)
-        const usdcBal = parseFloat(ethers.formatUnits(await usdc.balanceOf(LP_BASE_WALLET), 6))
-        const cbbtcBal = parseFloat(ethers.formatUnits(await cbbtc.balanceOf(LP_BASE_WALLET), 8))
-        const idleUsd = usdcBal * 1 + cbbtcBal * prices.btc + eth * prices.eth
-        return { address: LP_BASE_WALLET, chain: 'base', usdc: usdcBal, cbbtc: cbbtcBal, eth, idleUsd: Math.round(idleUsd * 100) / 100 }
-    } catch (e) { warn(`wallet read failed: ${e.message.slice(0, 50)}`); return null }
+    const rpcs = (process.env.BASE_RPC_URLS || 'https://mainnet.base.org,https://base.llamarpc.com,https://base-rpc.publicnode.com').split(',')
+    for (let attempt = 0; attempt < rpcs.length; attempt++) {
+        try {
+            const p = attempt === 0 ? provider : new ethers.JsonRpcProvider(rpcs[attempt])
+            const prices = await fetchPrices()
+            const eth = parseFloat(ethers.formatEther(await p.getBalance(LP_BASE_WALLET)))
+            const usdc = new ethers.Contract(BASE_USDC, ERC20_ABI, p)
+            const cbbtc = new ethers.Contract(BASE_CBBTC, ERC20_ABI, p)
+            const usdcBal = parseFloat(ethers.formatUnits(await usdc.balanceOf(LP_BASE_WALLET), 6))
+            const cbbtcBal = parseFloat(ethers.formatUnits(await cbbtc.balanceOf(LP_BASE_WALLET), 8))
+            const idleUsd = usdcBal * 1 + cbbtcBal * prices.btc + eth * prices.eth
+            return { address: LP_BASE_WALLET, chain: 'base', usdc: usdcBal, cbbtc: cbbtcBal, eth, idleUsd: Math.round(idleUsd * 100) / 100 }
+        } catch (e) {
+            if (attempt < rpcs.length - 1) { await new Promise(r => setTimeout(r, 400)) }
+            else { warn(`wallet read failed after ${rpcs.length} attempts: ${e.message.slice(0, 50)}`); return null }
+        }
+    }
 }
 
 // Full live reconcile of a Base CL position: funded check + mark-to-market value,
