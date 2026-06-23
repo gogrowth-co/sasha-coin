@@ -31,6 +31,37 @@
           }
         ]
       }
-    ]
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/gabrielmangabeira/Documents/Gabriel Mangabeira/sasha-coin/.claude/hooks/session-learn-nudge.sh\""
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/gabrielmangabeira/Documents/Gabriel Mangabeira/sasha-coin/.claude/hooks/curate-memory.sh\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/gabrielmangabeira/Documents/Gabriel Mangabeira/sasha-coin/.claude/hooks/subagent-memory-nudge.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": []
   }
 }
