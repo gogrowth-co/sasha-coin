@@ -1,0 +1,21 @@
+{
+  "name": "sasha-risk-desk",
+  "version": "1.0.0",
+  "description": "Sasha LP risk intelligence sold over CROO CAP",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "provider": "node dist/provider-entrypoint.js",
+    "requester": "node dist/requester-entrypoint.js"
+  },
+  "dependencies": {
+    "@croo-network/sdk": "^0.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0",
+    "@types/node": "^20.0.0"
+  }
+}

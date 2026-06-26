@@ -81,3 +81,7 @@ content/mantle-signal.json
 # Regenerated dashboard data (VPS produces every 5 min; not source-controlled)
 web/data/portfolio.json
 web/*/data/dashboard.json
+
+# CROO package build artifacts
+croo/dist/
+croo/node_modules/
