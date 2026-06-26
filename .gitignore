@@ -52,6 +52,9 @@ dist/
 build/
 *.bak
 
+# Git worktrees
+.worktrees/
+
 # Marketing template local-only (not deployed to VPS but committed locally? No — keep them local-only)
 # These are KEPT in git so the local workspace is reproducible across machines:
 # !CLAUDE.md
