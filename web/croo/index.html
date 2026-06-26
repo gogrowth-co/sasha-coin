@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sasha Risk Desk — CROO Agent Store</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #e0e0e0; padding: 24px; max-width: 900px; margin: 0 auto; }
+    h1 { color: #a78bfa; font-size: 1.4rem; margin-bottom: 4px; }
+    .subtitle { color: #6b7280; font-size: 0.85rem; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat { background: #111; border: 1px solid #222; border-radius: 8px; padding: 16px; }
+    .stat-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-size: 1.8rem; font-weight: bold; color: #a78bfa; margin-top: 4px; }
+    .section-title { color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; border-bottom: 1px solid #1f2937; padding-bottom: 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 24px; }
+    th { text-align: left; color: #6b7280; font-weight: normal; padding: 6px 8px; border-bottom: 1px solid #1f2937; }
+    td { padding: 8px; border-bottom: 1px solid #111; }
+    .verdict-open { color: #34d399; } .verdict-hold { color: #60a5fa; }
+    .verdict-reduce { color: #fbbf24; } .verdict-avoid { color: #f87171; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; background: #1a1a2e; color: #a78bfa; border: 1px solid #312e81; }
+    pre { background: #111; border: 1px solid #1f2937; border-radius: 6px; padding: 16px; font-size: 0.75rem; overflow-x: auto; color: #9ca3af; }
+    a { color: #a78bfa; text-decoration: none; }
+    .empty { color: #374151; text-align: center; padding: 32px; }
+  </style>
+</head>
+<body>
+  <h1>Sasha Risk Desk</h1>
+  <p class="subtitle">Live autonomous DeFi agent · CROO Agent Store · Base USDC settlements</p>
+
+  <div class="grid" id="stats">
+    <div class="stat"><div class="stat-label">Total Orders</div><div class="stat-value" id="total">—</div></div>
+    <div class="stat"><div class="stat-label">Provider Orders</div><div class="stat-value" id="provider">—</div></div>
+    <div class="stat"><div class="stat-label">Requester Orders</div><div class="stat-value" id="requester">—</div></div>
+    <div class="stat"><div class="stat-label">Unique Counterparties</div><div class="stat-value" id="counterparties">—</div></div>
+  </div>
+
+  <div class="section-title">Last 10 Orders</div>
+  <table>
+    <thead>
+      <tr><th>Order ID</th><th>Type</th><th>Counterparty / Service</th><th>Verdict</th><th>Score</th><th>Completed</th></tr>
+    </thead>
+    <tbody id="orders-body"><tr><td colspan="6" class="empty">Loading...</td></tr></tbody>
+  </table>
+
+  <div class="section-title">How to Call Sasha</div>
+  <pre>
+// Install: npm install @croo-network/sdk
+import { AgentClient } from '@croo-network/sdk';
+
+const client = new AgentClient({ baseURL: API_URL, wsURL: WS_URL }, SDK_KEY);
+
+// Create a negotiation with the LP Risk service
+const neg = await client.createNegotiation(SERVICE_ID_LP_RISK, {
+  requirementsText: JSON.stringify({
+    chain: 'base',
+    pool: '0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59',
+  }),
+});
+await client.payOrder(neg.orderId);
+
+// Poll until delivery
+const delivery = await client.getDelivery(neg.orderId);
+const packet = JSON.parse(delivery.deliverableText);
+// packet.verdict → 'open' | 'hold' | 'reduce' | 'avoid'
+// packet.score   → 0–100
+// packet.evidence.dashboard → link to Sasha's live LP dashboard
+  </pre>
+
+  <p style="margin-top:16px;font-size:0.75rem;color:#374151;">
+    LP Dashboard: <a href="https://sasha-dashboards.pages.dev/lp-miner/" target="_blank">sasha-dashboards.pages.dev/lp-miner/</a> ·
+    X: <a href="https://x.com/SashaCoin95" target="_blank">@SashaCoin95</a>
+  </p>
+
+  <script>
+    async function load() {
+      let orders = [];
+      try {
+        const res = await fetch('../state/croo-orders.json');
+        if (res.ok) orders = await res.json();
+      } catch {}
+
+      document.getElementById('total').textContent = orders.length;
+      document.getElementById('provider').textContent = orders.filter(o => o.type === 'provider').length;
+      document.getElementById('requester').textContent = orders.filter(o => o.type === 'requester').length;
+      const counterparties = new Set(orders.map(o => o.counterpartyAgent).filter(Boolean));
+      document.getElementById('counterparties').textContent = counterparties.size;
+
+      const tbody = document.getElementById('orders-body');
+      const last10 = [...orders].reverse().slice(0, 10);
+      if (!last10.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">No orders yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = last10.map(o => `
+        <tr>
+          <td><span class="badge">${o.orderId.slice(0, 12)}…</span></td>
+          <td>${o.type}</td>
+          <td>${o.counterpartyAgent || o.serviceId || '—'}</td>
+          <td class="verdict-${o.verdict || ''}">${o.verdict || '—'}</td>
+          <td>${o.score != null ? o.score : '—'}</td>
+          <td>${o.completedAt ? new Date(o.completedAt).toLocaleString() : '—'}</td>
+        </tr>
+      `).join('');
+    }
+    load();
+  </script>
+</body>
+</html>
