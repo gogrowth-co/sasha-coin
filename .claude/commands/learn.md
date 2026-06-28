@@ -96,6 +96,24 @@ type: [feedback | project | reference | user]
 
 5. Add a one-line entry to `MEMORY.md` under the existing list (never overwrite the index, only append or update existing lines)
 
+### Step 5b — Prune to budget (required after every append)
+
+After appending, check if MEMORY.md exceeds the **18,432-byte / ~80-line** budget:
+
+```bash
+wc -c MEMORY.md   # must be ≤ 18432
+```
+
+**If over budget**, demote the oldest non-protected entry to COLD tier:
+
+1. Identify the first entry in MEMORY.md that is **outside** the `<!-- PROTECTED -->` / `<!-- END PROTECTED -->` block. "Oldest" = lowest line number among unprotected entries.
+2. Append a line to `MEMORY-archive.md`:
+   `- YYYY-MM-DD archived | auto-demoted | [original one-liner] [topic-file.md]`
+3. Remove that line from MEMORY.md.
+4. Repeat until `wc -c MEMORY.md` ≤ 18,432.
+
+**Never demote** entries between `<!-- PROTECTED -->` and `<!-- END PROTECTED -->`.
+
 ---
 
 ## Step 6 — Report

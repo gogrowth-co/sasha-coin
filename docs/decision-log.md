@@ -181,12 +181,84 @@ Supersedes/Superseded-by: changes the OOR kill-switch behavior set in DEC-007 / 
 
 ---
 
-## DEC-009: CROO Agent Hackathon — Sasha Risk Desk (2026-06-26)
+**DEC-009 | 2026-06-07 | No-swap single-sided rebalancing (Snuggle.fi/Maxfi) — NO-GO for the live hedged position; technique kept for a future unhedged sleeve only**
+
+Decision: After deep research (primary sources) + a 5-advisor council + a Klein pre-mortem, **do NOT adopt "no-swap single-sided rebalancing" for the live delta-neutral WETH/USDC position** (NFT 71722642). **(B) external Snuggle.fi/Maxfi vault: rejected unconditionally** (custody reversal vs the Clawlett Safe, unverified headline claims, 15% fee, surrenders the hedge). **(A) self-build the technique into `lp-rebalancer.js`: rejected as a change to this position.** Approved instead: a zero-capital shadow backtest (proof + EV) and a Sasha content teardown.
+
+Why (the load-bearing reasons):
+- **It reverses what we just decided.** DEC-008 (2 days prior) removed auto-recenter precisely because "auto-recenter crystallizes IL on moves that mean-revert; this position is intentionally no-rebalance." No-swap rebalancing is a *rebalancing* technique — adopting it un-does DEC-007/DEC-008. The empirical "rebalance ~85% less / lazy beats greedy" finding is already implemented here in the extreme (kill-only, zero rebalances).
+- **It fights the hedge (the whole point).** `defi-lp-math` numeric check: no-swap swings LP delta between ~100% long (post-down, all WETH) and ~0 (post-up, all USDC) vs a stable ~48% for swap-to-recenter. The hedge is STATIC + MANUAL (pool `0xb2cc…` not in the hedge-executor registry). v3 range orders can UN-FILL, so the realized delta (hence the correct hedge size) is path-dependent and not final until withdrawal → no static short is correct for both legs. At the all-WETH extreme you'd short the full notional (~2x funding/margin).
+- **Trivial upside, real tail.** Only substantiated benefit = removing swap-step MEV/slippage (single-dollar on four-figure capital, ~offset by extra redeploy gas). Headline claims ("40-50% less IL", "70-80% of exploit vectors removed", "most capital-efficient") are NOT in Snuggle's docs — unsubstantiated marketing. Not novel (Maverick Mode Right/Left does it natively; Maverick's own docs warn of high IL when price reverses).
+- **Pre-mortem's #1 failure:** a rebalancing technique silently re-introducing directional exposure into a position whose safety IS its delta-neutrality — net-long into a downtrend while the static short covers half.
+
+Approved cheap/reversible follow-ups (GO):
+- (a) **Shadow backtest** — extend `scripts/lp-sim.js` into a path-based time-series replay; model `[no-swap LP delta swing + static 0.0106 ETH short]` vs the current `go-flat-on-kill` baseline, net result (fees+funding−IL−hedge drift−gas) on a ranging AND a trending WETH/USDC path. Zero capital, no Gabriel gate. Prereq: fix the malformed The Graph key (151 chars; real = first 32 hex) or use the GeckoTerminal OHLCV fallback. Also measure out-of-range event frequency (if ~0–2/quarter the EV is rounding error regardless).
+- (b) **Content** — route to `marketing/`: a Sasha teardown on why a hedged, hands-off farm should NOT chase no-swap rebalancing (right financial call = right brand call). Do NOT repeat the vendor's IL/exploit numbers.
+
+Scope note: the technique IS sound for an *unhedged, actively-managed, mean-reverting* LP (a future separate sleeve), self-built only, behind the same dry-run + confirm gate. It stays out of the delta-neutral position.
+
+Frameworks: Sprint (Knapp) — riskiest assumption tested cheaply first. Pre-mortem (Klein; not yet in the shared library — gap flagged). Full memo: `reports/no-swap-rebalancing-decision-2026-06-07.md`.
+
+Supersedes/Superseded-by: reaffirms DEC-007 (static hedge, no rebalance) and DEC-008 (no-recenter OOR policy) against the no-swap proposal; changes nothing on-chain.
+
+Addendum (2026-06-07): **Backtest built + run, confirms the NO-GO.** `scripts/lp-noswap-backtest.js` — path-based hourly 90d A/B (HODL / BASELINE go-flat-on-kill / NOSWAP_STATIC / NOSWAP_REHEDGE) across RANGING/TREND-DOWN/TREND-UP/CHOP synthetic paths + a real ETH 90d series rescaled onto the range. Findings: NOSWAP_STATIC loses to baseline on ~every path at every fee APR; NOSWAP_REHEDGE only beats baseline at implausibly high, UNVERIFIED fee APR (~150%+) and only in trending/real regimes — it still loses ~−$4.5 in the RANGING path at 300% APR (rehedge churn). Best-case edge is +$0.5–$1.5 on a $40 position (noise). Cost is dominated by redeploy gas+perp (13–45 redeploys/quarter), NOT the swap savings. De-hedging tail = $21–$36 net-delta excursion (54–89% of capital), but it's a static-hedge property present in baseline too and capped by the DEC-008 kill (provided no-swap never re-enters past a kill). Two defects found+fixed during the build before trusting output (HODL was accruing LP fees; trend paths' noise swamped the drift → relabeled/retuned). Backtest is a directional A/B, not a P&L oracle (simplified fee + avg-reset hedge accounting). Verdict stands: NO-GO; the only winning corner needs an unverified APR + trending market + rehedging, for rounding-error gains, on a deliberately no-rebalance position.
+
+---
+
+**DEC-010 | 2026-06-08 | Casper Buildathon Phase 0 spike — GO (both mandatory live `casper-test` tx hashes landed)**
+
+Decision: **GO** — proceed to Phase 1 (SPINE) of the Casper Agentic Buildathon build. The Codex-tightened Phase-0 GO bar (TWO live `casper-test` tx hashes — a public contract deploy AND a real x402 `/settle`) is met, both confirmed executed on-chain.
+
+Artifacts (the DoraHacks-grade deliverables):
+- **Contract deploy tx** `dc2d87a1830942799a7e2408ea3491ba18ca601a198ddc38f07ab96726a509c3` — Cep18X402 (CEP-18) deployed to public testnet, package `166e0ec88a3d1b3caec06edb723c841bac4d1182598d008aabfc0de99c81b9b8`.
+- **x402 settle tx** `32cb5e5f8aae10c32157dcfa00aa3595adba53a06ac495188fa1b2902cf13924` — `transfer_with_authorization`, executed `error_message: null`, block `f06a1839…`, cost 7 CSPR. Full loop: client 402 → headless EIP-712 sign → facilitator verify+settle → HTTP 200 (paid resource unlocked).
+
+Pre-checks (de-risking, not GO): OdraVM test PASS, CasperVM test PASS, x402 `/verify` PASS on a real headless ed25519 EIP-712 signature (the pre-mortem's #1 footgun — eliminated).
+
+Validated stack (matters for Phase 1): `make-software/casper-x402` **Go** facilitator is wire-compatible end-to-end with the `odradev/casper-x402-poc` **Rust/Odra** CEP-18, once the off-chain resource-server `ASSET_NAME` equals the token's runtime `name` ("Casper X402 Token") — because cep3009's on-chain EIP-712 domain name = `self.token.name()`. Domain `{name, version:"1", chain_name=casper:casper-test, contract_package_hash}`; struct `TransferWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)`. Headless signing = Casper Go SDK keypair (ed25519). Decision input from the spec: Go path approved (x402 ref is 100% Go; no TS EIP-712 equivalent) — Go 1.25.11 installed prebuilt, no sudo.
+
+Key debugging that unblocked GO: `/tmp` gets wiped between sessions → spike moved to `~/dev/casper-spike` (durable; resume point `SPIKE-STATE.md`); wasm32 added to the pinned `nightly-2026-01-01`; `wasm-opt`(binaryen 130)+`wasm-strip`(wabt 1.0.41) installed to `~/.local`; odra livenet deploy needs `ODRA_CASPER_LIVENET_EVENTS_URL=https://node.testnet.casper.network/events` (SSE); first settle reverted `User error 37003 = cep3009::InvalidSignature` because off-chain `ASSET_NAME` was the test-helper `TOKEN_NAME` ("Cep18x402") not the runtime token name — fixed.
+
+Scope/discipline notes: the spike settle was payer→payee on two keys I control — a **mechanism proof**, NOT the EXPOSE demo; a genuine external counterparty stays a **Phase 2 (STRETCH 1)** requirement (no self-dealing, spec §6). All Phase-0 work is in a throwaway `~/dev/casper-spike` tree; the SPINE will be a **fresh PUBLIC repo built from an allowlist** (never flip this private tree — `state/` holds live addresses + posting history) with a pre-commit secret scan. Testnet only; throwaway ed25519 key `01f50785…ccd064` funded with 4000 CSPR (Gabriel faucet'd his wallet 5000 CSPR + transferred 4000 to the on-disk signer).
+
+Full result: `_ops/spike-result-casper-2026-06-08.md`. Memory: [[project_casper_buildathon]]. Content/demo/vote → `marketing/` (workspace boundary).
+
+Supersedes/Superseded-by: none — opens the Casper build execution arc; next gate is Day-7 SPINE (attestation contract live on public testnet + agent loop + one live `402→settle` + fresh public repo).
+
+---
+
+**DEC-011 | 2026-06-08 | Casper SPINE: agent/adapter layer in Go, not TypeScript (plan deviation, research-backed)**
+
+Decision: build the SPINE's `SettlementAdapter` + `CasperAdapter` + agent loop in **Go**, deviating from the spec/plan's stated TypeScript+casper-js-sdk. The contract stays Rust/Odra and the x402 facilitator stays Go regardless (the repo is polyglot either way; the only open choice was the agent/adapter layer).
+
+Why (researched at Gabriel's request — he asked for pros/cons, not a snap call):
+- The Phase-0 spike validated the Go path end-to-end (both live tx hashes came from casper-go-sdk); casper-js-sdk was never validated by us.
+- Research correction: my Phase-0 note "no TS EIP-712 equivalent" was wrong — `@casper-ecosystem/casper-eip-712` v1.2.1 (npm, 2026-05-10) ships `buildDomain`/`hashTypedData`/`encodeAddress` + a prebuilt `TransferAuthorization` (though that prebuilt uses bytes32/uint64/snake_case and does NOT match the x402 `TransferWithAuthorization` variant — address/uint256/camelCase — so TS would need a custom type-def + a validation pass). casper-js-sdk v5 does support headless `TransactionV1`/`callEntrypoint`. So TS is viable, NOT the footgun I feared — but it is NEW code needing its own validation pass, against the Day-7 clock.
+- Go wins on speed + robustness (pre-mortem's #1 risk = build doesn't fit by Day-7): ~100% reuse of the validated stack, zero new signing-validation, agent+facilitator coherent. The "chain-agnostic" story is an interface (provable in Go; Phase-4 EVM adapter via `x402-foundation/x402/go`), not a language. Gabriel chose Go.
+
+Result so far (fresh PUBLIC repo `~/dev/sasha-x402-kit`, 4 commits, secret-scan gate verified working):
+- AgentAttest contract: clean-room Rust/Odra, OdraVM+CasperVM tests, **live deploy tx `577570f2…dba0bfff`**, package `7b4bb374af24ee46a067f4d41f5cba61b097ba613825617e81a57d7673132262`.
+- Go `core/` (chain-agnostic interface+types, no chain SDK) + `adapters/casper` (casper-go-sdk TransactionV1) — **live attest tx `15dd7a6f…57ae2546`** (error_message null) = Day-7 gate item #2 (agent writes on-chain). casper-go-sdk pinned to the spike-validated `v2.0.3-beta1.0.20260227130924-8416e84e4256`.
+
+Remaining for Day-7 (Jun 13): Task 1.4 (agent's own x402 PAY client + agent loop + one live `402→settle` driven by the loop — note item #3 was already proven mechanically in Phase 0 via the make-software client, but the SUBMISSION needs the agent loop to drive it with original code), Task 1.5 (README), Task 1.6 (gate verification). Build location `~/dev/sasha-x402-kit`; funded key has ~3299 CSPR.
+
+Supersedes/Superseded-by: refines DEC-010's "validated stack" note (Go facilitator + Odra CEP-18) by choosing Go for the agent layer too; the TS option in the spec is deferred to README "future work" / a possible post-Day-7 reskin.
+
+Addendum (2026-06-08) — **Day-7 SPINE GATE: PASS, 5 days early.** All four gate criteria met, each tx-hash-backed and executed on `casper-test` (`error_message: null`):
+1. Attestation contract live on public testnet — `AgentAttest` deploy `577570f2f5f486353b8d2e61f7328fca34cd8446053d643ebc395344dba0bfff`, package `7b4bb374af24ee46a067f4d41f5cba61b097ba613825617e81a57d7673132262`.
+2. Live `attest` call from the agent's own code — `15dd7a6f116527fcb54f695fc0ce2d2c6a1b278d6d538fbb5fdffefe57ae2546`.
+3. One agent-loop-driven live x402 `402→settle` — PAY/settle `b419bbcbcbefaa6da97eb4e5251461c691ba436f8f6921a316ea82c213cc5f2b` + the same cycle's ATTEST `1f063cc2d3567079cfac9075c3120d9b15deddcdec2a71eb75fc6fdec62f6893` (one `go run ./cmd/agent` did PAY→ACT→ATTEST). The x402 pay-scheme is original (implements the upstream `SchemeNetworkClient` via the public `casper-eip-712` lib — not the reference client).
+4. Fresh PUBLIC repo, secret-scan green — `~/dev/sasha-x402-kit`, 6 commits, `git ls-files` shows zero pem/env/key files; gate verified blocking + non-false-positive.
+Repo NOT yet pushed to GitHub (awaiting Gabriel's publish OK — the irreversible-disclosure gate). SPINE complete (Tasks 1.1–1.6). Per the plan, STRETCH (Phases 2–4) is now unblocked since a live `402→settle` exists; next is the GitHub publish decision, then Phase 2 (external x402 counterparty / EXPOSE) → Phase 5 packaging (demo video + DoraHacks writeup → `marketing/`). Submit target Jun 28. Funded key ~3.26k CSPR remaining.
+
+---
+
+## DEC-012: CROO Agent Hackathon — Sasha Risk Desk (2026-06-26)
 
 **Decision:** Build and enter "Sasha Risk Desk" in the CROO Agent Hackathon (deadline 2026-07-12).
 
 **Rationale:** $10,200 prize, exact fit for DeFi/On-chain Ops + Data & Verification tracks. Sasha's autonomous LP history is a unique moat — selling a live operating history, not generated text. CROO's A2A order graph judging (25%) rewards real composability, not demos.
 
-**Implementation:** `croo/` TypeScript package. Provider sells LP risk packets from `web/lp-miner/data/dashboard.json`. Requester buys from peer agents to build the order graph. Dashboard at `web/croo/`.
+**Implementation:** `croo/` TypeScript package. Provider sells LP risk packets from `web/lp-miner/data/dashboard.json`. Requester buys from peer agents to build the order graph. Dashboard at `web/croo/`. Agent registered: `f64edd68-41f0-4b2f-8ee3-8a21fdc87edb`. Service: `b0ba8e03-9e93-4865-8914-6fcd8f1b8eaf` at $0.10 USDC, 5min SLA.
 
 **Win condition:** 10+ completed CAP orders, 5+ unique buyer wallets, 3+ unique counterparty agents by July 10.

@@ -36,9 +36,14 @@ At the start of every new conversation in this workspace:
    - → `shared/project-facts.md` when: a project status changes, a port/URL/path changes
 
 2. Read this CLAUDE.md (you are now).
-3. Read `_context/brand-voice.md`, `_context/audience.md`, `_context/product-info.md`, `_context/positioning.md`. They define who Sasha is. Never write content without loading them.
-4. If the user mentions a campaign by name, load `campaigns/[slug]/brief.md`.
-5. Check `research/sasha-narrative-arc.md` to know what Sasha has already said.
+3. Load context files **on demand** based on task type — do NOT read them eagerly at session start:
+
+| Task type | Load |
+|---|---|
+| Content writing / voice / persona | `_context/brand-voice.md`, `_context/audience.md`, `_context/product-info.md`, `_context/positioning.md` |
+| Runtime / deployment / scripts | No context files needed — work from code directly |
+| Campaign work | `campaigns/[slug]/brief.md` (only when campaign is named) |
+| Narrative continuity check | `research/sasha-narrative-arc.md` |
 
 **Do NOT scan `.claude/skills/**`, `.claude/agents/**`, or `.claude/rules/**` broadly at session start.**
 For skill details, load `.claude/docs/skills-reference-full.md` only when selecting a specific skill.

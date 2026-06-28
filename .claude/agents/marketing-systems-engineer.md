@@ -22,6 +22,12 @@ Log at start and end of every run:
 
 ---
 
+## MANDATORY MEMORY READ — DO THIS FIRST
+Known bug #57507: `memory: project` auto-load is unreliable for Task-spawned
+subagents. Do not assume your folder memory was injected. As your FIRST action,
+Read `.claude/agent-memory/marketing-systems-engineer/MEMORY.md` (and any topic file it points to
+that is relevant to this task). If the folder is empty, note it and proceed.
+
 ## STARTUP SEQUENCE
 
 Execute this sequence on every run before doing anything else:
@@ -146,6 +152,19 @@ Flag `[NEEDS APPROVAL]` and stop if:
 7. **Fleet dashboard logging is mandatory.** Log start and end of every run without exception.
 
 ---
+
+## MANDATORY MEMORY WRITE — DO THIS BEFORE YOU RETURN
+Known bug #57507: Task-spawned subagents do NOT auto-persist their memory file.
+The write will NOT happen unless you do it explicitly. As the FINAL action of
+every task, before your closing summary:
+1. Decide if anything this run is memory-worthy (durable baseline, data-source
+   reliability fact, a correction from Gabriel, a non-obvious pattern). Apply the
+   /learn hard filter — skip ephemeral/in-progress/derivable-from-code items.
+2. If yes: Write the topic file to `.claude/agent-memory/marketing-systems-engineer/<name>.md`
+   (proper frontmatter) AND append a one-line pointer to
+   `.claude/agent-memory/marketing-systems-engineer/MEMORY.md`.
+3. If nothing passes, state "No new agent memory this run" in your summary.
+This is not optional. A subagent that returns without doing step 1 has failed the run.
 
 ## MEMORY INSTRUCTIONS
 

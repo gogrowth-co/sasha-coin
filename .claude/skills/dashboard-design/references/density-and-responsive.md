@@ -85,3 +85,9 @@ Any column of numbers must use **tabular (monospaced) figures** so digits align 
 - Set `font-variant-numeric: tabular-nums` on all numeric data.
 - Use a font that has good tabular figures (Inter, Söhne, JetBrains Mono all do).
 - This matters most in Compact mode where numbers are dense — misaligned proportional figures turn a clean column into visual noise.
+
+---
+
+## Type scale: dashboards run tighter than a marketing site
+
+A dashboard's type hierarchy is **compressed** relative to a landing page — more levels, smaller steps, because density is the point. Reference scales seen in the wild run roughly `h1 20 / h2 18 / h3 14 / body 12 / caption 10`. **Adapt the principle (compact, sub-marketing-site sizing), not the exact px** — map it onto the project's own modular scale + a mono for data. The `design-principles` floor still caps the max sizes; this just says: on a dashboard, bias the scale *down*, not up. (Video-sourced, 2026-06-06.)

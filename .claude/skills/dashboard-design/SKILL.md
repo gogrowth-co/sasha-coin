@@ -1,6 +1,6 @@
 ---
 name: dashboard-design
-description: Opinionated workflow for designing and rebuilding dashboards. Sits between design-principles (the floor) and frontend-design (the production layer). Owns the dashboard-specific disciplines: information hierarchy, metric tiering, chart selection, edge-state matrix, density modes, aesthetic direction, and anti-slop floor. Four modes — brief, audit, prescribe, decide. Use whenever the deliverable is a dashboard, status page, analytics surface, internal tool, or admin console. Triggers — "build a dashboard", "redesign the dashboard", "the dashboard looks bad", "fix the task board UI", "design an analytics page", "audit this dashboard", "what chart should I use", "how should I structure this overview page".
+description: Opinionated workflow for designing and rebuilding dashboards. Sits between design-principles (the floor) and frontend-design (the production layer). Owns the dashboard-specific disciplines: information hierarchy, metric tiering, chart selection, number & label treatment, interaction grammar, edge-state matrix, density modes, aesthetic direction, and anti-slop floor. Four modes — brief, audit, prescribe, decide. Use whenever the deliverable is a dashboard, status page, analytics surface, internal tool, or admin console. Triggers — "build a dashboard", "redesign the dashboard", "the dashboard looks bad", "fix the task board UI", "design an analytics page", "audit this dashboard", "what chart should I use", "how should I structure this overview page".
 ---
 
 # Dashboard Design — the discipline between the floor and the build
@@ -135,7 +135,7 @@ Every dashboard build hinges on these. If any one is wrong, the whole thing limp
 
 ## Anti-slop floor (the dashboard-specific bans)
 
-The 20 design-principles rules apply universally. **These 20 dashboard-specific bans are additive** — see `references/anti-patterns.md` for the full list with examples. The headline bans:
+The 20 design-principles rules apply universally. **These 24 dashboard-specific bans are additive** — see `references/anti-patterns.md` for the full list with examples. The headline bans:
 
 1. **No purple-gradient-on-white SaaS hero.** Earn the aesthetic instead.
 2. **No equal-sized metric card grid.** If everything's the same size, nothing is the answer.
@@ -157,6 +157,16 @@ The 20 design-principles rules apply universally. **These 20 dashboard-specific 
 18. **No `—` everywhere** when data is unavailable. State the cause: "API down 14:32" or "Awaiting first sync".
 19. **No legend below a chart when there are ≤3 series.** Inline labels beat legends.
 20. **No "Click here" or "Submit" button labels.** Verb + noun: "Create report", "Export CSV".
+21. **No traffic-light overload.** Color tracks problem density; a healthy screen is near-monochrome. Don't paint a green/red dot on every row. (See `information-hierarchy.md` → color budget.)
+22. **No glow / neon text-shadow on metrics.** Depth from tone + hairline borders, never a halo. Reads as a gamer HUD, not an instrument.
+23. **No dense table without search.** >15 rows → search; >30 → filters + sort; >100 → virtualize. (See `interaction-grammar.md`.)
+24. **No metric label without a timespan.** "Clicks · 7d", not "Clicks". (See `number-treatment.md`.)
+
+---
+
+## One rule that bends by context — the console vs. the client surface
+
+The strict anti-slop floor is calibrated for the **operator console / daily-use internal tool**: personality serves legibility, never the reverse. On a **client-facing or report surface**, deliberate rule-breaking for engagement and narrative is allowed (a hero moment, a bolder chart, more air) — *because the job is different.* Decide which kind of dashboard you're building before you decide how much to bend. **The console never bends; the showcase may.** (Geckoboard's "it's for people / keep evolving" principle, scoped — video distillation 2026-06-06.)
 
 ---
 
@@ -199,12 +209,14 @@ When the deliverable is a multi-week rebuild, also create a campaign object in `
 SKILL.md                              ← this file
 references/
   full-brief-template.md              ← the 18-section pre-build brief template
-  chart-selection.md                  ← chart-type decision tree, anatomy, color rules
-  information-hierarchy.md            ← hero / supporting / drill-down tiering
+  chart-selection.md                  ← chart-type decision tree, anatomy, data-ink, color rules
+  information-hierarchy.md            ← hero / supporting / drill-down tiering + spatial + color budget
+  number-treatment.md                 ← number formatting, no-orphan rule, labels (what + timespan)
+  interaction-grammar.md              ← popover/modal/drawer/page/toast + dense-table >15-row rule
   edge-state-matrix.md                ← 13 mandatory states per screen
-  density-and-responsive.md           ← density modes, breakpoint strategy
+  density-and-responsive.md           ← density modes, breakpoint strategy, type density
   aesthetic-directions.md             ← the 3 named directions (Operator / Editorial / Living Doc)
-  anti-patterns.md                    ← 20 dashboard-specific bans with examples
+  anti-patterns.md                    ← 24 dashboard-specific bans with examples
 ```
 
 ---

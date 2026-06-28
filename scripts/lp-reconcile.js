@@ -695,12 +695,17 @@ function writePortfolio(lpDash) {
                 audience: 'Judges: is this a real autonomous on-chain agent?', earns: 'mETH yield + trades',
             },
             {
-                key: 'okx', name: 'Dynamic Fee Hook', thesis: 'AI agent pricing its own Uniswap v4 pool’s risk on-chain', kind: 'money',
+                key: 'okx', name: 'Dynamic Fee Hook', thesis: "AI agent pricing its own Uniswap v4 pool's risk on-chain", kind: 'money',
                 valueUsd: r2(okxValue), poolUsd: r2(okxPool), walletUsd: r2(okxWallet),
                 feePct: okx?.oracle?.currentFeePct ?? null, riskLevel: okx?.oracle?.riskLevel || null,
                 pushes: (okx?.recentPushes || []).length, oracleStale: okx?.oracle?.isStale ?? null,
                 status: okx?.oracle?.currentFee != null ? 'live' : 'idle', deepLink: './okx/', history: series('okxUsd'),
                 audience: 'Judges: first AI agent setting dynamic v4 fees', earns: 'dynamic LP fees on its own pool',
+            },
+            {
+                key: 'casper', name: 'Casper x402', thesis: 'Every decision attested on Casper — PAY + ATTEST live on casper-test', kind: 'infra',
+                valueUsd: null, status: 'live', deepLink: './casper/', history: [],
+                audience: 'Judges: AI agent proves decisions on-chain, not just claims them', earns: 'on-chain attestation · x402 payments',
             },
         ]
 

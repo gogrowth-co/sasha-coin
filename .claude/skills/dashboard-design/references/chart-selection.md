@@ -60,6 +60,14 @@ Is the user looking at flow or transition between states?
 
 ---
 
+## Data-ink ratio & optimal sizing
+
+**Maximize data-ink, erase the rest.** Every pixel should carry data. Erase non-data ink and *redundant* data ink: box frames, heavy borders, drop shadows, 3D, dense gridlines, chart titles implied by the card header, axis titles the labels already make obvious. The test: if removing an element doesn't cost comprehension, remove it.
+
+**Optimal sizing — the shrink test.** A chart doesn't need to be big to be legible. Shrink it until it's *almost* unreadable, then nudge up one step. That's the size. Operator consoles win by fitting many small, legible charts (sparklines, card charts), not a few large ones.
+
+---
+
 ## Chart anatomy — the universal spec
 
 Every chart in the system follows these rules. If you find yourself bending one, document why.
@@ -169,6 +177,10 @@ Use `color-action-primary` for the line / bar / area. Don't get creative. Don't 
 - Use exactly **one** color for "this is the thing you should look at right now."
 - Everything else is grey, default, or palette.
 - The eye has to land somewhere on first glance. Decide where.
+
+### Cross-chart consistency
+
+The same category must use the **same color in every chart on the page.** If "Furniture" is teal in the sales donut, it's teal in the quantity donut. Inconsistent category color across charts forces the user to re-decode the legend on every glance — one of the quietest, most common comprehension killers.
 
 ---
 

@@ -1,7 +1,98 @@
 {
-  "version": "2.1",
-  "lastUpdated": "2026-06-02",
+  "lastUpdated": "2026-06-17T18:00:00.000Z",
   "tasks": [
+    {
+      "id": "CE-S-004",
+      "title": "Thread: Casper Buildathon — Launch Announcement",
+      "type": "content-piece",
+      "channel": "x",
+      "channels": ["x"],
+      "status": "todo",
+      "pipelineStage": "writing",
+      "priority": "high",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "casper-buildathon-promotion",
+      "arc": "Casper Buildathon",
+      "threadType": "Launch Announcement",
+      "dueDate": "2026-06-19",
+      "statusChangedDate": "2026-06-17",
+      "created": "2026-06-17",
+      "notes": "6-8 tweet launch thread. Angle: what we built + why. Real persona-owned position, verifiable on-chain identity, live tx proof. Link to DoraHacks submission + GitHub repo (gogrowth-co/sasha-x402-kit). Pull tx hashes from sasha-coin/docs/decision-log.md DEC-011. NEEDS: DoraHacks URL + CSPR.fans vote URL from Gabriel.",
+      "artifacts": {
+        "draft_x": null,
+        "published": []
+      }
+    },
+    {
+      "id": "CE-S-005",
+      "title": "Post: Casper Buildathon — Vote CTA",
+      "type": "content-piece",
+      "channel": "x",
+      "channels": ["x"],
+      "status": "todo",
+      "pipelineStage": "writing",
+      "priority": "high",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "casper-buildathon-promotion",
+      "arc": "Casper Buildathon",
+      "threadType": "Vote Drive",
+      "dueDate": "2026-06-21",
+      "statusChangedDate": "2026-06-17",
+      "created": "2026-06-17",
+      "notes": "Single post. Direct vote CTA: 'If you believe AI agents should own their economic identity on-chain, vote here → [CSPR.fans link]'. Needs CSPR.fans vote URL.",
+      "artifacts": {
+        "draft_x": null,
+        "published": []
+      }
+    },
+    {
+      "id": "CE-S-006",
+      "title": "Post: Casper Buildathon — Builder Log (Sasha's POV)",
+      "type": "content-piece",
+      "channel": "x",
+      "channels": ["x"],
+      "status": "todo",
+      "pipelineStage": "writing",
+      "priority": "medium",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "casper-buildathon-promotion",
+      "arc": "Casper Buildathon",
+      "threadType": "Builder Log",
+      "dueDate": "2026-06-24",
+      "statusChangedDate": "2026-06-17",
+      "created": "2026-06-17",
+      "notes": "Single post or short thread. Behind the build — Sasha's POV on x402 + AgentAttest. What surprised her. What she'd do differently. Character voice, first-person as Sasha.",
+      "artifacts": {
+        "draft_x": null,
+        "published": []
+      }
+    },
+    {
+      "id": "CE-S-007",
+      "title": "Thread: Casper Buildathon — Final Vote Push",
+      "type": "content-piece",
+      "channel": "x",
+      "channels": ["x"],
+      "status": "todo",
+      "pipelineStage": "writing",
+      "priority": "high",
+      "approvalStatus": "pending",
+      "qaStatus": "not-run",
+      "campaign": "casper-buildathon-promotion",
+      "arc": "Casper Buildathon",
+      "threadType": "Final Push",
+      "dueDate": "2026-06-27",
+      "statusChangedDate": "2026-06-17",
+      "created": "2026-06-17",
+      "notes": "Closing thread. Angle: votes close in X days. Live proof: tx hash on testnet.cspr.live. On-chain receipts as the closer. Pull from sasha-coin/docs/decision-log.md DEC-011.",
+      "artifacts": {
+        "draft_x": null,
+        "published": []
+      }
+    },
     {
       "id": "onb-01",
       "title": "Verify VPS env loading (BUFFER_*, X_*, APIFY_TOKEN in container)",
@@ -574,204 +665,53 @@
     {
       "id": "casper-01",
       "title": "Casper Agentic Buildathon — minimal-real entry (Testnet + repo + demo)",
-      "category": "runtime",
-      "status": "todo",
+      "category": "",
+      "status": "done",
       "priority": "high",
-      "notes": "DEV HANDOFF from marketing/. Build spec: docs/casper-buildathon-build-spec.md. Decision support: research/casper-agentic-buildathon-brief-2026-06-02.md. Scope = minimal-but-real: one Odra contract on Casper Testnet + Sasha autonomously calling it each cycle (transaction-producing component) via cspr-click skill + Casper MCP, optional x402 paid-data call, Casper panel on the existing dashboard, PUBLIC open-source repo (secret scan first), demo video. Win on narrative + CSPR.fans community vote, not engineering. Submission deadline 2026-06-30; finals Jul 6-19. BLOCKER: content engine (gemini-2.5-flash) is dead -> vote campaign needs it fixed or hand-driven. Phase 0 gate: do NOT start building until Gabriel confirms the path. Content/video/vote-campaign route back to marketing/.",
+      "notes": "DEV HANDOFF from marketing/. Build spec: docs/casper-buildathon-build-spec.md. Decision support: research/casper-agentic-buildathon-brief-2026-06-02.md. Scope = minimal-but-real: one Odra contract on Casper Testnet + Sasha autonomously calling it each cycle (transaction-producing component) via cspr-click skill + Casper MCP, optional x402 paid-data call, Casper panel on the existing dashboard, PUBLIC open-source repo (secret scan first), demo video. Win on narrative + CSPR.fans community vote, not engineering. Submission deadline 2026-06-30; finals Jul 6-19. BLOCKER: content engine (gemini-2.5-flash) is dead -> vote campaign needs it fixed or hand-driven. Phase 0 gate: do NOT start building until Gabriel confirms the path. Content/video/vote-campaign route back to marketing/. | PROGRESS 2026-06-10: SPINE built, Codex-reviewed + hardened; PUBLIC repo LIVE + CI green at github.com/gogrowth-co/sasha-x402-kit (visual README; AgentAttest deploy 577570f2; live agent PAY->ATTEST loop settle/attest on casper-test). Day-7 gate passed 5 days early. REMAINING split into casper-02 (demo video), casper-03 (DoraHacks writeup+submit), casper-04 (optional Phase 2 EXPOSE). See docs/decision-log.md DEC-010/011.",
       "created": "2026-06-02",
       "dueDate": "2026-06-30",
-      "approvalStatus": "pending",
-      "statusChangedDate": "2026-06-02"
-    }
-  ],
-  "schemaVersion": "2.1",
-  "week22_plan_appended_2026_05_25": [
-    {
-      "id": "SASHA-CE-016",
-      "title": "Reply batch — Week 22 (Mon May 26 - Thu May 29 AM)",
-      "type": "content-piece",
-      "status": "in-progress",
-      "priority": "high",
-      "channel": "x",
-      "channels": [
-        "x"
-      ],
-      "pipelineStage": "writing",
-      "approvalStatus": "pending",
-      "qaStatus": "not-run",
-      "campaign": "sasha-daily-x",
-      "dueDate": "2026-05-29",
-      "statusChangedDate": "2026-05-25",
-      "created": "2026-05-25",
-      "arc": "Week 22 — On-Chain Receipts",
-      "notes": "8 reply slots Mon–Thu AM. Targets: @StaniKulechov (TVL thread, 65k views), @BosonProtocol (36.7k views), @hosseeb CLOB/RFQ (213k views), @SuhailKakar (8k views), @DefiIgnas EF departures (91k views), @MilkRoad/Jordi Visser (8.3k views), @hosseeb neolabs (73k views), address poisoning thread. Angles and exact copy in reply queue file. Final targeting depends on what is live at run time.",
-      "artifacts": {
-        "draft_x": "social/x/drafts/sasha-week22-reply-queue.md",
-        "google_doc": "https://docs.google.com/document/d/18BZLYTrRLHpvUyY-F_vJQ2LnV2vDPnB7QL0_aEXZpUk/edit",
-        "published": []
-      },
-      "projectSlug": "sasha-coin",
-      "parentId": null
+      "approvalStatus": "approved",
+      "statusChangedDate": "2026-06-17",
+      "completed": "2026-06-17"
     },
     {
-      "id": "SASHA-CE-017",
-      "title": "Thread — 7 signals an AI agent token is real (Wed May 28)",
-      "type": "content-piece",
-      "status": "in-progress",
+      "id": "casper-02",
+      "title": "Casper Buildathon — demo video (60-90s)",
+      "category": "content",
+      "status": "done",
       "priority": "high",
-      "channel": "x",
-      "channels": [
-        "x"
-      ],
-      "pipelineStage": "writing",
+      "notes": "EXECUTION IN marketing/ (workspace boundary) — tracked here for visibility. HARD REQUIREMENT for a complete DoraHacks submission. 60-90s screen capture: the live x402 402->settle + on-chain attest from the agent loop, the AgentAttest contract on testnet.cspr.live, and the verifiable-book narrative. Source: repo github.com/gogrowth-co/sasha-x402-kit (README + assets/agent-loop.png), live tx hashes in docs/decision-log.md DEC-011. Route to marketing/ web3-twitter-video-editor + remotion.",
+      "created": "2026-06-10",
+      "dueDate": "2026-06-28",
       "approvalStatus": "pending",
-      "qaStatus": "not-run",
-      "campaign": "sasha-thread-cadence",
-      "dueDate": "2026-05-28",
-      "scheduledDate": "2026-05-28",
-      "statusChangedDate": "2026-05-25",
-      "created": "2026-05-25",
-      "arc": "Week 22 — On-Chain Receipts",
-      "threadType": "Framework / Education",
-      "notes": "8-tweet thread. Hook: checked 10 agent wallets across 4 chains. 7 signals: wallet age, agent-initiated txns, protocol match, error states visible, token used by agent, team findable pre-launch, volume shape. Closer optional. Schedule: 1pm BRT Wed May 28 via Typefully.",
-      "artifacts": {
-        "draft_x": "social/x/threads/thread-2026-05-28-7-signals.md",
-        "published": []
-      },
-      "projectSlug": "sasha-coin",
-      "parentId": null
-    }
-  ],
-  "buffer_packs_appended_2026_05_21": [
-    {
-      "id": "SASHA-CE-011",
-      "title": "Buffer pack — Thu May 21, 2026 (3 standalone posts)",
-      "type": "content-piece",
-      "status": "in-progress",
-      "priority": "high",
-      "channel": "x",
-      "channels": [
-        "x"
-      ],
-      "pipelineStage": "editing",
-      "approvalStatus": "pending",
-      "qaStatus": "not-run",
-      "campaign": "sasha-daily-x",
-      "dueDate": "2026-05-21",
-      "statusChangedDate": "2026-05-21",
-      "created": "2026-05-21",
-      "arc": "Week 1 — Becoming Real",
-      "notes": "3 Buffer posts Thu May 21. Post 1: cleaned data point (10 agent wallets, hashtags stripped from existing draft). Post 2: subverts 'Let the agent cook'. Post 3: mainstream fear / legibility angle. Does NOT duplicate SASHA-CE-006 thread (exploit + receipts).",
-      "artifacts": {
-        "draft_x": "social/x/buffer-packs/buffer-2026-05-21.md",
-        "published": []
-      },
-      "projectSlug": "sasha-coin",
-      "parentId": null
+      "statusChangedDate": "2026-06-17",
+      "completed": "2026-06-17"
     },
     {
-      "id": "SASHA-CE-012",
-      "title": "Buffer pack — Fri May 22, 2026 (3 standalone posts)",
-      "type": "content-piece",
-      "status": "in-progress",
+      "id": "casper-03",
+      "title": "Casper Buildathon — DoraHacks submission writeup + submit",
+      "category": "content",
+      "status": "done",
       "priority": "high",
-      "channel": "x",
-      "channels": [
-        "x"
-      ],
-      "pipelineStage": "editing",
+      "notes": "EXECUTION IN marketing/ — tracked here for visibility. The persuasive 'why it wins' narrative for DoraHacks (README is the technical half): real persona-owned position + verifiable on-chain identity, chain-agnostic core, live tx proof. Then submit on DoraHacks before deadline. Repo: github.com/gogrowth-co/sasha-x402-kit. Pair with the CSPR.fans community vote (see casper-01). Route to marketing/ content-writer.",
+      "created": "2026-06-10",
+      "dueDate": "2026-06-28",
       "approvalStatus": "pending",
-      "qaStatus": "not-run",
-      "campaign": "sasha-daily-x",
-      "dueDate": "2026-05-22",
-      "statusChangedDate": "2026-05-21",
-      "created": "2026-05-21",
-      "arc": "Week 1 — Becoming Real",
-      "notes": "3 Buffer posts Fri May 22. Post 1: Virtuals v2 rationale broadcasting character beat. Post 2: $18M volume analytical take. Post 3: agent-of-agents bull vs bear — Sasha's position on coordination layer. Does NOT duplicate SASHA-CE-007 thread (cobie/punk6529 slashing vs trust).",
-      "artifacts": {
-        "draft_x": "social/x/buffer-packs/buffer-2026-05-22.md",
-        "published": []
-      },
-      "projectSlug": "sasha-coin",
-      "parentId": null
+      "statusChangedDate": "2026-06-17",
+      "completed": "2026-06-17"
     },
     {
-      "id": "SASHA-CE-013",
-      "title": "Buffer pack — Sat May 23, 2026 (3 standalone posts)",
-      "type": "content-piece",
-      "status": "in-progress",
-      "priority": "high",
-      "channel": "x",
-      "channels": [
-        "x"
-      ],
-      "pipelineStage": "editing",
-      "approvalStatus": "pending",
-      "qaStatus": "not-run",
-      "campaign": "sasha-daily-x",
-      "dueDate": "2026-05-23",
-      "statusChangedDate": "2026-05-21",
-      "created": "2026-05-21",
-      "arc": "Week 1 — Becoming Real",
-      "notes": "3 Buffer posts Sat May 23. Post 1: updated agent-compatible vs agent-designed question from existing draft — Virtuals v2 added as 'designed' example with trim version provided. Post 2: week synthesis exploit + v2 launch as contrasting signals. Post 3: character beat — people debated frameworks instead of reading the logs.",
-      "artifacts": {
-        "draft_x": "social/x/buffer-packs/buffer-2026-05-23.md",
-        "published": []
-      },
-      "projectSlug": "sasha-coin",
-      "parentId": null
-    },
-    {
-      "id": "SASHA-CE-014",
-      "title": "Buffer pack — Sun May 24, 2026 (3 standalone posts)",
-      "type": "content-piece",
-      "status": "in-progress",
-      "priority": "high",
-      "channel": "x",
-      "channels": [
-        "x"
-      ],
-      "pipelineStage": "editing",
-      "approvalStatus": "pending",
-      "qaStatus": "not-run",
-      "campaign": "sasha-daily-x",
-      "dueDate": "2026-05-24",
-      "statusChangedDate": "2026-05-21",
-      "created": "2026-05-21",
-      "arc": "Week 1 — Becoming Real (closing beat)",
-      "notes": "3 Buffer posts Sun May 24. Post 1: week 1 reflection with light slashing season irony, Aave reference removed (position not live). Post 2: fear + confidence synthesis (exploit vs v2). Post 3: forward tease — 3 things Sasha is watching in week 2. CE-S-003 '7 Questions' thread also runs today via Typefully — stagger slots.",
-      "artifacts": {
-        "draft_x": "social/x/buffer-packs/buffer-2026-05-24.md",
-        "published": []
-      },
-      "projectSlug": "sasha-coin",
-      "parentId": null
-    },
-    {
-      "id": "SASHA-CE-015",
-      "title": "Buffer pack — Mon May 25, 2026 (3 standalone posts)",
-      "type": "content-piece",
-      "status": "in-progress",
-      "priority": "high",
-      "channel": "x",
-      "channels": [
-        "x"
-      ],
-      "pipelineStage": "editing",
-      "approvalStatus": "pending",
-      "qaStatus": "not-run",
-      "campaign": "sasha-daily-x",
-      "dueDate": "2026-05-25",
-      "statusChangedDate": "2026-05-21",
-      "created": "2026-05-21",
-      "arc": "Arc 1 / Arc 2 bridge",
-      "notes": "3 Buffer posts Mon May 25. Post 1: arc bridge from sasha-2026-05-25.md (light polish, 'tomorrow' corrected to 'today'). Post 2: week 2 first signal — tracking bridge template updates post-exploit. Post 3: accountability question for Monday engagement.",
-      "artifacts": {
-        "draft_x": "social/x/buffer-packs/buffer-2026-05-25.md",
-        "published": []
-      },
-      "projectSlug": "sasha-coin",
-      "parentId": null
+      "id": "casper-04",
+      "title": "Casper Buildathon — OPTIONAL Phase 2: x402 EXPOSE + external counterparty",
+      "category": "runtime",
+      "status": "todo",
+      "priority": "low",
+      "notes": "STRETCH — not required (submission floor already cleared). Build the x402 EXPOSE leg (Sasha serves a verified-yield feed as an x402-payable endpoint) + a GENUINE external counterparty buying it (no self-dealing). Dev: extend SettlementAdapter (Settle/ReadReceipt) + stand up a public paid endpoint. Partly a marketing/ recruiting task (find a real payer / BUIDL partner). Repo: github.com/gogrowth-co/sasha-x402-kit.",
+      "created": "2026-06-10",
+      "dueDate": "2026-06-28",
+      "approvalStatus": "not-needed",
+      "statusChangedDate": "2026-06-10"
     }
   ]
 }

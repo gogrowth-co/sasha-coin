@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-04
 **Status:** Live-verified against each API (not training knowledge). Field names, rate limits, and chain slugs confirmed by direct probes.
-**Last auto-verified:** 2026-06-04 — all sources match this doc. Checked weekly by `scripts/signals/lp-data-source-verifier.mjs` (launchd `com.mangaos.lp-datasource-check`, Mondays 09:05).
+**Last auto-verified:** 2026-06-22 — all documented shapes OK (transient down: thegraph). Checked weekly by `scripts/signals/lp-data-source-verifier.mjs` (launchd `com.mangaos.lp-datasource-check`, Mondays 09:05).
 **Purpose:** Exact endpoint/field spec for the pool-scanner v2 + dashboard pool-health rebuild.
 **Companion:** strategy + the "why DefiLlama lies" proof live in [`research/lp-data-sources-methodology-2026-06-02.md`](../../research/lp-data-sources-methodology-2026-06-02.md). This file is the *how* (the API spec); that file is the *why* (the validated stack + fee-APR math).
 

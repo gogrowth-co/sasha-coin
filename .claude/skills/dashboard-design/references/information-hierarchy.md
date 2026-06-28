@@ -82,6 +82,21 @@ The 5-second test: a stranger glances for 5 seconds, looks away. What do they re
 
 ---
 
+## Spatial hierarchy + the color budget
+
+Two encodings carry hierarchy before the user reads a single label.
+
+**Position.** The eye enters top-left and scans in a Z. The single most action-driving metric goes **top-left and largest** — not whatever the data model returned first. Size encodes "how likely is this to need me today," not "how big is the number." A vanity all-time total never earns the top-left slot; the thing most likely to be on fire does.
+
+**Color budget.** Color is a scarce resource, not decoration. The amount of color on screen should track the amount of *trouble* on screen:
+- A fully healthy dashboard is near-monochrome — neutral tone + one interactive accent.
+- Warning/alert color appears **only** on items that need action.
+- Resist "traffic-light overload" (a green or red dot on every row): when everything is colored, color stops meaning "look here." Show `16 active` in neutral, not 16 green dots; reserve the one warm signal for the item that's actually aging.
+
+This is why the **all-healthy calm state is a first-class design**, not the absence of red. Done right, a single real anomaly becomes the only colored thing on an otherwise quiet screen — the entire job of an anomaly-surfacing console. (Video-sourced, 2026-06-06.)
+
+---
+
 ## "What changed since yesterday" — the killer feature
 
 The most-quoted interview insight across dashboard research:

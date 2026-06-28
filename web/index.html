@@ -117,6 +117,7 @@ function earnLine(e){
   if(e.key==='lp') return `Fees earned <b>${fmtUsd(e.feesUsd)}</b> · deployed ${fmtUsd(e.deployedUsd)} + idle ${fmtUsd(e.idleUsd)}${e.unfunded?` · <span style="color:var(--negative)">${e.unfunded} unfunded</span>`:''}`
   if(e.key==='mantle') return `mETH yield <b>${e.yieldEth!=null?(e.yieldEth+' ETH'):'—'}</b> · last: ${esc(e.lastAction||'—')} · ERC-8004 #${e.identity||'—'}`
   if(e.key==='okx') return `Fee <b style="color:var(--accent)">${e.feePct!=null?e.feePct+'%':'—'}</b> ${esc(e.riskLevel||'')} · deployed ${fmtUsd(e.poolUsd)} + idle ${fmtUsd(e.walletUsd)} · ${e.pushes} pushes`
+  if(e.key==='casper') return `PAY + ATTEST <b style="color:var(--positive)">live</b> on casper-test · 3 txs · <span style="color:var(--info)">AgentAttest contract deployed</span> · ACT + EXPOSE roadmap`
   return ''
 }
 

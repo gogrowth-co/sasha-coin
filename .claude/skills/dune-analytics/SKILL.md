@@ -14,6 +14,7 @@ metadata:
   author: mangabeira
   version: "1.0.0"
   cli_version: "0.1.16"
+vps_runtimes: ["mrzq", "h3mk"]
 ---
 
 # Dune Analytics — Workspace Skill
@@ -23,7 +24,9 @@ multi-account key management, content production patterns, client audit workflow
 and agent routing rules.
 
 **For DuneSQL syntax, CLI command reference, and error recovery →** read the
-[official `dune` skill](../dune/SKILL.md) and its `references/` folder.
+[official `dune` skill](../dune/SKILL.md) and its `references/` folder. DuneSQL types and functions are
+also bundled locally in [references/dunesql-reference.md](references/dunesql-reference.md), so this skill
+is self-contained on runtimes where the `dune` CLI skill is not installed (for example the VPS).
 
 ---
 
@@ -87,6 +90,20 @@ Use `mcp__dune__*` tools when:
 - Checking credit usage mid-session
 
 See [endpoints.md](references/endpoints.md) for the full MCP tool reference.
+
+See [execution-and-cost.md](references/execution-and-cost.md) for execution-path selection (MCP vs Data API vs CLI vs Trino/MPP), the credit model, and result-filtering gotchas (for example, relative time is not allowed in API result filters).
+
+## Distilled reference files (self-contained, deploy with this skill)
+
+| Need | Reference |
+|---|---|
+| Which table to query: four-layer taxonomy + verbatim columns for `dex.trades`, `tokens.erc20`, `prices.*`, `tokens.transfers`, `cex.flows`, `labels` | [data-catalog.md](references/data-catalog.md) |
+| Ready-to-adapt DuneSQL: active wallets, DEX volume, new vs returning, holder concentration, trader leaderboard, USD enrichment | [query-patterns.md](references/query-patterns.md) |
+| DuneSQL dialect: types (varbinary addresses, uint256), casting, functions, the no-QUALIFY and varbinary gotchas | [dunesql-reference.md](references/dunesql-reference.md) |
+| Execution paths, credit model, result-filtering gotchas | [execution-and-cost.md](references/execution-and-cost.md) |
+| Dune MCP + REST endpoint reference | [endpoints.md](references/endpoints.md) |
+
+These files make the skill self-contained. On the VPS (no `dune` CLI binary), agents use these references to write correct DuneSQL and run it via the Dune MCP / Data API.
 
 ---
 

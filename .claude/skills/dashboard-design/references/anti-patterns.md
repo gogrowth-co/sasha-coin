@@ -1,6 +1,6 @@
 # Anti-Patterns — the dashboard "wall of no"
 
-The 20 universal rules in `design-principles` apply to everything. These 20 are **additive and dashboard-specific** — the failure modes that make a dashboard look amateur even when the type scale and color math are technically correct.
+The 20 universal rules in `design-principles` apply to everything. These 24 are **additive and dashboard-specific** — the failure modes that make a dashboard look amateur even when the type scale and color math are technically correct. (Bans 21–24 were added 2026-06-06 from the dashboard-design video distillation — see `_ops/dashboard-video-distillation-2026-06-06.md`.)
 
 Each is a hard ban with the reason and the fix.
 
@@ -102,6 +102,26 @@ Frosted-glass cards over a gradient. Trendy in 2021, generic now, and it hurts c
 
 ---
 
+## Color budget, glow & dense tables
+
+**21. Traffic-light overload (the color-budget violation).**
+A green or red dot on every row and every metric, all the time. When everything is colored, color stops meaning "look here." Resting color density should track *problem* density.
+→ *Fix:* default everything to neutral tone. Warm/alert color appears ONLY on items needing action. 16 healthy agents = "16 active" in neutral, not 16 green dots. (See `information-hierarchy.md` → color budget.)
+
+**22. Glow / neon text-shadow on metrics.**
+`text-shadow: 0 0 20px` halos on numbers, glowing status dots. Reads as a gamer HUD, not an instrument, and it lowers legibility.
+→ *Fix:* depth from surface tone + hairline borders. Zero glow. (Companion to #19 glassmorphism and #12 3D.)
+
+**23. Dense table with no search.**
+A 50- or 150-row table dumped raw. The user scrolls a wall hunting for one row.
+→ *Fix:* >15 rows → search; >30 → filters + sortable columns; >100 → virtualize. (See `interaction-grammar.md`.)
+
+**24. Metric label without a timespan.**
+"Clicks: 352" — over what window? Today? All time? Ambiguous metrics get misread.
+→ *Fix:* every windowed metric states its period: "Clicks · 7d". (See `number-treatment.md`.)
+
+---
+
 ## Bonus structural bans
 
 - **Infinite scroll feed as a primary widget** — chronological feeds invite anxiety. Curate, don't stream.
@@ -115,6 +135,6 @@ Frosted-glass cards over a gradient. Trendy in 2021, generic now, and it hurts c
 ## How to use this in audit mode
 
 When auditing an existing dashboard, walk this list top to bottom against the live page. Each present anti-pattern is a punch-list item. Tag severity:
-- **Trust-eroding** (7, 13, 15, 18) — fix first; these make users distrust the data.
-- **Comprehension-blocking** (1, 3, 5, 6, 9, 10, 20) — fix second; these make the dashboard slow to read.
-- **Polish** (2, 4, 11, 14, 16, 17, 19) — fix third; these make it look amateur but still function.
+- **Trust-eroding** (7, 13, 15, 18, 24) — fix first; these make users distrust the data.
+- **Comprehension-blocking** (1, 3, 5, 6, 9, 10, 20, 21, 23) — fix second; these make the dashboard slow to read.
+- **Polish** (2, 4, 11, 14, 16, 17, 19, 22) — fix third; these make it look amateur but still function.
