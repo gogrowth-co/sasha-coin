@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import type { DashboardData, DashboardPosition, RiskPacket, RiskPacketInput } from './types.js';
+import type { DashboardData, DashboardPosition, ExternalAgentInput, RiskPacket, RiskPacketInput } from './types.js';
 
 const DASHBOARD_URL = 'https://sasha-dashboards.pages.dev/lp-miner/';
 
@@ -30,7 +30,38 @@ function liquidationDistancePct(liquidationPx: number, currentPx: number): numbe
   return Math.abs((liquidationPx - currentPx) / currentPx);
 }
 
-export function buildRiskPacket(dashboard: DashboardData, input: RiskPacketInput): RiskPacket {
+/**
+ * Compute delivery_hash over the core scoring fields.
+ * Hash is computed before the hash field itself is set (circular exclusion).
+ */
+function computeDeliveryHash(
+  score: number,
+  verdict: string,
+  confidence: number,
+  risk_factors: RiskPacket['risk_factors'],
+  evidence: RiskPacket['evidence'],
+): string {
+  const payload = JSON.stringify({ score, verdict, confidence, risk_factors, evidence });
+  return crypto.createHash('sha256').update(payload).digest('hex');
+}
+
+/**
+ * Build the external-input context fields from the array of A2A purchases.
+ */
+function externalContext(externalInputs: ExternalAgentInput[]) {
+  return {
+    external_agent_inputs: externalInputs,
+    gas_context: externalInputs.find(e => e.used_for === 'gas_context')?.summary ?? null,
+    fear_greed_context: externalInputs.find(e => e.used_for === 'fear_greed_context')?.summary ?? null,
+    hl_vault_context: externalInputs.find(e => e.used_for === 'hl_vault_context')?.summary ?? null,
+  };
+}
+
+export function buildRiskPacket(
+  dashboard: DashboardData,
+  input: RiskPacketInput,
+  externalInputs: ExternalAgentInput[] = [],
+): RiskPacket {
   const ageMin = dataAgeMinutes(dashboard.asOf);
   const contentHash = '0x' + crypto
     .createHash('sha256')
@@ -40,30 +71,38 @@ export function buildRiskPacket(dashboard: DashboardData, input: RiskPacketInput
 
   const position = findPosition(dashboard, input);
   if (!position) {
+    const score = 0;
+    const verdict: RiskPacket['verdict'] = 'avoid';
+    const confidence = 10;
+    const reasons = ['no position found matching chain/pool/nft in current dashboard'];
+    const risk_factors: RiskPacket['risk_factors'] = {
+      range_status: 'unknown',
+      range_distance_min_pct: null,
+      hedge_active: false,
+      liq_distance_pct: null,
+      funding_ann_pct: null,
+      data_age_minutes: ageMin,
+      kill_armed: dashboard.killSwitch.armed,
+    };
+    const evidence: RiskPacket['evidence'] = {
+      dashboard: DASHBOARD_URL,
+      position_id: null,
+      pool_address: input.pool ?? null,
+      onchain_links: [],
+      content_hash: contentHash,
+    };
     return {
       schema: 'sasha.risk_packet.v1',
       as_of: new Date().toISOString(),
-      score: 0,
-      verdict: 'avoid',
-      confidence: 10,
-      reasons: ['no position found matching chain/pool/nft in current dashboard'],
-      risk_factors: {
-        range_status: 'unknown',
-        range_distance_min_pct: null,
-        hedge_active: false,
-        liq_distance_pct: null,
-        funding_ann_pct: null,
-        data_age_minutes: ageMin,
-        kill_armed: dashboard.killSwitch.armed,
-      },
-      evidence: {
-        dashboard: DASHBOARD_URL,
-        position_id: null,
-        pool_address: input.pool ?? null,
-        onchain_links: [],
-        content_hash: contentHash,
-      },
+      score,
+      verdict,
+      confidence,
+      reasons,
+      risk_factors,
+      evidence,
       ttl_seconds: 3600,
+      delivery_hash: computeDeliveryHash(score, verdict, confidence, risk_factors, evidence),
+      ...externalContext(externalInputs),
     };
   }
 
@@ -73,30 +112,36 @@ export function buildRiskPacket(dashboard: DashboardData, input: RiskPacketInput
   // Kill switch override
   if (dashboard.killSwitch.armed.length > 0) {
     reasons.push(`kill switch armed: ${dashboard.killSwitch.armed.join(', ')}`);
+    const verdict: RiskPacket['verdict'] = 'avoid';
+    const confidence = 95;
+    const risk_factors: RiskPacket['risk_factors'] = {
+      range_status: position.range.inRange ? 'in-range' : 'out-of-range',
+      range_distance_min_pct: Math.min(position.range.distanceToLowerPct, position.range.distanceToUpperPct),
+      hedge_active: position.hedge?.active ?? false,
+      liq_distance_pct: position.hedge ? liquidationDistancePct(position.hedge.liquidationPx, position.range.currentPrice) : null,
+      funding_ann_pct: position.hedge?.fundingAnnPct ?? null,
+      data_age_minutes: ageMin,
+      kill_armed: dashboard.killSwitch.armed,
+    };
+    const evidence: RiskPacket['evidence'] = {
+      dashboard: DASHBOARD_URL,
+      position_id: position.id,
+      pool_address: position.poolAddress,
+      onchain_links: [`https://basescan.org/token/0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1?a=${position.nftTokenId}`],
+      content_hash: contentHash,
+    };
     return {
       schema: 'sasha.risk_packet.v1',
       as_of: new Date().toISOString(),
       score: 5,
-      verdict: 'avoid',
-      confidence: 95,
+      verdict,
+      confidence,
       reasons,
-      risk_factors: {
-        range_status: position.range.inRange ? 'in-range' : 'out-of-range',
-        range_distance_min_pct: Math.min(position.range.distanceToLowerPct, position.range.distanceToUpperPct),
-        hedge_active: position.hedge?.active ?? false,
-        liq_distance_pct: position.hedge ? liquidationDistancePct(position.hedge.liquidationPx, position.range.currentPrice) : null,
-        funding_ann_pct: position.hedge?.fundingAnnPct ?? null,
-        data_age_minutes: ageMin,
-        kill_armed: dashboard.killSwitch.armed,
-      },
-      evidence: {
-        dashboard: DASHBOARD_URL,
-        position_id: position.id,
-        pool_address: position.poolAddress,
-        onchain_links: [`https://basescan.org/token/0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1?a=${position.nftTokenId}`],
-        content_hash: contentHash,
-      },
+      risk_factors,
+      evidence,
       ttl_seconds: 3600,
+      delivery_hash: computeDeliveryHash(5, verdict, confidence, risk_factors, evidence),
+      ...externalContext(externalInputs),
     };
   }
 
@@ -121,30 +166,36 @@ export function buildRiskPacket(dashboard: DashboardData, input: RiskPacketInput
     // Critical: liquidation < 5% → force avoid
     if (liqDistPct < 0.05) {
       reasons.push(`liquidation imminent: ${(liqDistPct * 100).toFixed(1)}% away`);
+      const verdict: RiskPacket['verdict'] = 'avoid';
+      const confidence = 95;
+      const risk_factors: RiskPacket['risk_factors'] = {
+        range_status: position.range.inRange ? 'in-range' : 'out-of-range',
+        range_distance_min_pct: Math.min(position.range.distanceToLowerPct, position.range.distanceToUpperPct),
+        hedge_active: true,
+        liq_distance_pct: liqDistPct,
+        funding_ann_pct: hedge.fundingAnnPct,
+        data_age_minutes: ageMin,
+        kill_armed: [],
+      };
+      const evidence: RiskPacket['evidence'] = {
+        dashboard: DASHBOARD_URL,
+        position_id: position.id,
+        pool_address: position.poolAddress,
+        onchain_links: [],
+        content_hash: contentHash,
+      };
       return {
         schema: 'sasha.risk_packet.v1',
         as_of: new Date().toISOString(),
         score: 5,
-        verdict: 'avoid',
-        confidence: 95,
+        verdict,
+        confidence,
         reasons,
-        risk_factors: {
-          range_status: position.range.inRange ? 'in-range' : 'out-of-range',
-          range_distance_min_pct: Math.min(position.range.distanceToLowerPct, position.range.distanceToUpperPct),
-          hedge_active: true,
-          liq_distance_pct: liqDistPct,
-          funding_ann_pct: hedge.fundingAnnPct,
-          data_age_minutes: ageMin,
-          kill_armed: [],
-        },
-        evidence: {
-          dashboard: DASHBOARD_URL,
-          position_id: position.id,
-          pool_address: position.poolAddress,
-          onchain_links: [],
-          content_hash: contentHash,
-        },
+        risk_factors,
+        evidence,
         ttl_seconds: 3600,
+        delivery_hash: computeDeliveryHash(5, verdict, confidence, risk_factors, evidence),
+        ...externalContext(externalInputs),
       };
     }
 
@@ -175,31 +226,38 @@ export function buildRiskPacket(dashboard: DashboardData, input: RiskPacketInput
     : score >= 25 ? 'reduce'
     : 'avoid';
 
+  const finalScore = Math.min(100, score);
+
+  const risk_factors: RiskPacket['risk_factors'] = {
+    range_status: position.range.inRange ? 'in-range' : 'out-of-range',
+    range_distance_min_pct: Math.min(position.range.distanceToLowerPct, position.range.distanceToUpperPct),
+    hedge_active: hedge?.active ?? false,
+    liq_distance_pct: liqDistPct,
+    funding_ann_pct: hedge?.fundingAnnPct ?? null,
+    data_age_minutes: ageMin,
+    kill_armed: [],
+  };
+  const evidence: RiskPacket['evidence'] = {
+    dashboard: DASHBOARD_URL,
+    position_id: position.id,
+    pool_address: position.poolAddress,
+    onchain_links: [
+      `https://basescan.org/token/0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1?a=${position.nftTokenId}`,
+    ],
+    content_hash: contentHash,
+  };
+
   return {
     schema: 'sasha.risk_packet.v1',
     as_of: new Date().toISOString(),
-    score: Math.min(100, score),
+    score: finalScore,
     verdict,
     confidence,
     reasons,
-    risk_factors: {
-      range_status: position.range.inRange ? 'in-range' : 'out-of-range',
-      range_distance_min_pct: Math.min(position.range.distanceToLowerPct, position.range.distanceToUpperPct),
-      hedge_active: hedge?.active ?? false,
-      liq_distance_pct: liqDistPct,
-      funding_ann_pct: hedge?.fundingAnnPct ?? null,
-      data_age_minutes: ageMin,
-      kill_armed: [],
-    },
-    evidence: {
-      dashboard: DASHBOARD_URL,
-      position_id: position.id,
-      pool_address: position.poolAddress,
-      onchain_links: [
-        `https://basescan.org/token/0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1?a=${position.nftTokenId}`,
-      ],
-      content_hash: contentHash,
-    },
+    risk_factors,
+    evidence,
     ttl_seconds: 3600,
+    delivery_hash: computeDeliveryHash(finalScore, verdict, confidence, risk_factors, evidence),
+    ...externalContext(externalInputs),
   };
 }

@@ -1,5 +1,13 @@
 // croo/src/types.ts
 
+export interface ExternalAgentInput {
+  agent: string;       // human name e.g. "Gas Tracker"
+  serviceId: string;
+  orderId: string;
+  used_for: string;   // e.g. "gas_context"
+  summary: string;    // first 200 chars of delivery text
+}
+
 export interface DashboardPosition {
   id: string;
   symbol: string;
@@ -90,6 +98,11 @@ export interface RiskPacket {
     content_hash: string;
   };
   ttl_seconds: number;
+  delivery_hash: string;           // sha256 of core packet fields
+  external_agent_inputs: ExternalAgentInput[];
+  gas_context: string | null;
+  fear_greed_context: string | null;
+  hl_vault_context: string | null;
 }
 
 export interface ReputationProof {
