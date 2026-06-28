@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { DeliverableType, EventType } from '@croo-network/sdk';
 import { createClient } from './croo-client.js';
 import { buildRiskPacket } from './risk-packet.js';
+import { buyExternalInputs } from './a2a-buyer.js';
 import { appendOrder } from './logger.js';
 import type { DashboardData, RiskPacketInput, OrderLogEntry } from './types.js';
 
@@ -121,7 +122,26 @@ export async function runProvider(): Promise<void> {
       return;
     }
 
-    const packet = buildRiskPacket(dashboard, req);
+    // Buy from external CROO agents before delivery (resilient — failures return [])
+    const externalInputs = await buyExternalInputs(client);
+
+    // Log each external purchase as a requester entry
+    for (const ext of externalInputs) {
+      try {
+        appendOrder({
+          orderId: ext.orderId,
+          type: 'requester',
+          serviceId: ext.serviceId,
+          counterpartyAgent: ext.agent,
+          requirementsSummary: `a2a:${ext.used_for}`,
+          completedAt: new Date().toISOString(),
+        });
+      } catch (logErr) {
+        console.error('[provider] appendOrder for external input failed:', logErr);
+      }
+    }
+
+    const packet = buildRiskPacket(dashboard, req, externalInputs);
     const deliverableText = JSON.stringify(packet);
 
     let result;
