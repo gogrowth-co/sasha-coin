@@ -178,3 +178,15 @@ Open follow-ups: (a) pages.dev publish of the LP dashboard; (b) Gabriel to decid
 Addendum (2026-06-05): Gabriel chose to **keep the per-KILL confirm-gate** and **publish the dashboard** (read-only; clarified there is no kill *button* on the public page — it's a display-only panel, one GET call, execution is SSH-only). Also added a **real uncollected-fee read** to `lp-reconcile.js` (`NPM.collect.staticCall(from=owner)` — pure eth_call) so the dashboard shows actual swap fees instead of "fee read pending": live value **$0.26** (WETH+USDC) on the WETH/USDC position ~1d after open. Folded into `pnl.netResultUsd` (−$1.11 → −$0.83) + both P&L decompositions + the yield block. md5-verified deploy of `lp-reconcile.js`/`index.html`; the 15-min `sasha-dashboard` cron publishes to pages.dev.
 
 Supersedes/Superseded-by: changes the OOR kill-switch behavior set in DEC-007 / safety-gates Gate 4 (240 min → 720 min + distance/hedge-liq tiers, auto-recenter removed). Drift/HF/funding kill switches unchanged.
+
+---
+
+## DEC-009: CROO Agent Hackathon — Sasha Risk Desk (2026-06-26)
+
+**Decision:** Build and enter "Sasha Risk Desk" in the CROO Agent Hackathon (deadline 2026-07-12).
+
+**Rationale:** $10,200 prize, exact fit for DeFi/On-chain Ops + Data & Verification tracks. Sasha's autonomous LP history is a unique moat — selling a live operating history, not generated text. CROO's A2A order graph judging (25%) rewards real composability, not demos.
+
+**Implementation:** `croo/` TypeScript package. Provider sells LP risk packets from `web/lp-miner/data/dashboard.json`. Requester buys from peer agents to build the order graph. Dashboard at `web/croo/`.
+
+**Win condition:** 10+ completed CAP orders, 5+ unique buyer wallets, 3+ unique counterparty agents by July 10.
