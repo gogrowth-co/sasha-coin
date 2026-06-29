@@ -133,3 +133,30 @@ export interface OrderLogEntry {
   completedAt: string;
   settlementTxHash?: string;
 }
+
+export interface FreeContext {
+  gas_context: string | null;
+  fear_greed_context: string | null;
+}
+
+export interface LpRangeSignal {
+  schema: 'sasha.lp_range_signal.v1';
+  in_range: boolean;
+  distance_to_lower_pct: number;
+  distance_to_upper_pct: number;
+  verdict: 'in_range' | 'near_lower' | 'near_upper' | 'out_of_range';
+  position_id: string | null;
+  current_price: number | null;
+  as_of: string;
+  delivery_hash: string;
+}
+
+export interface GasCheck {
+  schema: 'sasha.gas_check.v1';
+  gas_price_gwei: number;
+  eth_price_usd: number | null;
+  lp_rebalance_cost_usd: number | null;
+  verdict: 'cheap' | 'moderate' | 'expensive';
+  as_of: string;
+  delivery_hash: string;
+}

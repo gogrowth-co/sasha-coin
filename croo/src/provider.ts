@@ -4,8 +4,10 @@ import { fileURLToPath } from 'url';
 import { DeliverableType, EventType } from '@croo-network/sdk';
 import { createClient } from './croo-client.js';
 import { buildRiskPacket } from './risk-packet.js';
-import { buyExternalInputs } from './a2a-buyer.js';
+import { fetchFreeContext } from './free-data.js';
 import { appendOrder } from './logger.js';
+import { handleLpRangeSignal } from './services/lp-range-signal.js';
+import { handleGasCheck } from './services/gas-check.js';
 import type { DashboardData, RiskPacketInput, OrderLogEntry } from './types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,6 +26,21 @@ export function parseRequirements(raw: string): RiskPacketInput | null {
 
 export function shouldAcceptNegotiation(req: RiskPacketInput): boolean {
   return SUPPORTED_CHAINS.includes(req.chain);
+}
+
+type HandlerKey = 'lp_risk' | 'lp_range' | 'gas_check';
+
+export const SCHEMA_FOR_SERVICE: Record<HandlerKey, string> = {
+  lp_risk: 'sasha.risk_packet.v1',
+  lp_range: 'sasha.lp_range_signal.v1',
+  gas_check: 'sasha.gas_check.v1',
+};
+
+export function getHandlerForService(serviceId: string): HandlerKey | null {
+  if (serviceId === process.env.CROO_SERVICE_ID_LP_RISK) return 'lp_risk';
+  if (serviceId === process.env.CROO_SERVICE_ID_LP_RANGE) return 'lp_range';
+  if (serviceId === process.env.CROO_SERVICE_ID_GAS_CHECK) return 'gas_check';
+  return null;
 }
 
 function loadDashboard(): DashboardData {
@@ -58,21 +75,32 @@ export async function runProvider(): Promise<void> {
       return;
     }
 
-    const req = parseRequirements(negotiation.requirements ?? '');
-    if (!req || !shouldAcceptNegotiation(req)) {
-      const reason = !req
-        ? 'requirements parse error or missing chain field'
-        : `unsupported chain: ${req.chain}`;
-      console.log(`[provider] rejecting negotiation ${negotiationId} — ${reason}`);
-      try {
-        await client.rejectNegotiation(negotiationId, reason);
-      } catch (err) {
-        console.error(`[provider] rejectNegotiation failed:`, err);
-      }
+    // Check we support this service before accepting
+    const handlerKey = getHandlerForService((negotiation as any).serviceId ?? '');
+    if (!handlerKey) {
+      console.log(`[provider] rejecting negotiation ${negotiationId} — unknown serviceId`);
+      try { await client.rejectNegotiation(negotiationId, 'service not supported'); } catch {}
       return;
     }
 
-    console.log(`[provider] accepting negotiation ${negotiationId} (chain=${req.chain})`);
+    // For LP risk: also validate requirements (chain must be 'base')
+    if (handlerKey === 'lp_risk') {
+      const req = parseRequirements(negotiation.requirements ?? '');
+      if (!req || !shouldAcceptNegotiation(req)) {
+        const reason = !req
+          ? 'requirements parse error or missing chain field'
+          : `unsupported chain: ${req.chain}`;
+        console.log(`[provider] rejecting negotiation ${negotiationId} — ${reason}`);
+        try {
+          await client.rejectNegotiation(negotiationId, reason);
+        } catch (err) {
+          console.error(`[provider] rejectNegotiation failed:`, err);
+        }
+        return;
+      }
+    }
+
+    console.log(`[provider] accepting negotiation ${negotiationId} (handler=${handlerKey})`);
     try {
       await client.acceptNegotiation(negotiationId);
     } catch (err) {
@@ -80,7 +108,7 @@ export async function runProvider(): Promise<void> {
     }
   });
 
-  // Listen for paid orders — this is when we deliver the risk packet
+  // Listen for paid orders — this is when we deliver the service response
   stream.on(EventType.OrderPaid, async (event) => {
     const orderId = event.order_id;
     if (!orderId) {
@@ -88,7 +116,7 @@ export async function runProvider(): Promise<void> {
       return;
     }
 
-    console.log(`[provider] order paid: ${orderId} — building risk packet`);
+    console.log(`[provider] order paid: ${orderId} — routing to handler`);
 
     // Fetch order to get requirements via the negotiation
     let order;
@@ -107,48 +135,53 @@ export async function runProvider(): Promise<void> {
       return;
     }
 
-    const req = parseRequirements(negotiation.requirements ?? '') ?? { chain: 'base' };
-
-    let dashboard: DashboardData;
-    try {
-      dashboard = loadDashboard();
-    } catch (err) {
-      console.error(`[provider] dashboard load failed — rejecting order ${orderId}:`, err);
-      try {
-        await client.rejectOrder(orderId, 'dashboard unavailable');
-      } catch (rejectErr) {
-        console.error(`[provider] rejectOrder failed:`, rejectErr);
-      }
+    const ordHandlerKey = getHandlerForService((order as any).serviceId ?? '');
+    if (!ordHandlerKey) {
+      console.warn(`[provider] unknown serviceId on paid order ${orderId}`);
+      try { await client.rejectOrder(orderId, 'service not supported'); } catch {}
       return;
     }
 
-    // Buy from external CROO agents before delivery (resilient — failures return [])
-    const externalInputs = await buyExternalInputs(client);
+    let deliverableText: string;
+    let verdict: string | undefined;
+    let score: number | undefined;
 
-    // Log each external purchase as a requester entry
-    for (const ext of externalInputs) {
+    if (ordHandlerKey === 'lp_risk') {
+      let dashboard: DashboardData;
       try {
-        appendOrder({
-          orderId: ext.orderId,
-          type: 'requester',
-          serviceId: ext.serviceId,
-          counterpartyAgent: ext.agent,
-          requirementsSummary: `a2a:${ext.used_for}`,
-          completedAt: new Date().toISOString(),
-        });
-      } catch (logErr) {
-        console.error('[provider] appendOrder for external input failed:', logErr);
+        dashboard = loadDashboard();
+      } catch (err) {
+        console.error(`[provider] dashboard load failed — rejecting order ${orderId}:`, err);
+        try { await client.rejectOrder(orderId, 'dashboard unavailable'); } catch {}
+        return;
       }
+      const req = parseRequirements(negotiation.requirements ?? '') ?? { chain: 'base' };
+      const freeCtx = await fetchFreeContext().catch(() => ({ gas_context: null, fear_greed_context: null }));
+      const packet = buildRiskPacket(dashboard, req, [], freeCtx);
+      deliverableText = JSON.stringify(packet);
+      verdict = packet.verdict;
+      score = packet.score;
+    } else if (ordHandlerKey === 'lp_range') {
+      let dashboard: DashboardData;
+      try {
+        dashboard = loadDashboard();
+      } catch (err) {
+        console.error(`[provider] dashboard load failed — rejecting order ${orderId}:`, err);
+        try { await client.rejectOrder(orderId, 'dashboard unavailable'); } catch {}
+        return;
+      }
+      deliverableText = handleLpRangeSignal(dashboard);
+    } else {
+      deliverableText = await handleGasCheck();
     }
 
-    const packet = buildRiskPacket(dashboard, req, externalInputs);
-    const deliverableText = JSON.stringify(packet);
+    const schema = SCHEMA_FOR_SERVICE[ordHandlerKey];
 
     let result;
     try {
       result = await client.deliverOrder(orderId, {
         deliverableType: DeliverableType.Schema,
-        deliverableSchema: packet.schema,
+        deliverableSchema: schema,
         deliverableText,
       });
     } catch (err) {
@@ -156,16 +189,16 @@ export async function runProvider(): Promise<void> {
       return;
     }
 
-    console.log(`[provider] delivered order ${orderId} — verdict=${packet.verdict} score=${packet.score}`);
+    console.log(`[provider] delivered order ${orderId} — handler=${ordHandlerKey}${verdict ? ` verdict=${verdict}` : ''}`);
 
     const logEntry: OrderLogEntry = {
       orderId,
       type: 'provider',
-      serviceId: order.serviceId,
+      serviceId: (order as any).serviceId,
       counterpartyAgent: order.requesterAgentId,
-      requirementsSummary: `chain=${req.chain} pool=${req.pool ?? 'any'}`,
-      verdict: packet.verdict,
-      score: packet.score,
+      requirementsSummary: `handler=${ordHandlerKey}`,
+      verdict,
+      score,
       completedAt: new Date().toISOString(),
       settlementTxHash: result.txHash,
     };

@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import type { DashboardData, DashboardPosition, ExternalAgentInput, RiskPacket, RiskPacketInput } from './types.js';
+import type { DashboardData, DashboardPosition, ExternalAgentInput, FreeContext, RiskPacket, RiskPacketInput } from './types.js';
 
 const DASHBOARD_URL = 'https://sasha-dashboards.pages.dev/lp-miner/';
 
@@ -47,12 +47,13 @@ function computeDeliveryHash(
 
 /**
  * Build the external-input context fields from the array of A2A purchases.
+ * freeCtx values take priority over externalInputs for gas_context and fear_greed_context.
  */
-function externalContext(externalInputs: ExternalAgentInput[]) {
+function externalContext(externalInputs: ExternalAgentInput[], freeCtx: FreeContext) {
   return {
     external_agent_inputs: externalInputs,
-    gas_context: externalInputs.find(e => e.used_for === 'gas_context')?.summary ?? null,
-    fear_greed_context: externalInputs.find(e => e.used_for === 'fear_greed_context')?.summary ?? null,
+    gas_context: freeCtx.gas_context ?? externalInputs.find(e => e.used_for === 'gas_context')?.summary ?? null,
+    fear_greed_context: freeCtx.fear_greed_context ?? externalInputs.find(e => e.used_for === 'fear_greed_context')?.summary ?? null,
     hl_vault_context: externalInputs.find(e => e.used_for === 'hl_vault_context')?.summary ?? null,
   };
 }
@@ -61,6 +62,7 @@ export function buildRiskPacket(
   dashboard: DashboardData,
   input: RiskPacketInput,
   externalInputs: ExternalAgentInput[] = [],
+  freeCtx: FreeContext = { gas_context: null, fear_greed_context: null },
 ): RiskPacket {
   const ageMin = dataAgeMinutes(dashboard.asOf);
   const contentHash = '0x' + crypto
@@ -102,7 +104,7 @@ export function buildRiskPacket(
       evidence,
       ttl_seconds: 3600,
       delivery_hash: computeDeliveryHash(score, verdict, confidence, risk_factors, evidence),
-      ...externalContext(externalInputs),
+      ...externalContext(externalInputs, freeCtx),
     };
   }
 
@@ -141,7 +143,7 @@ export function buildRiskPacket(
       evidence,
       ttl_seconds: 3600,
       delivery_hash: computeDeliveryHash(5, verdict, confidence, risk_factors, evidence),
-      ...externalContext(externalInputs),
+      ...externalContext(externalInputs, freeCtx),
     };
   }
 
@@ -195,7 +197,7 @@ export function buildRiskPacket(
         evidence,
         ttl_seconds: 3600,
         delivery_hash: computeDeliveryHash(5, verdict, confidence, risk_factors, evidence),
-        ...externalContext(externalInputs),
+        ...externalContext(externalInputs, freeCtx),
       };
     }
 
@@ -258,6 +260,6 @@ export function buildRiskPacket(
     evidence,
     ttl_seconds: 3600,
     delivery_hash: computeDeliveryHash(finalScore, verdict, confidence, risk_factors, evidence),
-    ...externalContext(externalInputs),
+    ...externalContext(externalInputs, freeCtx),
   };
 }
