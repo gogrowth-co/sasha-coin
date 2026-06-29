@@ -162,6 +162,17 @@ describe('buildRiskPacket', () => {
     expect(p.delivery_hash).toMatch(/^[a-f0-9]{64}$/);
   });
 
+  it('uses freeCtx gas_context over externalInputs when freeCtx is provided', () => {
+    const packet = buildRiskPacket(
+      baseDashboard,
+      { chain: 'base' },
+      [],
+      { gas_context: 'free gas data', fear_greed_context: 'Fear 32/100' },
+    );
+    expect(packet.gas_context).toBe('free gas data');
+    expect(packet.fear_greed_context).toBe('Fear 32/100');
+  });
+
   it('delivery_hash is a 64-char hex string on liq-imminent packet', () => {
     const nearLiq: DashboardData = {
       ...baseDashboard,
