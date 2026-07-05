@@ -6,8 +6,8 @@
  * mantle-signal.js) and calls SashaOracle.setFee() on X Layer.
  *
  * This is the autonomous bridge between Sasha's off-chain signal pipeline
- * and the on-chain SashaDynamicFeeHook. It runs every 6 hours from the VPS
- * cron (HEARTBEAT.md) — no human intervention needed.
+ * and the on-chain SashaDynamicFeeHook. The VPS cron (/etc/cron.d/sasha-oracle)
+ * runs it every 4h with --heartbeat — no human intervention needed.
  *
  * Signal → Fee mapping:
  *   "risk-off"  → 10000  (1.0% — protect LPs during uncertainty)
@@ -21,11 +21,21 @@
  *   node scripts/push-signal-to-xlayer.js               # live push
  *   node scripts/push-signal-to-xlayer.js --dry-run     # simulate, no tx
  *   node scripts/push-signal-to-xlayer.js --force       # push even if signal unchanged
+ *   node scripts/push-signal-to-xlayer.js --heartbeat   # push only if risk changed OR
+ *                                                        # on-chain updatedAt is nearing
+ *                                                        # the 6h staleness threshold (>=5h old)
+ *
+ * The --heartbeat mode is what the VPS cron uses (audit M-1 fix): it replaces the old
+ * --force-every-2h pattern, which refreshed updatedAt regardless of whether anything
+ * changed and defeated the oracle's own staleness fallback. A signal-age guard also
+ * refuses to push a stale content/mantle-signal.json as if it were fresh — if the
+ * off-chain pipeline dies, the oracle should honestly go stale, not lie about freshness.
  *
  * Requires (in .env):
  *   XLAYER_RPC_URL         — X Layer RPC endpoint
  *   XLAYER_AGENT_PK        — Sasha's agent EOA private key for X Layer
  *   XLAYER_ORACLE_ADDRESS  — Deployed SashaOracle contract address
+ *   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID — optional, for low-OKB keeper alert
  *
  * Sasha Coin — OKX Build X Hackathon 2026
  */
@@ -33,6 +43,7 @@
 import { ethers } from 'ethers'
 import fs from 'fs'
 import path from 'path'
+import https from 'https'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -40,12 +51,20 @@ const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..'
 
 // ─── CLI args ────────────────────────────────────────────────────────────────
 
-const args     = process.argv.slice(2)
-const DRY_RUN  = args.includes('--dry-run')
-const FORCE    = args.includes('--force')
+const args      = process.argv.slice(2)
+const DRY_RUN   = args.includes('--dry-run')
+const FORCE     = args.includes('--force')
+const HEARTBEAT = args.includes('--heartbeat')
 // --risk <risk-off|neutral|risk-on> overrides the signal-derived risk level.
 // Use for mechanism-demonstration pushes (prove the hook sets all three fee tiers on-chain).
 const RISK_ARG = (() => { const i = args.indexOf('--risk'); return i !== -1 ? args[i + 1] : null })()
+
+// ─── Thresholds ───────────────────────────────────────────────────────────────
+
+const SIGNAL_MAX_AGE_MINUTES  = 360    // 6h — beyond this, the signal itself is untrustworthy
+const HEARTBEAT_PUSH_AGE_SECS = 5 * 3600 // push if on-chain updatedAt is >= 5h old (< 6h stale cutoff)
+const LOW_BALANCE_ALERT_OKB   = 0.01   // ~10 days runway at heartbeat cadence
+const ALERT_DEBOUNCE_HOURS    = 24
 
 // ─── Chain config ─────────────────────────────────────────────────────────────
 
@@ -82,6 +101,48 @@ const ORACLE_ABI = [
 
 function log(msg)  { console.log(`[xlayer-oracle] ${msg}`) }
 function warn(msg) { console.warn(`[xlayer-oracle] ⚠  ${msg}`) }
+
+function sendTelegram(msg) {
+    const token  = process.env.TELEGRAM_BOT_TOKEN
+    const chatId = process.env.TELEGRAM_CHAT_ID
+    if (!token || !chatId) return
+    const body = JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
+    const options = {
+        hostname: 'api.telegram.org',
+        path: `/bot${token}/sendMessage`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+    }
+    const req = https.request(options, () => {})
+    req.on('error', () => {})
+    req.write(body)
+    req.end()
+}
+
+function loadKeeperState() {
+    const p = path.join(WORKSPACE, 'state', 'xlayer-oracle-keeper-state.json')
+    try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return {} }
+}
+
+function saveKeeperState(state) {
+    const p = path.join(WORKSPACE, 'state', 'xlayer-oracle-keeper-state.json')
+    try {
+        fs.mkdirSync(path.dirname(p), { recursive: true })
+        fs.writeFileSync(p, JSON.stringify(state, null, 2))
+    } catch (e) { warn(`Could not save keeper state: ${e.message}`) }
+}
+
+function maybeAlertLowBalance(balanceOKB) {
+    if (balanceOKB >= LOW_BALANCE_ALERT_OKB) return
+    const state = loadKeeperState()
+    const lastAlert = state.lastLowBalanceAlertAt ? new Date(state.lastLowBalanceAlertAt).getTime() : 0
+    if (Date.now() - lastAlert < ALERT_DEBOUNCE_HOURS * 3600 * 1000) return
+    sendTelegram(
+        `⚠️ <b>[XLAYER ORACLE KEEPER]</b> Low OKB balance: ${balanceOKB.toFixed(5)} OKB (~10 days runway or less at heartbeat cadence). ` +
+        `Fund the keeper (0xe451…461d1f) at https://www.okx.com/xlayer/bridge`
+    )
+    saveKeeperState({ ...state, lastLowBalanceAlertAt: new Date().toISOString() })
+}
 
 function loadSignal() {
     const signalPath = path.join(WORKSPACE, 'content', 'mantle-signal.json')
@@ -145,6 +206,14 @@ async function main() {
     log(`Risk level: ${riskLevel}`)
     log(`Fee to push: ${fee} (${(fee / 10000).toFixed(4)}%)`)
 
+    // Signal-age guard (audit M-1): a --risk override is an intentional manual demo push
+    // and bypasses signal freshness. Otherwise, refuse to push a stale signal as if fresh —
+    // let the oracle's own staleness fallback do its job honestly.
+    if (!RISK_ARG && typeof signalAge === 'number' && signalAge > SIGNAL_MAX_AGE_MINUTES) {
+        warn(`Signal is ${signalAge} min old (> ${SIGNAL_MAX_AGE_MINUTES} min) — refusing to push a stale signal as fresh. Oracle will go stale honestly.`)
+        process.exit(0)
+    }
+
     // 2. Check oracle address
     const oracleAddress = process.env.XLAYER_ORACLE_ADDRESS
     if (!oracleAddress) {
@@ -176,18 +245,28 @@ async function main() {
     const oracle = new ethers.Contract(oracleAddress, ORACLE_ABI, wallet)
 
     // 5. Check current oracle state
-    let currentFee, currentRisk, stale
+    let currentFee, currentRisk, stale, updatedAt
     try {
         currentFee  = await oracle.currentFee()
         currentRisk = await oracle.riskLevel()
         stale       = await oracle.isStale()
-        log(`Oracle current: fee=${currentFee} risk="${currentRisk}" stale=${stale}`)
+        updatedAt   = await oracle.updatedAt()
+        log(`Oracle current: fee=${currentFee} risk="${currentRisk}" stale=${stale} updatedAt=${new Date(Number(updatedAt) * 1000).toISOString()}`)
     } catch (e) {
         warn(`Could not read oracle state: ${e.message}`)
     }
 
-    // 6. Skip if unchanged (unless --force)
-    if (!FORCE && currentFee !== undefined && Number(currentFee) === fee && currentRisk === riskLevel) {
+    // 6. Skip logic
+    if (HEARTBEAT) {
+        const riskChanged = currentRisk !== undefined && currentRisk !== riskLevel
+        const onChainAgeSecs = updatedAt !== undefined ? Math.round(Date.now() / 1000) - Number(updatedAt) : null
+        const nearingStale = onChainAgeSecs === null || onChainAgeSecs >= HEARTBEAT_PUSH_AGE_SECS
+        if (!riskChanged && !nearingStale) {
+            log(`Heartbeat: risk unchanged and updatedAt is only ${Math.round(onChainAgeSecs / 60)} min old (< ${HEARTBEAT_PUSH_AGE_SECS / 60} min threshold) — skipping push.`)
+            process.exit(0)
+        }
+        log(`Heartbeat: pushing because ${riskChanged ? 'risk changed' : 'on-chain updatedAt is nearing the 6h staleness threshold'}.`)
+    } else if (!FORCE && currentFee !== undefined && Number(currentFee) === fee && currentRisk === riskLevel) {
         log(`Oracle already at ${fee} bips (${riskLevel}) — no update needed. Use --force to override.`)
         process.exit(0)
     }
@@ -197,6 +276,7 @@ async function main() {
     const balanceOKB = parseFloat(ethers.formatEther(balance))
     log(`Agent wallet: ${wallet.address}`)
     log(`OKB balance:  ${balanceOKB}`)
+    maybeAlertLowBalance(balanceOKB)
     if (balanceOKB < 0.001) {
         warn(`Low OKB balance (${balanceOKB}) — transaction may fail. Fund at: https://www.okx.com/xlayer/bridge`)
         process.exit(0)

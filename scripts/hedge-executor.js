@@ -206,6 +206,17 @@ async function placeOrder(exchange, { idx, szDecimals, markPx }, side, size) {
   return res
 }
 
+// Parse an HL order response's per-order status. Filled orders carry the ACTUAL filled
+// size — never assume the target was reached just because the API call returned 200.
+function parseOrderResult(res) {
+  const status = res?.response?.data?.statuses?.[0]
+  if (status && typeof status === 'object' && status.filled) {
+    return { ok: true, filledSz: parseFloat(status.filled.totalSz) }
+  }
+  const errMsg = (status && typeof status === 'object' && status.error) || `not filled (status: ${JSON.stringify(status)})`
+  return { ok: false, errMsg }
+}
+
 // ─── funding kill switch ────────────────────────────────────────────────────────
 async function fundingKill(info, coin) {
   const now = Date.now()
@@ -269,20 +280,39 @@ async function main() {
   // ── reconcile hedge to LP delta ──────────────────────────────────────────────
   const data = readPositions()
   const open = data.positions.filter((p) => p.status === 'open' && p.chain === 'base')
-  if (!open.length) {
-    // No LP to hedge. If a short is still open, it is ORPHANED (naked directional risk) — close it.
-    log('  no open Base LP positions')
-    for (const coin of ['BTC', 'ETH']) {
-      const sz = await currentShort(info, address, coin)
-      if (sz > 0) {
-        log(`  ⚠️ orphaned ${sz} ${coin} short with no LP — closing`)
-        if (EXECUTE && process.env.HEDGE_LIVE_OK === '1') {
-          const m = await perpMeta(info, coin)
-          await placeOrder(exchange, m, 'closeShort', sz)
-          await telegram(`🧹 Closed orphaned ${sz} ${coin} short (no LP position left to hedge).`)
-        } else { log('  (dry/ungated — would close orphaned short)') }
-      }
+
+  // Coins backed by an OPEN LP (registry lookup), including staticHedge positions — those
+  // shorts are intentionally left alone by the loop below, but they are still legitimate,
+  // not orphaned. Only a coin with NO backing open LP at all is orphaned.
+  const backedCoins = new Set()
+  for (const pos of open) {
+    const reg = POOL_REGISTRY[(pos.poolAddress || '').toLowerCase()]
+    if (reg) backedCoins.add(reg.hlPerp)
+  }
+
+  // Sweep orphaned shorts every run (not only when the whole book is empty) — a leftover
+  // short from an LP closed elsewhere must not survive just because another LP is open.
+  for (const coin of ['BTC', 'ETH']) {
+    if (backedCoins.has(coin)) continue
+    const sz = await currentShort(info, address, coin)
+    if (sz > 0) {
+      log(`  ⚠️ orphaned ${sz} ${coin} short with no backing LP — closing`)
+      if (EXECUTE && process.env.HEDGE_LIVE_OK === '1') {
+        const m = await perpMeta(info, coin)
+        try {
+          const res = await placeOrder(exchange, m, 'closeShort', sz)
+          const r = parseOrderResult(res)
+          if (r.ok) await telegram(`🧹 Closed orphaned ${coin} short: filled ${r.filledSz} of ${sz} (no LP backs this coin).`)
+          else await telegram(`⚠️ Orphaned ${sz} ${coin} short close did NOT fill: ${r.errMsg}. Will retry next cycle.`)
+        } catch (e) {
+          await telegram(`❌ Orphaned ${sz} ${coin} short close failed: ${e.message}. Will retry next cycle.`)
+        }
+      } else { log('  (dry/ungated — would close orphaned short)') }
     }
+  }
+
+  if (!open.length) {
+    log('  no open Base LP positions')
     return
   }
 
@@ -319,10 +349,21 @@ async function main() {
     if (k.allKill && cur > 0) {
       log(`  ⚠️ FUNDING KILL armed (${k.anns.map((a) => a.toFixed(1)).join(',')}% ann) -> close hedge`)
       if (EXECUTE && process.env.HEDGE_LIVE_OK === '1') {
-        await placeOrder(exchange, m, 'closeShort', cur)
-        pos.hedgeSize = 0; pos.hedgeClosedAt = new Date().toISOString(); pos.hedgeClosedReason = 'funding_kill'
-        writePositions(data)
-        await telegram(`🛑 <b>HEDGE KILL</b> ${pos.symbol}: funding < ${FUNDING_KILL_ANN}% ann for 3 periods. Closed ${cur} ${delta.hlPerp} short.`)
+        try {
+          const res = await placeOrder(exchange, m, 'closeShort', cur)
+          const r = parseOrderResult(res)
+          if (r.ok) {
+            pos.hedgeSize = Number(Math.max(0, cur - r.filledSz).toFixed(m.szDecimals))
+            if (pos.hedgeSize === 0) { pos.hedgeClosedAt = new Date().toISOString(); pos.hedgeClosedReason = 'funding_kill' }
+            pos.hedgeUpdatedAt = new Date().toISOString()
+            writePositions(data)
+            await telegram(`🛑 <b>HEDGE KILL</b> ${pos.symbol}: funding < ${FUNDING_KILL_ANN}% ann for 3 periods. Closed ${r.filledSz} ${delta.hlPerp} short (remaining ${pos.hedgeSize}).`)
+          } else {
+            await telegram(`❌ <b>HEDGE KILL FAILED</b> ${pos.symbol}: close order for ${cur} ${delta.hlPerp} did not fill: ${r.errMsg}. Naked exposure remains — will retry next cycle.`)
+          }
+        } catch (e) {
+          await telegram(`❌ <b>HEDGE KILL FAILED</b> ${pos.symbol}: close order threw: ${e.message}. Naked exposure remains — will retry next cycle.`)
+        }
       }
       continue
     }
@@ -332,10 +373,21 @@ async function main() {
     if (DO_CLOSE) {
       log(`  ACTION: close ${cur} ${delta.hlPerp} short`)
       if (EXECUTE && process.env.HEDGE_LIVE_OK === '1' && cur > 0) {
-        await placeOrder(exchange, m, 'closeShort', cur)
-        pos.hedgeSize = 0; pos.hedgeClosedAt = new Date().toISOString()
-        writePositions(data)
-        await telegram(`✅ Hedge closed ${pos.symbol}: bought back ${cur} ${delta.hlPerp}.`)
+        try {
+          const res = await placeOrder(exchange, m, 'closeShort', cur)
+          const r = parseOrderResult(res)
+          if (r.ok) {
+            pos.hedgeSize = Number(Math.max(0, cur - r.filledSz).toFixed(m.szDecimals))
+            if (pos.hedgeSize === 0) pos.hedgeClosedAt = new Date().toISOString()
+            pos.hedgeUpdatedAt = new Date().toISOString()
+            writePositions(data)
+            await telegram(`✅ Hedge closed ${pos.symbol}: bought back ${r.filledSz} ${delta.hlPerp} (remaining ${pos.hedgeSize}).`)
+          } else {
+            await telegram(`⚠️ Hedge close order for ${pos.symbol} did not fill: ${r.errMsg}. Will retry next cycle.`)
+          }
+        } catch (e) {
+          await telegram(`❌ Hedge close order for ${pos.symbol} threw: ${e.message}. Will retry next cycle.`)
+        }
       }
       continue
     }
@@ -358,14 +410,20 @@ async function main() {
       })
       const res = await placeOrder(exchange, m, side, size)
       log('  result:', JSON.stringify(res))
-      pos.hedgeSize = target
-      pos.hedgePerp = delta.hlPerp
-      pos.hedgeEntryMark = m.markPx
-      pos.hedgeUpdatedAt = new Date().toISOString()
-      pos.fundingHistory = pos.fundingHistory || []
-      pos.fundingHistory.push({ at: new Date().toISOString(), annPct: annFunding })
-      writePositions(data)
-      await telegram(`🛡️ <b>HEDGE</b> ${pos.symbol}: ${side === 'short' ? 'opened/increased' : 'reduced'} ${size} ${delta.hlPerp} short. Target ${target} ($${notional.toFixed(2)}). Funding ${annFunding.toFixed(1)}% ann.`)
+      const r = parseOrderResult(res)
+      if (r.ok) {
+        pos.hedgeSize = Number((side === 'short' ? cur + r.filledSz : Math.max(0, cur - r.filledSz)).toFixed(m.szDecimals))
+        pos.hedgePerp = delta.hlPerp
+        pos.hedgeEntryMark = m.markPx
+        pos.hedgeUpdatedAt = new Date().toISOString()
+        pos.fundingHistory = pos.fundingHistory || []
+        pos.fundingHistory.push({ at: new Date().toISOString(), annPct: annFunding })
+        writePositions(data)
+        await telegram(`🛡️ <b>HEDGE</b> ${pos.symbol}: ${side === 'short' ? 'opened/increased' : 'reduced'} ${r.filledSz} ${delta.hlPerp} short (target ${target}, now ${pos.hedgeSize}, $${notional.toFixed(2)}). Funding ${annFunding.toFixed(1)}% ann.`)
+      } else {
+        log(`  ⚠️ order not filled: ${r.errMsg}`)
+        await telegram(`⚠️ Hedge order for ${pos.symbol} did not fill: ${r.errMsg}. State left at observed ${cur} ${delta.hlPerp}; will retry next cycle.`)
+      }
     } catch (e) {
       log('  ❌ order failed:', e.message)
       await telegram(`❌ Hedge order failed ${pos.symbol}: ${e.message}`)
