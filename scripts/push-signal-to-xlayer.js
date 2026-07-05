@@ -221,42 +221,24 @@ async function main() {
         process.exit(0)
     }
 
-    // 3. Dry-run
-    if (DRY_RUN) {
-        log('--- DRY RUN ---')
-        log(`Would call: SashaOracle(${oracleAddress}).setFee(${fee}, "${riskLevel}")`)
-        log(`On chain:   X Layer (chainId ${XLAYER.chainId})`)
-        log('No transaction sent.')
-        process.exit(0)
-    }
+    // 3. Read-only provider + oracle state (no private key needed for reads —
+    // this runs in both dry-run and live mode so --dry-run --heartbeat actually
+    // shows whether the push would be skipped, not just what it would send).
+    const provider   = new ethers.JsonRpcProvider(XLAYER.rpc, { chainId: XLAYER.chainId, name: XLAYER.name })
+    const readOracle = new ethers.Contract(oracleAddress, ORACLE_ABI, provider)
 
-    // 4. Connect
-    const pk = process.env.XLAYER_AGENT_PK
-    if (!pk) {
-        warn('XLAYER_AGENT_PK not set — skipping oracle push (non-blocking)')
-        process.exit(0)
-    }
-
-    const provider = new ethers.JsonRpcProvider(XLAYER.rpc, {
-        chainId: XLAYER.chainId,
-        name:    XLAYER.name,
-    })
-    const wallet = new ethers.Wallet(pk, provider)
-    const oracle = new ethers.Contract(oracleAddress, ORACLE_ABI, wallet)
-
-    // 5. Check current oracle state
     let currentFee, currentRisk, stale, updatedAt
     try {
-        currentFee  = await oracle.currentFee()
-        currentRisk = await oracle.riskLevel()
-        stale       = await oracle.isStale()
-        updatedAt   = await oracle.updatedAt()
+        currentFee  = await readOracle.currentFee()
+        currentRisk = await readOracle.riskLevel()
+        stale       = await readOracle.isStale()
+        updatedAt   = await readOracle.updatedAt()
         log(`Oracle current: fee=${currentFee} risk="${currentRisk}" stale=${stale} updatedAt=${new Date(Number(updatedAt) * 1000).toISOString()}`)
     } catch (e) {
         warn(`Could not read oracle state: ${e.message}`)
     }
 
-    // 6. Skip logic
+    // 4. Skip logic
     if (HEARTBEAT) {
         const riskChanged = currentRisk !== undefined && currentRisk !== riskLevel
         const onChainAgeSecs = updatedAt !== undefined ? Math.round(Date.now() / 1000) - Number(updatedAt) : null
@@ -270,6 +252,24 @@ async function main() {
         log(`Oracle already at ${fee} bips (${riskLevel}) — no update needed. Use --force to override.`)
         process.exit(0)
     }
+
+    // 5. Dry-run (after skip logic, so it reflects what would actually happen)
+    if (DRY_RUN) {
+        log('--- DRY RUN ---')
+        log(`Would call: SashaOracle(${oracleAddress}).setFee(${fee}, "${riskLevel}")`)
+        log(`On chain:   X Layer (chainId ${XLAYER.chainId})`)
+        log('No transaction sent.')
+        process.exit(0)
+    }
+
+    // 6. Connect wallet (only needed once we know we're actually pushing)
+    const pk = process.env.XLAYER_AGENT_PK
+    if (!pk) {
+        warn('XLAYER_AGENT_PK not set — skipping oracle push (non-blocking)')
+        process.exit(0)
+    }
+    const wallet = new ethers.Wallet(pk, provider)
+    const oracle = readOracle.connect(wallet)
 
     // 7. Check OKB balance
     const balance    = await provider.getBalance(wallet.address)
