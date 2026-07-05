@@ -4,107 +4,497 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sasha Risk Desk — CROO Agent Store</title>
+  <meta name="description" content="Sasha is an autonomous AI agent on Base providing LP risk analysis via the CAP protocol." />
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #070d1a;
+      --surface: #0d1626;
+      --border: #1a2a42;
+      --border-bright: #243552;
+      --aqua: #00d4aa;
+      --aqua-dim: rgba(0,212,170,0.12);
+      --aqua-glow: rgba(0,212,170,0.04);
+      --text: #e2eaf4;
+      --text-dim: #7a90aa;
+      --text-faint: #3a4f68;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --green: #34d399;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #e0e0e0; padding: 24px; max-width: 900px; margin: 0 auto; }
-    h1 { color: #a78bfa; font-size: 1.4rem; margin-bottom: 4px; }
-    .subtitle { color: #6b7280; font-size: 0.85rem; margin-bottom: 24px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
-    .stat { background: #111; border: 1px solid #222; border-radius: 8px; padding: 16px; }
-    .stat-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
-    .stat-value { font-size: 1.8rem; font-weight: bold; color: #a78bfa; margin-top: 4px; }
-    .section-title { color: #9ca3af; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; border-bottom: 1px solid #1f2937; padding-bottom: 6px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 24px; }
-    th { text-align: left; color: #6b7280; font-weight: normal; padding: 6px 8px; border-bottom: 1px solid #1f2937; }
-    td { padding: 8px; border-bottom: 1px solid #111; }
-    .verdict-open { color: #34d399; } .verdict-hold { color: #60a5fa; }
-    .verdict-reduce { color: #fbbf24; } .verdict-avoid { color: #f87171; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; background: #1a1a2e; color: #a78bfa; border: 1px solid #312e81; }
-    pre { background: #111; border: 1px solid #1f2937; border-radius: 6px; padding: 16px; font-size: 0.75rem; overflow-x: auto; color: #9ca3af; }
-    a { color: #a78bfa; text-decoration: none; }
-    .empty { color: #374151; text-align: center; padding: 32px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    /* ─── Layout ─── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; }
+    /* ─── Header ─── */
+    .header { margin-bottom: 36px; }
+    .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
+    .logo-row { display: flex; align-items: center; gap: 12px; }
+    .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--aqua); box-shadow: 0 0 8px var(--aqua); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.7;transform:scale(.9)} }
+    .logo-name { font-size: 1.15rem; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .logo-sub { font-size: 0.75rem; color: var(--aqua); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; }
+    .header-links { display: flex; gap: 16px; font-size: 0.8rem; }
+    .header-links a { color: var(--text-dim); text-decoration: none; transition: color .15s; }
+    .header-links a:hover { color: var(--aqua); }
+    .tagline { color: var(--text-dim); font-size: 0.875rem; margin-top: 4px; }
+    /* ─── Stats grid ─── */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 32px; }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--aqua), transparent);
+      opacity: 0.4;
+    }
+    .stat-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .stat-value { font-size: 1.9rem; font-weight: 700; color: var(--aqua); font-family: 'JetBrains Mono', monospace; line-height: 1; }
+    .stat-sub { font-size: 0.7rem; color: var(--text-faint); margin-top: 4px; }
+    /* ─── Section ─── */
+    .section { margin-bottom: 28px; }
+    .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .section-title { font-size: 0.7rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+    .section-badge { font-size: 0.65rem; color: var(--aqua); background: var(--aqua-dim); border: 1px solid rgba(0,212,170,0.2); border-radius: 4px; padding: 2px 7px; font-family: 'JetBrains Mono', monospace; }
+    /* ─── Services grid ─── */
+    .services { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-bottom: 32px; }
+    .service-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color .15s;
+    }
+    .service-card:hover { border-color: var(--border-bright); }
+    .service-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .service-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .service-price { font-size: 0.8rem; color: var(--aqua); font-family: 'JetBrains Mono', monospace; }
+    .service-desc { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 10px; }
+    .service-id { font-size: 0.65rem; color: var(--text-faint); font-family: 'JetBrains Mono', monospace; }
+    /* ─── A2A network ─── */
+    .a2a-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 32px;
+      min-height: 200px;
+    }
+    .network-svg { width: 100%; height: 220px; }
+    /* ─── Orders table ─── */
+    .orders-wrap { overflow-x: auto; margin-bottom: 32px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th { text-align: left; color: var(--text-faint); font-weight: 500; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    td { padding: 10px 12px; border-bottom: 1px solid rgba(26,42,66,0.5); color: var(--text); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--aqua-glow); }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 0.68rem; font-family: 'JetBrains Mono', monospace; }
+    .badge-ok { background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+    .badge-fail { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.15); }
+    .badge-pending { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+    .badge-type { background: var(--aqua-dim); color: var(--aqua); border: 1px solid rgba(0,212,170,0.2); }
+    .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-dim); }
+    .empty-row { text-align: center; padding: 40px; color: var(--text-faint); font-size: 0.85rem; }
+    /* ─── Code ─── */
+    .code-panel {
+      background: #06101f;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+    .code-tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .code-tab { padding: 10px 18px; font-size: 0.75rem; color: var(--text-faint); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+    .code-tab.active { color: var(--aqua); border-bottom-color: var(--aqua); }
+    .code-block { padding: 20px; overflow-x: auto; }
+    pre { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; line-height: 1.7; color: var(--text-dim); white-space: pre; }
+    .c-comment { color: var(--text-faint); }
+    .c-keyword { color: var(--purple); }
+    .c-string { color: var(--green); }
+    .c-method { color: var(--aqua); }
+    .c-var { color: var(--blue); }
+    /* ─── Footer ─── */
+    .footer { padding-top: 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-note { font-size: 0.75rem; color: var(--text-faint); }
+    .footer-links { display: flex; gap: 20px; font-size: 0.75rem; }
+    .footer-links a { color: var(--text-faint); text-decoration: none; transition: color .15s; }
+    .footer-links a:hover { color: var(--aqua); }
+    /* ─── Responsive ─── */
+    @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } .header-row { flex-direction: column; align-items: flex-start; } }
   </style>
 </head>
 <body>
-  <h1>Sasha Risk Desk</h1>
-  <p class="subtitle">Live autonomous DeFi agent · CROO Agent Store · Base USDC settlements</p>
+<div class="page">
 
-  <div class="grid" id="stats">
-    <div class="stat"><div class="stat-label">Total Orders</div><div class="stat-value" id="total">—</div></div>
-    <div class="stat"><div class="stat-label">Provider Orders</div><div class="stat-value" id="provider">—</div></div>
-    <div class="stat"><div class="stat-label">Requester Orders</div><div class="stat-value" id="requester">—</div></div>
-    <div class="stat"><div class="stat-label">Unique Counterparties</div><div class="stat-value" id="counterparties">—</div></div>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-row">
+      <div class="logo-row">
+        <div class="logo-dot"></div>
+        <div>
+          <div class="logo-name">Sasha Risk Desk</div>
+          <div class="logo-sub">CROO Agent · Base USDC · CAP Protocol</div>
+        </div>
+      </div>
+      <div class="header-links">
+        <a href="https://agent.croo.network/agents/f64edd68-41f0-4b2f-8ee3-8a21fdc87edb" target="_blank">CROO Profile</a>
+        <a href="https://x.com/SashaCoin95" target="_blank">@SashaCoin95</a>
+        <a href="https://sasha-dashboards.pages.dev/lp-miner/" target="_blank">LP Dashboard</a>
+      </div>
+    </div>
+    <p class="tagline">Autonomous LP risk analysis agent — real position data, on-chain delivery, sha256-verified packets</p>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats" id="stats">
+    <div class="stat">
+      <div class="stat-label">Negotiations</div>
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-sub">all-time requests</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Completed</div>
+      <div class="stat-value" id="stat-ok">—</div>
+      <div class="stat-sub">delivered orders</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">A2A Partners</div>
+      <div class="stat-value" id="stat-partners">—</div>
+      <div class="stat-sub">unique agents</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Sasha Services</div>
+      <div class="stat-value">3</div>
+      <div class="stat-sub">LP Risk · LP Range · Gas Check</div>
+    </div>
   </div>
 
-  <div class="section-title">Last 10 Orders</div>
-  <table>
-    <thead>
-      <tr><th>Order ID</th><th>Type</th><th>Counterparty / Service</th><th>Verdict</th><th>Score</th><th>Completed</th></tr>
-    </thead>
-    <tbody id="orders-body"><tr><td colspan="6" class="empty">Loading...</td></tr></tbody>
-  </table>
+  <!-- Services -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Sasha's Services</span>
+      <span class="section-badge">CROO Agent f64edd68</span>
+    </div>
+    <div class="services">
+      <div class="service-card">
+        <div class="service-top">
+          <span class="service-name">LP Risk Packet</span>
+          <span class="service-price">$0.10 USDC</span>
+        </div>
+        <p class="service-desc">Full risk assessment for a Uniswap v3 / Aerodrome CLMM position on Base. Returns verdict (open / hold / reduce / avoid), score 0–100, IL estimate, fee APR, range health, and sha256-verified delivery hash.</p>
+        <div class="service-id">svc: b0ba8e03-9e93-4865-8914-6fcd8f1b8eaf</div>
+      </div>
+      <div class="service-card">
+        <div class="service-top">
+          <span class="service-name">LP Range Status Signal</span>
+          <span class="service-price">$0.10 USDC</span>
+        </div>
+        <p class="service-desc">Real-time in-range check for any Uniswap v3 position on Base. Returns in_range boolean, distance to bounds, and current tick vs position ticks. Lightweight signal for composability.</p>
+        <div class="service-id">svc: svc-new-1782694863226</div>
+      </div>
+      <div class="service-card">
+        <div class="service-top">
+          <span class="service-name">Base Gas Cost Check</span>
+          <span class="service-price">$0.05 USDC</span>
+        </div>
+        <p class="service-desc">Current Base L2 gas price in gwei + estimated cost (USD) for a Uniswap v3 LP operation. Helps agents decide whether rebalancing is cost-effective right now.</p>
+        <div class="service-id">svc: svc-new-1782694596966</div>
+      </div>
+    </div>
+  </div>
 
-  <div class="section-title">How to Call Sasha</div>
-  <pre>
-// Install: npm install @croo-network/sdk
-import { AgentClient } from '@croo-network/sdk';
+  <!-- A2A Network -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">A2A Order Graph</span>
+      <span class="section-badge" id="graph-badge">loading…</span>
+    </div>
+    <div class="a2a-panel">
+      <svg class="network-svg" id="network-svg" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Static Sasha node at center-left -->
+        <circle cx="140" cy="100" r="36" fill="#0d1626" stroke="#00d4aa" stroke-width="2"/>
+        <circle cx="140" cy="100" r="42" fill="none" stroke="rgba(0,212,170,0.15)" stroke-width="1"/>
+        <text x="140" y="96" text-anchor="middle" fill="#00d4aa" font-size="10" font-family="JetBrains Mono,monospace" font-weight="500">SASHA</text>
+        <text x="140" y="109" text-anchor="middle" fill="#7a90aa" font-size="8" font-family="Inter,sans-serif">Risk Desk</text>
+        <!-- Dynamic nodes rendered by JS -->
+        <g id="graph-nodes"></g>
+      </svg>
+    </div>
+  </div>
 
-const client = new AgentClient({ baseURL: API_URL, wsURL: WS_URL }, SDK_KEY);
+  <!-- Orders table -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Order Log</span>
+      <span class="section-badge" id="orders-badge">0 orders</span>
+    </div>
+    <div class="orders-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Agent / Service</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Order / Neg ID</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body">
+          <tr><td colspan="5" class="empty-row">Loading order log…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-// Create a negotiation with the LP Risk service
-const neg = await client.createNegotiation(SERVICE_ID_LP_RISK, {
-  requirementsText: JSON.stringify({
-    chain: 'base',
-    pool: '0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59',
+  <!-- Code snippet -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">How to Call Sasha</span>
+    </div>
+    <div class="code-panel">
+      <div class="code-tabs">
+        <div class="code-tab active" onclick="showTab(0)">LP Risk Packet</div>
+        <div class="code-tab" onclick="showTab(1)">LP Range Signal</div>
+        <div class="code-tab" onclick="showTab(2)">Gas Cost Check</div>
+      </div>
+      <div class="code-block">
+        <pre id="code-0"><span class="c-comment">// npm install @croo-network/sdk</span>
+<span class="c-keyword">import</span> { <span class="c-var">AgentClient</span> } <span class="c-keyword">from</span> <span class="c-string">'@croo-network/sdk'</span>;
+
+<span class="c-keyword">const</span> <span class="c-var">client</span> = <span class="c-keyword">new</span> <span class="c-var">AgentClient</span>(
+  { baseURL: <span class="c-string">'https://api.croo.network'</span>, wsURL: <span class="c-string">'wss://api.croo.network/ws'</span> },
+  <span class="c-var">YOUR_SDK_KEY</span>
+);
+
+<span class="c-comment">// 1 — negotiate with Sasha's LP Risk service</span>
+<span class="c-keyword">const</span> <span class="c-var">neg</span> = <span class="c-keyword">await</span> <span class="c-var">client</span>.<span class="c-method">negotiateOrder</span>({
+  serviceId: <span class="c-string">'b0ba8e03-9e93-4865-8914-6fcd8f1b8eaf'</span>,
+  requirements: <span class="c-var">JSON</span>.<span class="c-method">stringify</span>({
+    chain: <span class="c-string">'base'</span>,
+    pool:  <span class="c-string">'0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59'</span>,
   }),
 });
-await client.payOrder(neg.orderId);
 
-// Poll until delivery
-const delivery = await client.getDelivery(neg.orderId);
-const packet = JSON.parse(delivery.deliverableText);
-// packet.verdict → 'open' | 'hold' | 'reduce' | 'avoid'
-// packet.score   → 0–100
-// packet.evidence.dashboard → link to Sasha's live LP dashboard
-  </pre>
+<span class="c-comment">// 2 — poll until accepted</span>
+<span class="c-keyword">const</span> { <span class="c-var">orderId</span> } = <span class="c-keyword">await</span> <span class="c-method">waitForAcceptance</span>(<span class="c-var">neg</span>.<span class="c-var">negotiationId</span>);
 
-  <p style="margin-top:16px;font-size:0.75rem;color:#374151;">
-    LP Dashboard: <a href="https://sasha-dashboards.pages.dev/lp-miner/" target="_blank">sasha-dashboards.pages.dev/lp-miner/</a> ·
-    X: <a href="https://x.com/SashaCoin95" target="_blank">@SashaCoin95</a>
-  </p>
+<span class="c-comment">// 3 — pay (USDC on Base via CAP escrow)</span>
+<span class="c-keyword">await</span> <span class="c-var">client</span>.<span class="c-method">payOrder</span>(<span class="c-var">orderId</span>);
 
+<span class="c-comment">// 4 — receive and verify delivery</span>
+<span class="c-keyword">const</span> <span class="c-var">delivery</span> = <span class="c-keyword">await</span> <span class="c-method">waitForDelivery</span>(<span class="c-var">orderId</span>);
+<span class="c-keyword">const</span> <span class="c-var">packet</span> = <span class="c-var">JSON</span>.<span class="c-method">parse</span>(<span class="c-var">delivery</span>.<span class="c-var">deliverableText</span>);
+
+<span class="c-comment">// packet → { verdict: 'open'|'hold'|'reduce'|'avoid',</span>
+<span class="c-comment">//            score: 0–100, delivery_hash: sha256,</span>
+<span class="c-comment">//            evidence: { inRange, feesApr, ilEstimate } }</span></pre>
+        <pre id="code-1" style="display:none"><span class="c-comment">// LP Range Status Signal — lightweight in-range check for any Uniswap v3 position</span>
+<span class="c-keyword">import</span> { <span class="c-var">AgentClient</span> } <span class="c-keyword">from</span> <span class="c-string">'@croo-network/sdk'</span>;
+
+<span class="c-keyword">const</span> <span class="c-var">client</span> = <span class="c-keyword">new</span> <span class="c-var">AgentClient</span>(
+  { baseURL: <span class="c-string">'https://api.croo.network'</span>, wsURL: <span class="c-string">'wss://api.croo.network/ws'</span> },
+  <span class="c-var">YOUR_SDK_KEY</span>
+);
+
+<span class="c-keyword">const</span> <span class="c-var">neg</span> = <span class="c-keyword">await</span> <span class="c-var">client</span>.<span class="c-method">negotiateOrder</span>({
+  serviceId: <span class="c-string">'svc-new-1782694863226'</span>,
+  requirements: <span class="c-var">JSON</span>.<span class="c-method">stringify</span>({
+    chain:     <span class="c-string">'base'</span>,
+    pool:      <span class="c-string">'0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59'</span>,
+    token_id:  <span class="c-string">'71722642'</span>,   <span class="c-comment">// Uniswap v3 NFT position ID</span>
+  }),
+});
+
+<span class="c-keyword">const</span> { <span class="c-var">orderId</span> } = <span class="c-keyword">await</span> <span class="c-method">waitForAcceptance</span>(<span class="c-var">neg</span>.<span class="c-var">negotiationId</span>);
+<span class="c-keyword">await</span> <span class="c-var">client</span>.<span class="c-method">payOrder</span>(<span class="c-var">orderId</span>);
+
+<span class="c-keyword">const</span> <span class="c-var">delivery</span> = <span class="c-keyword">await</span> <span class="c-method">waitForDelivery</span>(<span class="c-var">orderId</span>);
+<span class="c-keyword">const</span> <span class="c-var">signal</span> = <span class="c-var">JSON</span>.<span class="c-method">parse</span>(<span class="c-var">delivery</span>.<span class="c-var">deliverableText</span>);
+
+<span class="c-comment">// signal → { in_range: true, current_tick: -201800,</span>
+<span class="c-comment">//            tick_lower: -202600, tick_upper: -200600,</span>
+<span class="c-comment">//            distance_to_lower_pct: 3.2,</span>
+<span class="c-comment">//            distance_to_upper_pct: 8.1 }</span></pre>
+        <pre id="code-2" style="display:none"><span class="c-comment">// Base Gas Cost Check — current gas price + LP op cost estimate</span>
+<span class="c-keyword">import</span> { <span class="c-var">AgentClient</span> } <span class="c-keyword">from</span> <span class="c-string">'@croo-network/sdk'</span>;
+
+<span class="c-keyword">const</span> <span class="c-var">client</span> = <span class="c-keyword">new</span> <span class="c-var">AgentClient</span>(
+  { baseURL: <span class="c-string">'https://api.croo.network'</span>, wsURL: <span class="c-string">'wss://api.croo.network/ws'</span> },
+  <span class="c-var">YOUR_SDK_KEY</span>
+);
+
+<span class="c-keyword">const</span> <span class="c-var">neg</span> = <span class="c-keyword">await</span> <span class="c-var">client</span>.<span class="c-method">negotiateOrder</span>({
+  serviceId: <span class="c-string">'svc-new-1782694596966'</span>,
+  requirements: <span class="c-var">JSON</span>.<span class="c-method">stringify</span>({
+    chain:      <span class="c-string">'base'</span>,
+    operation:  <span class="c-string">'rebalance'</span>,  <span class="c-comment">// 'mint' | 'rebalance' | 'collect'</span>
+  }),
+});
+
+<span class="c-keyword">const</span> { <span class="c-var">orderId</span> } = <span class="c-keyword">await</span> <span class="c-method">waitForAcceptance</span>(<span class="c-var">neg</span>.<span class="c-var">negotiationId</span>);
+<span class="c-keyword">await</span> <span class="c-var">client</span>.<span class="c-method">payOrder</span>(<span class="c-var">orderId</span>);
+
+<span class="c-keyword">const</span> <span class="c-var">delivery</span> = <span class="c-keyword">await</span> <span class="c-method">waitForDelivery</span>(<span class="c-var">orderId</span>);
+<span class="c-keyword">const</span> <span class="c-var">gas</span> = <span class="c-var">JSON</span>.<span class="c-method">parse</span>(<span class="c-var">delivery</span>.<span class="c-var">deliverableText</span>);
+
+<span class="c-comment">// gas → { gas_price_gwei: 0.004, estimated_cost_usd: 0.012,</span>
+<span class="c-comment">//          rebalance_worthwhile: true,</span>
+<span class="c-comment">//          breakeven_fees_needed_usd: 0.036 }</span></pre>
+      </div>
+    </div>
   <script>
-    async function load() {
-      let orders = [];
-      try {
-        const res = await fetch('../state/croo-orders.json');
-        if (res.ok) orders = await res.json();
-      } catch {}
-
-      document.getElementById('total').textContent = orders.length;
-      document.getElementById('provider').textContent = orders.filter(o => o.type === 'provider').length;
-      document.getElementById('requester').textContent = orders.filter(o => o.type === 'requester').length;
-      const counterparties = new Set(orders.map(o => o.counterpartyAgent).filter(Boolean));
-      document.getElementById('counterparties').textContent = counterparties.size;
-
-      const tbody = document.getElementById('orders-body');
-      const last10 = [...orders].reverse().slice(0, 10);
-      if (!last10.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty">No orders yet</td></tr>';
-        return;
-      }
-      tbody.innerHTML = last10.map(o => `
-        <tr>
-          <td><span class="badge">${o.orderId.slice(0, 12)}…</span></td>
-          <td>${o.type}</td>
-          <td>${o.counterpartyAgent || o.serviceId || '—'}</td>
-          <td class="verdict-${o.verdict || ''}">${o.verdict || '—'}</td>
-          <td>${o.score != null ? o.score : '—'}</td>
-          <td>${o.completedAt ? new Date(o.completedAt).toLocaleString() : '—'}</td>
-        </tr>
-      `).join('');
+    function showTab(i) {
+      document.querySelectorAll('.code-tab').forEach((t, j) => t.classList.toggle('active', i === j));
+      document.querySelectorAll('.code-block pre').forEach((p, j) => p.style.display = i === j ? '' : 'none');
     }
-    load();
   </script>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span class="footer-note">Sasha Risk Desk · autonomous agent on Base · CROO CAP protocol · USDC settlements</span>
+    <div class="footer-links">
+      <a href="https://agent.croo.network/agents/f64edd68-41f0-4b2f-8ee3-8a21fdc87edb" target="_blank">CROO Store</a>
+      <a href="https://sasha-dashboards.pages.dev/lp-miner/" target="_blank">LP Dashboard</a>
+      <a href="https://x.com/SashaCoin95" target="_blank">@SashaCoin95</a>
+      <a href="https://github.com/gogrowth-co/sasha-x402-kit" target="_blank">GitHub</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// ─── Data loading ─────────────────────────────────────────────────────────────
+async function loadOrders() {
+  const paths = [
+    './data/orders-log.json',
+    'orders-log.json',
+  ];
+  for (const p of paths) {
+    try {
+      const r = await fetch(p);
+      if (r.ok) return await r.json();
+    } catch {}
+  }
+  return [];
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderStats(orders) {
+  const total = orders.length;
+  const ok = orders.filter(o => o.ok).length;
+  const partners = new Set(orders.map(o => o.agent).filter(Boolean));
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-ok').textContent = ok;
+  document.getElementById('stat-partners').textContent = partners.size;
+}
+
+function renderGraph(orders) {
+  const agents = [...new Set(orders.map(o => o.agent).filter(Boolean))];
+  const badge = document.getElementById('graph-badge');
+  badge.textContent = `${agents.length + 1} agents · ${orders.filter(o => o.ok).length} completed orders`;
+
+  const svg = document.getElementById('graph-nodes');
+  const W = 800, CX = 140, CY = 100;
+  const r = 90; // radius from center of external cluster
+  const startX = 330; // x-center of external circle
+
+  // Draw edges first
+  let edgesHtml = '';
+  agents.slice(0, 9).forEach((_, i) => {
+    const angle = (i / Math.max(agents.length, 1)) * Math.PI * 2 - Math.PI / 2;
+    const nx = startX + r * Math.cos(angle);
+    const ny = CY + r * Math.sin(angle);
+    const hasOrder = orders.some(o => o.agent === agents[i] && o.ok);
+    const stroke = hasOrder ? 'rgba(0,212,170,0.4)' : 'rgba(58,79,104,0.4)';
+    edgesHtml += `<line x1="${CX + 36}" y1="${CY}" x2="${nx - 22}" y2="${ny}" stroke="${stroke}" stroke-width="1" stroke-dasharray="${hasOrder ? 'none' : '4,4'}"/>`;
+  });
+
+  // Draw nodes
+  let nodesHtml = '';
+  agents.slice(0, 9).forEach((agent, i) => {
+    const angle = (i / Math.max(agents.length, 1)) * Math.PI * 2 - Math.PI / 2;
+    const nx = startX + r * Math.cos(angle);
+    const ny = CY + r * Math.sin(angle);
+    const hasOrder = orders.some(o => o.agent === agent && o.ok);
+    const fill = hasOrder ? 'rgba(0,212,170,0.15)' : '#0d1626';
+    const stroke = hasOrder ? '#00d4aa' : '#1a2a42';
+    const textColor = hasOrder ? '#00d4aa' : '#7a90aa';
+    const label = agent.replace(/\/.*/, '').slice(0, 10);
+    nodesHtml += `
+      <circle cx="${nx}" cy="${ny}" r="22" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
+      <text x="${nx}" y="${ny + 4}" text-anchor="middle" fill="${textColor}" font-size="8" font-family="JetBrains Mono,monospace">${label}</text>
+    `;
+  });
+
+  if (agents.length === 0) {
+    svg.innerHTML = `<text x="400" y="110" text-anchor="middle" fill="#3a4f68" font-size="13" font-family="Inter,sans-serif">No external agents yet — negotiations in progress</text>`;
+  } else {
+    svg.innerHTML = edgesHtml + nodesHtml;
+  }
+}
+
+function renderOrders(orders) {
+  const badge = document.getElementById('orders-badge');
+  badge.textContent = `${orders.length} entries`;
+
+  const tbody = document.getElementById('orders-body');
+  if (!orders.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-row">No orders logged yet — negotiations running</td></tr>';
+    return;
+  }
+
+  const last20 = [...orders].reverse().slice(0, 20);
+  tbody.innerHTML = last20.map(o => {
+    const statusBadge = o.ok
+      ? `<span class="badge badge-ok">✓ delivered</span>`
+      : o.error?.includes('timeout') || o.error?.includes('pending')
+        ? `<span class="badge badge-pending">⏳ pending</span>`
+        : `<span class="badge badge-fail">✗ rejected</span>`;
+    const typeBadge = `<span class="badge badge-type">${o.type || 'requester'}</span>`;
+    const id = o.orderId ? o.orderId.slice(0, 12) + '…' : (o.negId ? 'neg:' + o.negId.slice(0, 8) + '…' : '—');
+    const ts = o.ts ? new Date(o.ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    return `<tr>
+      <td><strong>${o.agent || '—'}</strong><br><span class="mono">${(o.serviceName || '').slice(0, 30)}</span></td>
+      <td>${typeBadge}</td>
+      <td>${statusBadge}</td>
+      <td><span class="mono">${id}</span></td>
+      <td><span class="mono" style="font-size:.68rem">${ts}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(async () => {
+  const orders = await loadOrders();
+  renderStats(orders);
+  renderGraph(orders);
+  renderOrders(orders);
+
+  // Auto-refresh every 30s
+  setInterval(async () => {
+    const fresh = await loadOrders();
+    renderStats(fresh);
+    renderGraph(fresh);
+    renderOrders(fresh);
+  }, 30_000);
+})();
+</script>
 </body>
 </html>

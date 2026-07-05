@@ -652,6 +652,12 @@ function writePortfolio(lpDash) {
         const lp     = lpDash || loadJson(path.join(WEB, 'lp-miner', 'data', 'dashboard.json'))
 
         const r2 = n => n == null ? null : Math.round(n * 100) / 100
+
+        // CROO — read live order data
+        const crooOrders = loadJson(path.join(WORKSPACE, 'croo', 'data', 'orders-log.json')) || []
+        const crooOk = crooOrders.filter(o => o.ok)
+        const crooRevenue = crooOk.reduce((s, o) => s + (Number(o.revenueUsd) || 0), 0)
+
         // LP value = marked-to-market footprint (LP value + hedge account + idle wallet).
         const lpValue = lp?.book?.navUsd ?? lp?.book?.lpValueUsd ?? lp?.book?.deployedBasisUsd ?? null
         // nav = idle wallet + value deployed in open LP positions (full book).
@@ -706,6 +712,12 @@ function writePortfolio(lpDash) {
                 key: 'casper', name: 'Casper x402', thesis: 'Every decision attested on Casper — PAY + ATTEST live on casper-test', kind: 'infra',
                 valueUsd: null, status: 'live', deepLink: './casper/', history: [],
                 audience: 'Judges: AI agent proves decisions on-chain, not just claims them', earns: 'on-chain attestation · x402 payments',
+            },
+            {
+                key: 'croo', name: 'CROO Risk Desk', thesis: 'Sells LP risk packets as a paid service over the CAP protocol — USDC settled on Base', kind: 'infra',
+                valueUsd: 0, orders: crooOk.length, revenueUsd: r2(crooRevenue), services: 3,
+                status: 'live', deepLink: './croo/', history: [],
+                audience: 'DeFi agents that need LP risk signals on Base',
             },
         ]
 

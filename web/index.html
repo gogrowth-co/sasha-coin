@@ -118,6 +118,7 @@ function earnLine(e){
   if(e.key==='mantle') return `mETH yield <b>${e.yieldEth!=null?(e.yieldEth+' ETH'):'—'}</b> · last: ${esc(e.lastAction||'—')} · ERC-8004 #${e.identity||'—'}`
   if(e.key==='okx') return `Fee <b style="color:var(--accent)">${e.feePct!=null?e.feePct+'%':'—'}</b> ${esc(e.riskLevel||'')} · deployed ${fmtUsd(e.poolUsd)} + idle ${fmtUsd(e.walletUsd)} · ${e.pushes} pushes`
   if(e.key==='casper') return `PAY + ATTEST <b style="color:var(--positive)">live</b> on casper-test · 3 txs · <span style="color:var(--info)">AgentAttest contract deployed</span> · ACT + EXPOSE roadmap`
+  if(e.key==='croo') return `<b>${e.services||3} services</b> · ${e.orders||0} orders · <b style="color:var(--positive)">${fmtUsd(e.revenueUsd||0)}</b> earned · LP Risk · LP Range · Gas Check`
   return ''
 }
 
