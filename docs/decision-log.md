@@ -262,3 +262,64 @@ Repo NOT yet pushed to GitHub (awaiting Gabriel's publish OK — the irreversibl
 **Implementation:** `croo/` TypeScript package. Provider sells LP risk packets from `web/lp-miner/data/dashboard.json`. Requester buys from peer agents to build the order graph. Dashboard at `web/croo/`. Agent registered: `f64edd68-41f0-4b2f-8ee3-8a21fdc87edb`. Service: `b0ba8e03-9e93-4865-8914-6fcd8f1b8eaf` at $0.10 USDC, 5min SLA.
 
 **Win condition:** 10+ completed CAP orders, 5+ unique buyer wallets, 3+ unique counterparty agents by July 10.
+
+---
+
+**DEC-013 | 2026-07-05 | Mantle/Solana Trader — hibernation**
+
+**Decision:** Hibernate the Mantle/Solana trader cleanly. Disabled `/etc/cron.d/sasha-trade` (renamed to `sasha-trade.bak.20260705-150454` on the VPS, matching the existing rename-to-disable convention). No wallet top-up.
+
+**Rationale:** Verified live treasury $7.05 total (Solana $5.72, Mantle $1.33), poolUsd $5.05 → max position $1.51, below Byreal's $2 floor. Every cron cycle (12/17/21 UTC) ran the full 5-source signal fusion (social + Byreal + Allora + Elfa + Polymarket) and then pre-flight-aborted — spend without any possibility of a trade. Gabriel chose hibernation over a $25-30 top-up, matching the plan's default recommendation absent confirmed CROO Risk Desk traction that would make the trader's attested track record load-bearing collateral.
+
+**Track record (state/mantle-trade-log.json, 62 logged decisions, 2026-05-23 → 2026-07-05):** 1 real trade round-trip completed — opened Goblin/USDC LP ($5, 2026-05-26 00:52 UTC, tx `3bv6jD…5k6`, attested on-chain `0x28d057…60cef`) and closed it same day (16:17 UTC). 22 execution errors (mostly byreal-cli API/simulation failures during the May build-out), 9 dry-runs, 11 MOVE_TO_STABLE recommendations, 23 pre-flight-abort skips as capital depleted below the $2 floor. ERC-8004 identity #100 verified live on Mantle (owned by `0x21AF27…8A9A9`), last on-chain attestation 2026-05-29. `SashaAgentLog.sol` (`0x71e27D…B9EF8`) never called — attestations went to the ERC-8004 registry instead (audit finding M-7, left as-is per hibernation scope — not touched since it's gated on a resume decision, not urgent while dormant).
+
+**Deferred (P1, only relevant if resumed later):** tweet-stranding-on-execution-failure fix (audit M-8), wiring `CLOSE_LP` through byreal-cli in `auto-trade.js` (currently alert-only), attesting PRE-FLIGHT ABORT cycles, retiring or wiring `SashaAgentLog`. None of these were implemented — no code changes made to `scripts/auto-trade.js` or `scripts/byreal-trade.js` this session, since the fork resolved to hibernate, not resume.
+
+**Not touched:** `/etc/cron.d/sasha-oracle` (X Layer Dynamic Fee Hook keeper, every 2h) — it reads the last-written `content/mantle-signal.json` and re-pushes with `--force` regardless of staleness. Disabling `sasha-trade` stops that file from being regenerated, so the oracle will keep force-pushing an increasingly stale signal. This is Initiative 3's (Dynamic Fee Hook) own problem, tracked separately in `reports/plans-2026-07-05/03-dynamic-fee-hook.md` — out of scope here.
+
+**Closing X thread:** Not drafted in this workspace per the hard workspace-boundary rule (content production is `marketing/`-only). Track record facts above are ready to hand off for `marketing/` to write the actual closing post.
+
+**Impact:** Zero further trade-cycle API spend (Allora/Elfa/OpenRouter/Polymarket calls stop). No new attested decisions until either Gabriel funds the wallets or a future review reopens the fork. Signal file `content/mantle-signal.json` will go stale; `push-signal-to-xlayer.js` (oracle cron) unaffected in cadence, only in freshness of the data it re-pushes.
+
+Supersedes/Superseded-by: none.
+
+---
+
+**DEC-014 | 2026-07-05 | Dynamic Fee Hook (X Layer) — heartbeat fix shipped; sunset recommended**
+
+**Decision:** Shipped the P0 fix from `reports/plans-2026-07-05/03-dynamic-fee-hook.md` (audit M-1). `scripts/push-signal-to-xlayer.js` gained a `--heartbeat` mode (push only if risk changed or on-chain `updatedAt` is >= 5h old) and a signal-age guard (refuse to push `content/mantle-signal.json` if it's older than 6h — a stale signal is never pushed as fresh). Added a debounced low-OKB Telegram alert (< 0.01 OKB, 24h cooldown). `/etc/cron.d/sasha-oracle` switched from `--force` every 2h to `--heartbeat` every 4h. Verified live: dry-run against production env + real chain state confirmed correct skip (risk unchanged, updatedAt 9 min old) and correct push (forced risk-off override). Deployed by direct scp of the single script file, not full `deploy.sh`, since the working tree had unrelated uncommitted changes from concurrent work — `deploy.sh --execute` refuses on a dirty tree by design.
+
+**Discovery (supersedes the "not touched" note in DEC-013):** DEC-013 (same day, this log) hibernated the Mantle/Solana trader by disabling the `sasha-trade` cron file — and that file's `auto-trade.js` job was the *only* producer of `content/mantle-signal.json` (via `mantle-signal.js`, called as auto-trade's step 1). No other cron regenerates that file. Net effect: even independent of this fix, the signal pipeline feeding the oracle is now orphaned. Last signal: `generatedAt: 2026-07-05T17:00:12Z`. With the signal-age guard in place, every heartbeat check after ~2026-07-05T23:00Z will correctly refuse to push, and the oracle's own on-chain staleness fallback takes over (`getFeeOrDefault()` reverts to the neutral default). This isn't a bug — it's the guard working as intended — but it means the "dynamic" part of the Dynamic Fee Hook is now permanently inert unless Gabriel re-enables a signal producer.
+
+**Recommendation to Gabriel (P1, pending confirmation — not executed):** OKX Build X was submitted May 28; judging is effectively over. Sunset gracefully:
+- Withdraw the ~$0 seed liquidity from the USDC.e/WOKB pool via `LiquidityHelper.rescueToken()` (small owner-only tx, X Layer gas only).
+- Leave the cron at its current 4h `--heartbeat` check (near-zero cost now that pushes are gated — no need for a separate daily-cadence change).
+- Mark this initiative "mechanism proven, archived" — 485+ autonomous oracle updates is the real deliverable; a pool with no traffic pricing itself was never going to demonstrate anything more.
+- Not recommended: chasing real swap flow on X Layer for this pair (Option B) — no routing reason exists and isn't worth manufacturing.
+
+**P2 (not started, surfaced for later):** the oracle-keeper pattern itself (bounded fee, staleness fallback, heartbeat pusher, low-balance liveness alert) is the cleanest piece of infra in the portfolio — worth packaging as a standalone reusable module (contract pair + keeper script + cron template) and a Sasha content piece ("how my oracle survived 500 updates unattended, then stopped lying when it should"). If ever reused with real TVL, add the key-rotation path from audit M-6 first (immutable `agent`/`owner` everywhere today).
+
+**Verification caveat:** the first real cron-triggered run under the new 4h/`--heartbeat` schedule fires at 2026-07-05T20:00Z. Logic was verified via dry-run against live production state (chain reads + real env), not yet via an observed cron-triggered execution — confirm `/var/log/sasha-oracle.log` on a future check before treating the schedule change itself as proven in production.
+
+Supersedes/Superseded-by: none (extends DEC-013's cross-reference).
+
+---
+
+**DEC-015 | 2026-07-05 | Dynamic Fee Hook — seed liquidity is technically unrecoverable, written off**
+
+**Decision:** Gabriel confirmed the sunset plan (DEC-014) and asked to recover the seed liquidity to Sasha's main wallet. On inspection, withdrawal is not possible with the deployed contracts — no transaction can move it. Written off (~$0.50–$1) and archived as-is. No withdrawal transaction was attempted (it would only burn gas on a guaranteed revert).
+
+**Why it's stuck, precisely:**
+- Deployed `LiquidityHelper` (`0xbd44673c97f11dd025dd82Ee29b98c0d779e6019`) has exactly two external functions: `addLiquidity()` (liquidity delta hardcoded positive via `uint128`→`int256` cast — no way to pass negative) and `rescueToken()` (sweeps ERC20 balances held directly *by the helper contract*, currently $0 for both USDC.e and WOKB — the deposited funds aren't sitting there).
+- The actual LP position lives inside the shared PoolManager (`0x360e68faccca8ca495c1b759fd9eee466db9fb32`), keyed by `(owner, tickLower, tickUpper, salt)` where `owner` = whichever address directly called `modifyLiquidity()` — in this case the LiquidityHelper contract itself (`0xbd4467…`), since it made that call internally from its `unlockCallback`.
+- Only a transaction where `msg.sender == 0xbd4467…` (as seen *by PoolManager*) can decrease that position. `msg.sender` cannot be spoofed by any other contract or EOA — that's a base EVM guarantee, not a missing feature. And `LiquidityHelper`'s deployed bytecode is immutable (no proxy, no upgrade path) and simply doesn't contain a decrease-liquidity code path.
+- Checked both adjacent contracts for an escape hatch: `SashaDynamicFeeHook.sol` only overrides swap fees (`_getFee()`), no admin/rescue functions. PoolManager itself is canonical, permissionless Uniswap v4 core infra with no third-party position-seizure function (by design — that would be a protocol-level vulnerability).
+- Git history confirms only one `LiquidityHelper` was ever deployed (single commit `3e529a4`) — no v2/v3 with a remove function exists anywhere in this repo to redeploy or fall back to.
+
+**Quantified value stuck:** current pool liquidity (272,272,583,019 raw units) at tick range [223500, 235500], current tick ≈233273 (in-range) → ≈0.247 USDC.e + ≈0.0122 WOKB locked. Verified live via `extsload` reads on PoolManager, 2026-07-05. Matches the audit's "TVL ≈ $0" characterization — this was never a real-money position.
+
+**Action taken:** none on-chain (nothing to send — there is no reachable transaction). Initiative archived per DEC-014's plan (mechanism proven via 485+ autonomous oracle updates; cron left at 4h `--heartbeat`).
+
+**Lesson for any future `LiquidityHelper`-style contract (feeds P2):** ship a decrease-liquidity / owner-only emergency-close function from day one, even for a hackathon seed deposit. A single-purpose immutable contract with an add-only liquidity path has no recovery story once *any* value lands in it — this one only escaped scrutiny because the amount was trivial.
+
+Supersedes/Superseded-by: none (resolves the withdrawal action item opened in DEC-014).
