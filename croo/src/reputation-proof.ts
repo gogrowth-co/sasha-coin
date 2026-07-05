@@ -4,8 +4,9 @@ const SASHA_AGENT = {
   name: 'Sasha',
   x: 'https://x.com/SashaCoin95',
   wallets: [
-    '0xba3BB320d35773ae0C44843BC5D7e5B3B0B08601',
-    '0xFAef67C0ee18dD89eaAA91a3d485e48949F7Ed04',
+    '0xba3BB32Fa5cfA2edCFc1401c76292FB102f86662', // Clawlett agent EOA (Base)
+    '0x21AF273dA03e695ead9d72B221Bd394f04D8A9A9', // LP-miner EOA (Base + Mantle, ERC-8004 #100)
+    '0xFAef67C0ee18dD89eaAA91a3d485e48949F7Ed04', // Hyperliquid hedge wallet
   ],
 };
 

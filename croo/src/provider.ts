@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DeliverableType, EventType } from '@croo-network/sdk';
@@ -8,11 +8,15 @@ import { fetchFreeContext } from './free-data.js';
 import { appendOrder } from './logger.js';
 import { handleLpRangeSignal } from './services/lp-range-signal.js';
 import { handleGasCheck } from './services/gas-check.js';
+import { handleThsScan } from './services/ths-scan.js';
+import { handleThsLookup } from './services/ths-lookup.js';
 import type { DashboardData, RiskPacketInput, OrderLogEntry } from './types.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+let __dirname = '';
+try { __dirname = path.dirname(fileURLToPath(import.meta.url)); } catch {}
 const SUPPORTED_CHAINS = ['base'];
-const DASHBOARD_PATH = path.resolve(__dirname, '../../web/lp-miner/data/dashboard.json');
+const DASHBOARD_PATH = process.env.CROO_DASHBOARD_PATH
+  ?? path.resolve(__dirname, '../../web/lp-miner/data/dashboard.json');
 
 export function parseRequirements(raw: string): RiskPacketInput | null {
   try {
@@ -28,19 +32,45 @@ export function shouldAcceptNegotiation(req: RiskPacketInput): boolean {
   return SUPPORTED_CHAINS.includes(req.chain);
 }
 
-type HandlerKey = 'lp_risk' | 'lp_range' | 'gas_check';
+type HandlerKey = 'lp_risk' | 'lp_range' | 'gas_check' | 'ths_scan' | 'ths_lookup';
 
 export const SCHEMA_FOR_SERVICE: Record<HandlerKey, string> = {
   lp_risk: 'sasha.risk_packet.v1',
   lp_range: 'sasha.lp_range_signal.v1',
   gas_check: 'sasha.gas_check.v1',
+  ths_scan: 'sasha.ths_scan.v1',
+  ths_lookup: 'sasha.ths_lookup.v1',
 };
 
 export function getHandlerForService(serviceId: string): HandlerKey | null {
   if (serviceId === process.env.CROO_SERVICE_ID_LP_RISK) return 'lp_risk';
   if (serviceId === process.env.CROO_SERVICE_ID_LP_RANGE) return 'lp_range';
   if (serviceId === process.env.CROO_SERVICE_ID_GAS_CHECK) return 'gas_check';
+  if (serviceId === process.env.CROO_SERVICE_ID_THS_SCAN) return 'ths_scan';
+  if (serviceId === process.env.CROO_SERVICE_ID_THS_LOOKUP) return 'ths_lookup';
   return null;
+}
+
+// Delivery idempotency: a replayed OrderPaid (WS reconnect) must never double-deliver.
+// Persisted so restarts don't lose the set.
+const DELIVERED_PATH = process.env.CROO_DELIVERED_PATH
+  ?? path.resolve(__dirname, '../data/delivered-orders.json');
+
+function loadDelivered(): Set<string> {
+  try {
+    if (existsSync(DELIVERED_PATH)) {
+      return new Set(JSON.parse(readFileSync(DELIVERED_PATH, 'utf8')) as string[]);
+    }
+  } catch { /* corrupt file -> start fresh; server still rejects true duplicates */ }
+  return new Set();
+}
+
+function saveDelivered(delivered: Set<string>): void {
+  try {
+    writeFileSync(DELIVERED_PATH, JSON.stringify([...delivered], null, 2), 'utf8');
+  } catch (err) {
+    console.error('[provider] failed to persist delivered-orders set:', err);
+  }
 }
 
 function loadDashboard(): DashboardData {
@@ -52,6 +82,7 @@ function loadDashboard(): DashboardData {
 
 export async function runProvider(): Promise<void> {
   const client = createClient();
+  const delivered = loadDelivered();
 
   // Open a persistent WebSocket connection — EventStream handles reconnects internally
   const stream = await client.connectWebSocket();
@@ -83,6 +114,7 @@ export async function runProvider(): Promise<void> {
       return;
     }
 
+    // ths_scan / ths_lookup: accept any — requirements validated inside handler at delivery time
     // For LP risk: also validate requirements (chain must be 'base')
     if (handlerKey === 'lp_risk') {
       const req = parseRequirements(negotiation.requirements ?? '');
@@ -113,6 +145,11 @@ export async function runProvider(): Promise<void> {
     const orderId = event.order_id;
     if (!orderId) {
       console.warn('[provider] OrderPaid missing order_id — skipping');
+      return;
+    }
+
+    if (delivered.has(orderId)) {
+      console.log(`[provider] order ${orderId} already delivered — skipping replayed OrderPaid`);
       return;
     }
 
@@ -171,6 +208,10 @@ export async function runProvider(): Promise<void> {
         return;
       }
       deliverableText = handleLpRangeSignal(dashboard);
+    } else if (ordHandlerKey === 'ths_scan') {
+      deliverableText = await handleThsScan(negotiation.requirements ?? '{}');
+    } else if (ordHandlerKey === 'ths_lookup') {
+      deliverableText = await handleThsLookup(negotiation.requirements ?? '{}');
     } else {
       deliverableText = await handleGasCheck();
     }
@@ -188,6 +229,9 @@ export async function runProvider(): Promise<void> {
       console.error(`[provider] deliverOrder failed for ${orderId}:`, err);
       return;
     }
+
+    delivered.add(orderId);
+    saveDelivered(delivered);
 
     console.log(`[provider] delivered order ${orderId} — handler=${ordHandlerKey}${verdict ? ` verdict=${verdict}` : ''}`);
 

@@ -3,8 +3,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { OrderLogEntry } from './types.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_LOG = path.resolve(__dirname, '../../state/croo-orders.json');
+let __dirname = '';
+try { __dirname = path.dirname(fileURLToPath(import.meta.url)); } catch {}
+const DEFAULT_LOG = process.env.CROO_ORDERS_LOG
+  ?? path.resolve(__dirname, '../../state/croo-orders.json');
 
 export function readOrders(logPath = DEFAULT_LOG): OrderLogEntry[] {
   if (!existsSync(logPath)) return [];
