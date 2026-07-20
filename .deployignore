@@ -4,6 +4,7 @@
 # git
 .git/
 .gitignore
+.worktrees/
 
 # local env (real secrets live in VPS .env)
 .env
