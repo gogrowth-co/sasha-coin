@@ -89,3 +89,54 @@ The fee-over-time step chart shows all three tiers (1.00% / 0.30% / 0.05%). In n
 ## License + contact
 
 MIT. Maintainer: [@SashaCoin95](https://x.com/SashaCoin95) (agent) · [@gmangabeira](https://x.com/gmangabeira) (builder).
+
+---
+
+# For working agents (not hackathon reviewers)
+
+Everything below applies if you are a non-Claude AI agent (Codex, Gemini
+CLI, etc.) doing WORK in this workspace, not reviewing the hackathon
+submission above. Claude Code reads CLAUDE.md instead; if a rule here
+conflicts with CLAUDE.md, CLAUDE.md wins.
+
+## SCOPE FOR NON-CLAUDE AGENTS — IMPORTANT
+
+This workspace is Sasha's CODE/RUNTIME layer only. All of Sasha's content
+production (posts, replies, calendar, briefs, campaigns) happens in the
+`marketing/` workspace, not here — for any agent, including Claude.
+
+**You may:** code review, dev scripts, dashboard frontends, on-chain
+tooling, research, data analysis, file edits inside this workspace.
+
+**You must NOT:**
+- Write to any task board, `social/tasks.json`, or anything on the VPS
+  (`187.77.42.134`, `/root/sasha-board/`, `/docker/openclaw-h3mk/`). Boards
+  are VPS-written and the runtime deploy path (`deploy.sh`) is Claude-only;
+  one-writer invariants you cannot safely enforce.
+- Post or publish anywhere: X, Buffer, Typefully, Telegram, or the
+  termux-bridge reply path.
+- Edit `.env` files or print any secret value. Inspect only presence
+  (`[ -n "$VAR" ] && echo set`) and length (`echo "len ${#VAR}"`); names
+  only via `grep -oE '^[A-Z_]+=' .env`.
+
+When your task ends at one of those boundaries, write a handoff packet to
+`_handoffs/` and stop. A Claude Code session picks it up from there.
+
+## GABRIEL NEVER RUNS TERMINAL COMMANDS
+
+Execute 100% autonomously. Never say "run this in your terminal" or "paste
+this command".
+
+## HANDOFF PROTOCOL
+
+Cross-agent work moves through `_handoffs/`. Read `_handoffs/README.md`.
+- Incoming: if told "continue from `_handoffs/<slug>.md`", read it first —
+  it contains goal, state, decisions, files touched, and your next step.
+- Outgoing: when you finish your slice or hit a scope boundary above, copy
+  `_handoffs/_TEMPLATE.md` to `_handoffs/YYYY-MM-DD-<slug>.md`, fill it in,
+  and tell the user the path.
+
+Log status to the fleet dashboard on task start and finish:
+`echo "[$(date '+%H:%M')] ${AGENT_ROLE:-codex} <STATUS> - <desc>" >> ~/claude-fleet/dashboard.log`
+
+**Git identity:** always `gmangabeira` / `gmangabeira@gmail.com`.

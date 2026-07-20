@@ -73,7 +73,7 @@ function saveDelivered(delivered: Set<string>): void {
   }
 }
 
-function loadDashboard(): DashboardData {
+export function loadDashboard(): DashboardData {
   if (!existsSync(DASHBOARD_PATH)) {
     throw new Error(`dashboard.json not found at ${DASHBOARD_PATH}`);
   }

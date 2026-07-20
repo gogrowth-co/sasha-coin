@@ -8,7 +8,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "provider": "node dist/provider-entrypoint.js",
-    "requester": "node dist/requester-entrypoint.js"
+    "requester": "node dist/requester-entrypoint.js",
+    "risk-packet-server": "node dist/risk-packet-internal-server.js"
   },
   "dependencies": {
     "@croo-network/sdk": "^0.2.1",

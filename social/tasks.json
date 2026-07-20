@@ -1,36 +1,44 @@
 {
-  "lastUpdated": "2026-06-17T18:00:00.000Z",
+  "lastUpdated": "2026-07-05T20:15:00.000Z",
   "tasks": [
     {
       "id": "CE-S-004",
       "title": "Thread: Casper Buildathon — Launch Announcement",
       "type": "content-piece",
       "channel": "x",
-      "channels": ["x"],
-      "status": "todo",
-      "pipelineStage": "writing",
+      "channels": [
+        "x"
+      ],
+      "status": "scheduled",
+      "pipelineStage": "publish",
       "priority": "high",
-      "approvalStatus": "pending",
+      "approvalStatus": "approved",
       "qaStatus": "not-run",
       "campaign": "casper-buildathon-promotion",
       "arc": "Casper Buildathon",
       "threadType": "Launch Announcement",
       "dueDate": "2026-06-19",
-      "statusChangedDate": "2026-06-17",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-06-17",
       "notes": "6-8 tweet launch thread. Angle: what we built + why. Real persona-owned position, verifiable on-chain identity, live tx proof. Link to DoraHacks submission + GitHub repo (gogrowth-co/sasha-x402-kit). Pull tx hashes from sasha-coin/docs/decision-log.md DEC-011. NEEDS: DoraHacks URL + CSPR.fans vote URL from Gabriel.",
       "artifacts": {
-        "draft_x": null,
-        "published": []
-      }
+        "draft_x": "typefully draft 9779939 (created 2026-07-05)",
+        "published": [],
+        "typefully_draft_id": 9779939,
+        "typefully_url": "https://typefully.com/?d=9779939&a=255726"
+      },
+      "scheduledDate": "2026-07-06T19:00:00-03:00",
+      "boardCleanupNote": "2026-07-05: written + scheduled via Typefully for Mon Jul 6 19:00 BRT (voting finals window opens same day). Facts verified against docs/decision-log.md DEC-011 tx hashes."
     },
     {
       "id": "CE-S-005",
       "title": "Post: Casper Buildathon — Vote CTA",
       "type": "content-piece",
       "channel": "x",
-      "channels": ["x"],
-      "status": "todo",
+      "channels": [
+        "x"
+      ],
+      "status": "blocked",
       "pipelineStage": "writing",
       "priority": "high",
       "approvalStatus": "pending",
@@ -39,44 +47,52 @@
       "arc": "Casper Buildathon",
       "threadType": "Vote Drive",
       "dueDate": "2026-06-21",
-      "statusChangedDate": "2026-06-17",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-06-17",
       "notes": "Single post. Direct vote CTA: 'If you believe AI agents should own their economic identity on-chain, vote here → [CSPR.fans link]'. Needs CSPR.fans vote URL.",
       "artifacts": {
         "draft_x": null,
         "published": []
-      }
+      },
+      "boardCleanupNote": "2026-07-05: BLOCKED, not published. _ops/pre-mortem-casper-buildathon-2026-06-06.md (risk A3) found the CSPR.fans 'top-3 vote skips judging' mechanism was never confirmed real — @CSPRfans is a dead account (2 followers) and no doc links a CSPR.fans vote to buildathon finals. Publishing a vote CTA to an unconfirmed mechanism would violate the fact-check hard rule. Needs Gabriel to confirm the mechanism (or drop it) before this can be written."
     },
     {
       "id": "CE-S-006",
       "title": "Post: Casper Buildathon — Builder Log (Sasha's POV)",
       "type": "content-piece",
       "channel": "x",
-      "channels": ["x"],
-      "status": "todo",
-      "pipelineStage": "writing",
+      "channels": [
+        "x"
+      ],
+      "status": "scheduled",
+      "pipelineStage": "publish",
       "priority": "medium",
-      "approvalStatus": "pending",
+      "approvalStatus": "approved",
       "qaStatus": "not-run",
       "campaign": "casper-buildathon-promotion",
       "arc": "Casper Buildathon",
       "threadType": "Builder Log",
       "dueDate": "2026-06-24",
-      "statusChangedDate": "2026-06-17",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-06-17",
       "notes": "Single post or short thread. Behind the build — Sasha's POV on x402 + AgentAttest. What surprised her. What she'd do differently. Character voice, first-person as Sasha.",
       "artifacts": {
-        "draft_x": null,
-        "published": []
-      }
+        "draft_x": "buffer post 6a4ab1f1c109183ee85a63c0 (created 2026-07-05)",
+        "published": [],
+        "buffer_post_id": "6a4ab1f1c109183ee85a63c0"
+      },
+      "scheduledDate": "2026-07-06T09:00:00-03:00",
+      "boardCleanupNote": "2026-07-05: written + scheduled via Buffer for Mon Jul 6 9am BRT. Sourced from real DEC-010 debugging incident (InvalidSignature/ASSET_NAME mismatch), not invented."
     },
     {
       "id": "CE-S-007",
       "title": "Thread: Casper Buildathon — Final Vote Push",
       "type": "content-piece",
       "channel": "x",
-      "channels": ["x"],
-      "status": "todo",
+      "channels": [
+        "x"
+      ],
+      "status": "blocked",
       "pipelineStage": "writing",
       "priority": "high",
       "approvalStatus": "pending",
@@ -85,13 +101,14 @@
       "arc": "Casper Buildathon",
       "threadType": "Final Push",
       "dueDate": "2026-06-27",
-      "statusChangedDate": "2026-06-17",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-06-17",
       "notes": "Closing thread. Angle: votes close in X days. Live proof: tx hash on testnet.cspr.live. On-chain receipts as the closer. Pull from sasha-coin/docs/decision-log.md DEC-011.",
       "artifacts": {
         "draft_x": null,
         "published": []
-      }
+      },
+      "boardCleanupNote": "2026-07-05: BLOCKED, not published. _ops/pre-mortem-casper-buildathon-2026-06-06.md (risk A3) found the CSPR.fans 'top-3 vote skips judging' mechanism was never confirmed real — @CSPRfans is a dead account (2 followers) and no doc links a CSPR.fans vote to buildathon finals. Publishing a vote CTA to an unconfirmed mechanism would violate the fact-check hard rule. Needs Gabriel to confirm the mechanism (or drop it) before this can be written."
     },
     {
       "id": "onb-01",
@@ -103,7 +120,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-05",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-02",
@@ -115,7 +134,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-05",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-03",
@@ -130,7 +151,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-05",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-04",
@@ -145,7 +168,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-05",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-05",
@@ -160,7 +185,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-05",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-06",
@@ -176,7 +203,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-06",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-07",
@@ -191,7 +220,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-07",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-08",
@@ -206,7 +237,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-07",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-09",
@@ -221,7 +254,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-09",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "pipelineStage": "backlog-infra",
+      "boardCleanupNote": "2026-07-05 cleanup: kept open but explicitly deprioritized. Audit Pattern 4 (infrastructure before content) + this session's hard sequencing rule: no new dashboard/infra work until the content cadence is live and stable. Revisit after 60-day cadence checkpoint."
     },
     {
       "id": "onb-10",
@@ -236,7 +271,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-09",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "pipelineStage": "backlog-infra",
+      "boardCleanupNote": "2026-07-05 cleanup: kept open but explicitly deprioritized. Audit Pattern 4 (infrastructure before content) + this session's hard sequencing rule: no new dashboard/infra work until the content cadence is live and stable. Revisit after 60-day cadence checkpoint."
     },
     {
       "id": "onb-11",
@@ -251,7 +288,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-09",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "pipelineStage": "backlog-infra",
+      "boardCleanupNote": "2026-07-05 cleanup: kept open but explicitly deprioritized. Audit Pattern 4 (infrastructure before content) + this session's hard sequencing rule: no new dashboard/infra work until the content cadence is live and stable. Revisit after 60-day cadence checkpoint."
     },
     {
       "id": "onb-12",
@@ -267,7 +306,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-09",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "pipelineStage": "backlog-infra",
+      "boardCleanupNote": "2026-07-05 cleanup: kept open but explicitly deprioritized. Audit Pattern 4 (infrastructure before content) + this session's hard sequencing rule: no new dashboard/infra work until the content cadence is live and stable. Revisit after 60-day cadence checkpoint."
     },
     {
       "id": "onb-13",
@@ -282,7 +323,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-09",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "pipelineStage": "backlog-infra",
+      "boardCleanupNote": "2026-07-05 cleanup: kept open but explicitly deprioritized. Audit Pattern 4 (infrastructure before content) + this session's hard sequencing rule: no new dashboard/infra work until the content cadence is live and stable. Revisit after 60-day cadence checkpoint."
     },
     {
       "id": "onb-14",
@@ -297,7 +340,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-09",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "pipelineStage": "backlog-infra",
+      "boardCleanupNote": "2026-07-05 cleanup: kept open but explicitly deprioritized. Audit Pattern 4 (infrastructure before content) + this session's hard sequencing rule: no new dashboard/infra work until the content cadence is live and stable. Revisit after 60-day cadence checkpoint."
     },
     {
       "id": "onb-15",
@@ -312,8 +357,10 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-12",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-27",
-      "completed": "2026-05-27"
+      "statusChangedDate": "2026-07-05",
+      "completed": "2026-05-27",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-16",
@@ -325,7 +372,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-14",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "pipelineStage": "backlog-infra",
+      "boardCleanupNote": "2026-07-05 cleanup: kept open but explicitly deprioritized. Audit Pattern 4 (infrastructure before content) + this session's hard sequencing rule: no new dashboard/infra work until the content cadence is live and stable. Revisit after 60-day cadence checkpoint."
     },
     {
       "id": "onb-17",
@@ -340,7 +389,9 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-07",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "onb-18",
@@ -355,19 +406,23 @@
       "created": "2026-05-02",
       "dueDate": "2026-05-07",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-02"
+      "statusChangedDate": "2026-07-05",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Completed VPS/runtime onboarding task, no longer active."
     },
     {
       "id": "sasha-19",
       "title": "Add Sasha visual reference images for lifestyle image generation",
       "category": "content",
-      "status": "in-progress",
+      "status": "blocked",
       "priority": "high",
       "notes": "Visual profile written from reference images → images/references/visual-profile.md and VPS /data/.openclaw/workspace/content/sasha-references/visual-profile.md. STILL NEEDED: upload actual .jpg reference files to VPS. Use: scp -i ~/.ssh/hostinger_vps <image_path> root@187.77.42.134:/docker/openclaw-h3mk/data/.openclaw/workspace/content/sasha-references/ Files needed: ref-01-headshot.jpg, ref-02-fullbody-studio.jpg, ref-03-character-sheet.jpg, ref-04-brand-sheet.jpg",
       "created": "2026-05-13",
       "dueDate": null,
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-05-13"
+      "statusChangedDate": "2026-07-05",
+      "boardCleanupNote": "2026-07-05 cleanup: blocked, not archived — still wanted, but stalled since 2026-05-13 pending Gabriel uploading 4 reference .jpg files. Not actioned this session (out of scope).",
+      "pipelineStage": "backlog-infra"
     },
     {
       "id": "SASHA-CE-001",
@@ -384,7 +439,7 @@
       "qaStatus": "not-run",
       "campaign": "sasha-daily-x",
       "dueDate": "2026-05-25",
-      "statusChangedDate": "2026-05-17",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-17",
       "notes": "Daily X post cadence for Sasha persona. 7 posts: Mon-Sun. Mix of market takes, replies-as-posts, and character-voice threads. All 7 days drafted as of 2026-05-21.",
       "artifacts": {
@@ -403,61 +458,71 @@
         "google_doc": "https://docs.google.com/document/d/1KxxrR6hhIsi3l66hb0I3pX7-CNqoWgFAlzvT_hlWmMo/edit"
       },
       "projectSlug": "sasha-coin",
-      "parentId": null
+      "parentId": null,
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived, not published. Draft files (sasha-2026-05-19..25.md) use 'this week' / '7 days' framing now 6+ weeks stale — republishing verbatim would violate the fact-check rule. No evidence these ever posted to Buffer (queue history shows only automated LP-trade posts in this window). Superseded by the cadence restart (deliverable 2) with fresh content."
     },
     {
       "id": "SASHA-CE-002",
       "title": "X thread — Sasha's take on AI agent wallets",
       "type": "content-piece",
-      "status": "todo",
+      "status": "scheduled",
       "priority": "high",
       "channel": "x",
       "channels": [
         "x"
       ],
-      "pipelineStage": "outline",
-      "approvalStatus": "pending",
+      "pipelineStage": "publish",
+      "approvalStatus": "approved",
       "qaStatus": "not-run",
       "campaign": "sasha-daily-x",
-      "dueDate": "2026-05-22",
-      "statusChangedDate": "2026-05-17",
+      "dueDate": "2026-07-08",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-17",
       "notes": "Thread from Sasha's POV on why AI agents need native wallets. 6-8 tweets. Narrative arc: problem → current workarounds → why it breaks → Sasha's vision.",
       "artifacts": {
         "research": null,
         "outline": null,
-        "draft_x": null,
-        "published": []
+        "draft_x": "typefully draft 9780017 (created 2026-07-05)",
+        "published": [],
+        "typefully_draft_id": 9780017,
+        "typefully_url": "https://typefully.com/?d=9780017&a=255726"
       },
       "projectSlug": "sasha-coin",
-      "parentId": null
+      "parentId": null,
+      "boardCleanupNote": "2026-07-05: kept as backlog idea, folded into 60-day content plan Week 2.",
+      "scheduledDate": "2026-07-08T19:00:00-03:00"
     },
     {
       "id": "SASHA-CE-003",
       "title": "X thread — Sasha market analysis: DeFAI sector",
       "type": "content-piece",
-      "status": "todo",
+      "status": "scheduled",
       "priority": "medium",
       "channel": "x",
       "channels": [
         "x"
       ],
-      "pipelineStage": "idea-backlog",
-      "approvalStatus": "not-needed",
+      "pipelineStage": "publish",
+      "approvalStatus": "approved",
       "qaStatus": "not-run",
       "campaign": "sasha-daily-x",
-      "dueDate": "2026-05-30",
-      "statusChangedDate": "2026-05-17",
+      "dueDate": "2026-07-10",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-17",
       "notes": "Sasha's first 'market analyst' thread. DeFAI landscape — top 5 protocols, who wins, who fades. Data-first tone.",
       "artifacts": {
         "research": null,
         "outline": null,
-        "draft_x": null,
-        "published": []
+        "draft_x": "typefully draft 9780022 (created 2026-07-05)",
+        "published": [],
+        "typefully_draft_id": 9780022,
+        "typefully_url": "https://typefully.com/?d=9780022&a=255726"
       },
       "projectSlug": "sasha-coin",
-      "parentId": null
+      "parentId": null,
+      "boardCleanupNote": "2026-07-05: kept as backlog idea, folded into 60-day content plan Week 3.",
+      "scheduledDate": "2026-07-10T19:00:00-03:00"
     },
     {
       "id": "SASHA-CE-004",
@@ -474,7 +539,7 @@
       "qaStatus": "passed",
       "campaign": "sasha-daily-x",
       "dueDate": "2026-05-18",
-      "statusChangedDate": "2026-05-17",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-17",
       "notes": "Daily reply targets. Scraped via Apify, morning-reply-run.js executes. Already in distribution.",
       "artifacts": {
@@ -484,7 +549,9 @@
         "published": []
       },
       "projectSlug": "sasha-coin",
-      "parentId": null
+      "parentId": null,
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Describes Week 21 (mid-May) reply cadence, a process description not a trackable content piece. Reply cadence itself is addressed operationally in the 60-day plan, not as a board card."
     },
     {
       "id": "SASHA-CE-005",
@@ -501,7 +568,7 @@
       "qaStatus": "not-run",
       "campaign": "sasha-daily-x",
       "dueDate": "2026-05-30",
-      "statusChangedDate": "2026-05-17",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-17",
       "notes": "Week 2 'On-Chain Receipts' arc. 5 posts May 26-30.",
       "artifacts": {
@@ -510,7 +577,9 @@
         "published": []
       },
       "projectSlug": "sasha-coin",
-      "parentId": null
+      "parentId": null,
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived, not published. Same staleness issue as SASHA-CE-001 — May 26-30 daily drafts, dates and 'this week' framing invalid now. Superseded by cadence restart."
     },
     {
       "id": "CE-S-001",
@@ -520,14 +589,14 @@
       "channels": [
         "x"
       ],
-      "status": "scheduled",
-      "pipelineStage": "publish",
+      "status": "done",
+      "pipelineStage": "distribution",
       "priority": "high",
       "approvalStatus": "approved",
       "qaStatus": "not-run",
       "dueDate": "2026-05-20",
       "scheduledDate": "2026-05-20",
-      "statusChangedDate": "2026-05-19",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-19",
       "campaign": "sasha-thread-cadence",
       "arc": "Week 1 — Becoming Real",
@@ -538,10 +607,13 @@
         "design": [
           "social/x/x-img-2026-05-20-virtuals-dissection.png"
         ],
-        "published": [],
+        "published": [
+          "https://x.com/SashaCoin95/status/2057068940724199678"
+        ],
         "typefully_draft_id": 9163796,
         "typefully_url": "https://typefully.com/?d=9163796&a=255726"
-      }
+      },
+      "boardCleanupNote": "2026-07-05 cleanup: verified live via Typefully API — was already published, board was stale."
     },
     {
       "id": "CE-S-002",
@@ -551,14 +623,14 @@
       "channels": [
         "x"
       ],
-      "status": "scheduled",
-      "pipelineStage": "publish",
+      "status": "done",
+      "pipelineStage": "distribution",
       "priority": "high",
       "approvalStatus": "approved",
       "qaStatus": "not-run",
       "dueDate": "2026-05-22",
       "scheduledDate": "2026-05-22",
-      "statusChangedDate": "2026-05-19",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-19",
       "campaign": "sasha-thread-cadence",
       "arc": "Week 1 — Becoming Real",
@@ -569,10 +641,13 @@
         "design": [
           "social/x/x-img-2026-05-22-builder-log.png"
         ],
-        "published": [],
+        "published": [
+          "https://x.com/SashaCoin95/status/2057793716782592228"
+        ],
         "typefully_draft_id": 9163798,
         "typefully_url": "https://typefully.com/?d=9163798&a=255726"
-      }
+      },
+      "boardCleanupNote": "2026-07-05 cleanup: verified live via Typefully API — was already published, board was stale."
     },
     {
       "id": "CE-S-003",
@@ -582,14 +657,14 @@
       "channels": [
         "x"
       ],
-      "status": "scheduled",
-      "pipelineStage": "publish",
+      "status": "done",
+      "pipelineStage": "distribution",
       "priority": "high",
       "approvalStatus": "approved",
       "qaStatus": "not-run",
       "dueDate": "2026-05-24",
       "scheduledDate": "2026-05-24",
-      "statusChangedDate": "2026-05-19",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-19",
       "campaign": "sasha-thread-cadence",
       "arc": "Week 1 — Becoming Real",
@@ -600,55 +675,61 @@
         "design": [
           "social/x/x-img-2026-05-24-7-questions.png"
         ],
-        "published": [],
+        "published": [
+          "https://x.com/SashaCoin95/status/2058518491100320161"
+        ],
         "typefully_draft_id": 9163800,
         "typefully_url": "https://typefully.com/?d=9163800&a=255726"
-      }
+      },
+      "boardCleanupNote": "2026-07-05 cleanup: verified live via Typefully API — was already published, board was stale."
     },
     {
       "id": "SASHA-CE-006",
       "title": "X Thread — $420k exploit + the receipts argument (May 21)",
       "type": "content-piece",
-      "status": "in-progress",
+      "status": "done",
       "priority": "high",
       "channel": "x",
       "channels": [
         "x"
       ],
-      "pipelineStage": "writing",
-      "approvalStatus": "pending",
+      "pipelineStage": "distribution",
+      "approvalStatus": "approved",
       "qaStatus": "not-run",
       "campaign": "sasha-daily-x",
       "dueDate": "2026-05-21",
-      "statusChangedDate": "2026-05-21",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-21",
       "notes": "ID SASHA-CE-004 was already in use (reply-engagement task). This thread uses SASHA-CE-006 as next available. Angle: $420k bridge exploit + Sasha's legibility counter-position vs slashing/reputation debate.",
       "artifacts": {
         "research": null,
         "outline": null,
         "draft_x": "social/x/threads/thread-2026-05-21-exploit.md",
-        "published": [],
+        "published": [
+          "https://x.com/SashaCoin95/status/2057476594181210571"
+        ],
         "google_doc": "https://docs.google.com/document/d/1lvkfpE1YMgu12iduZu6fvHWujH_SVpcziFnCeFG7J_A/edit"
       },
       "projectSlug": "sasha-coin",
-      "parentId": null
+      "parentId": null,
+      "boardCleanupNote": "2026-07-05 cleanup: verified live via Typefully API — was already published, board was stale."
     },
     {
       "id": "SASHA-CE-007",
       "title": "X Thread — Autonomous vs Automated (May 22)",
       "type": "content-piece",
-      "status": "in-progress",
+      "status": "done",
       "priority": "high",
       "channel": "x",
       "channels": [
         "x"
       ],
-      "pipelineStage": "writing",
-      "approvalStatus": "pending",
+      "pipelineStage": "distribution",
+      "approvalStatus": "approved",
       "qaStatus": "not-run",
       "campaign": "sasha-daily-x",
       "dueDate": "2026-05-22",
-      "statusChangedDate": "2026-05-21",
+      "statusChangedDate": "2026-07-05",
       "created": "2026-05-21",
       "arc": "Week 1 — Becoming Real",
       "notes": "Complete replacement for the old 'Slashing vs Trust' thread. New angle: autonomous vs automated — category definition from the inside. Data spine: 10 wallets, avg 4 txns/day, Sasha 11 txns / 3 initiated / 8 approvals. Does NOT reference Aave position or the exploit (that is SASHA-CE-006).",
@@ -656,11 +737,14 @@
         "research": null,
         "outline": null,
         "draft_x": "social/x/threads/thread-2026-05-22-slashing-debate.md",
-        "published": [],
+        "published": [
+          "https://x.com/SashaCoin95/status/2057794450060112044"
+        ],
         "google_doc": "https://docs.google.com/document/d/1RPfpv79puji24sVINg3wVvaTlkx52uVMIXJNg0vd61A/edit"
       },
       "projectSlug": "sasha-coin",
-      "parentId": null
+      "parentId": null,
+      "boardCleanupNote": "2026-07-05 cleanup: verified live via Typefully API — was already published, board was stale."
     },
     {
       "id": "casper-01",
@@ -672,8 +756,10 @@
       "created": "2026-06-02",
       "dueDate": "2026-06-30",
       "approvalStatus": "approved",
-      "statusChangedDate": "2026-06-17",
-      "completed": "2026-06-17"
+      "statusChangedDate": "2026-07-05",
+      "completed": "2026-06-17",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Casper Buildathon submission complete (DoraHacks buidl/45337 live, demo video, repo public). Promo posts tracked separately under CE-S-004..007."
     },
     {
       "id": "casper-02",
@@ -685,8 +771,10 @@
       "created": "2026-06-10",
       "dueDate": "2026-06-28",
       "approvalStatus": "pending",
-      "statusChangedDate": "2026-06-17",
-      "completed": "2026-06-17"
+      "statusChangedDate": "2026-07-05",
+      "completed": "2026-06-17",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Casper Buildathon submission complete (DoraHacks buidl/45337 live, demo video, repo public). Promo posts tracked separately under CE-S-004..007."
     },
     {
       "id": "casper-03",
@@ -698,8 +786,10 @@
       "created": "2026-06-10",
       "dueDate": "2026-06-28",
       "approvalStatus": "pending",
-      "statusChangedDate": "2026-06-17",
-      "completed": "2026-06-17"
+      "statusChangedDate": "2026-07-05",
+      "completed": "2026-06-17",
+      "archived": true,
+      "boardCleanupNote": "2026-07-05 cleanup: archived. Casper Buildathon submission complete (DoraHacks buidl/45337 live, demo video, repo public). Promo posts tracked separately under CE-S-004..007."
     },
     {
       "id": "casper-04",
@@ -711,7 +801,81 @@
       "created": "2026-06-10",
       "dueDate": "2026-06-28",
       "approvalStatus": "not-needed",
-      "statusChangedDate": "2026-06-10"
+      "statusChangedDate": "2026-07-05",
+      "pipelineStage": "backlog-infra",
+      "boardCleanupNote": "2026-07-05 cleanup: kept as backlog, explicitly NOT started this session. Deliverable 4 (payment rails) is spec/kickoff-prompt only per the hard sequencing rule — no x402 code this session. Also optional stretch, submission floor already cleared."
+    },
+    {
+      "id": "SASHA-CE-008",
+      "title": "Cadence restart — Week of Jul 6 (Mon-load)",
+      "type": "content-piece",
+      "status": "scheduled",
+      "priority": "high",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "pipelineStage": "publish",
+      "approvalStatus": "approved",
+      "qaStatus": "passed",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-07-09",
+      "statusChangedDate": "2026-07-05",
+      "created": "2026-07-05",
+      "notes": "Locked cadence (project_sasha_posting_cadence, 2026-06-04) restarted 2026-07-05 per audit Pattern 4 remediation. Buffer loaded 10/10 free-tier slots, Mon 9am through Thu 9am BRT (verified live via read-queue.js). Typefully loaded 3 threads Mon/Wed/Fri (Casper launch, AI agent wallets, DeFAI sector) — verified live via typefully_get_queue. NEXT ACTION: Thu-load (second half of week, Thu-PM through next Mon-AM) per the twice-weekly ritual — Buffer free tier caps at 10 scheduled/channel, could not preload both halves at once.",
+      "artifacts": {
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "SASHA-CE-009",
+      "title": "Cadence restart — Thu-load (second half of week, Jul 9 PM → Jul 13 AM)",
+      "type": "content-piece",
+      "status": "todo",
+      "priority": "high",
+      "channel": "x",
+      "channels": [
+        "x"
+      ],
+      "pipelineStage": "backlog",
+      "approvalStatus": "not-needed",
+      "qaStatus": "not-run",
+      "campaign": "sasha-daily-x",
+      "dueDate": "2026-07-09",
+      "statusChangedDate": "2026-07-05",
+      "created": "2026-07-05",
+      "notes": "Buffer free tier caps at 10 scheduled posts/channel — SASHA-CE-008's Mon-load filled the cap through Thu 9am BRT. This card is the reminder to run the Thu-load on 2026-07-09: 3 Buffer originals/day Thu-PM through Fri, 1/day Sat-Sun, per the locked twice-weekly ritual. CROO Agent Hackathon deadline (Jul 12) and Casper Buildathon finals window (through Jul 19) both fall in this window — good source material already scoped in this session's report.",
+      "artifacts": {
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
+    },
+    {
+      "id": "REV-sasha-coin-2026-07",
+      "title": "Review — July 2026",
+      "type": "review",
+      "status": "in-progress",
+      "priority": "high",
+      "pipelineStage": "editing",
+      "approvalStatus": "pending",
+      "campaign": "review-cycle",
+      "created": "2026-07-05",
+      "statusChangedDate": "2026-07-05",
+      "notes": "2026-07 review cycle: board cleanup, backlog publish, cadence restart, services menu (Hormozi offer framework), payment-rails decision, 60-day plan. TWO OPEN APPROVAL GATES: (1) services-menu.md pricing/offers, (2) sponsor-post disclosure format in the 60-day plan. Nothing downstream of either ships until Gabriel signs off.",
+      "artifacts": {
+        "review_package": "https://drive.google.com/file/d/13g110eCSKUEcHinqadPl9xWMSlDLyoQG/view",
+        "review_package_repo": "marketing/reports/reviews/sasha-coin/2026-07/index.html",
+        "doc": "https://docs.google.com/document/d/13KRbEcqnQ_rt2Sjy3y2-eD_j6fQcglm3tvtMaKRcipg/edit",
+        "data": null,
+        "research": "marketing/reports/reviews/sasha-coin/2026-07/02-research-brief.html",
+        "draft_blog": "marketing/reports/reviews/sasha-coin/2026-07/03-strategy-plan.html",
+        "published": []
+      },
+      "projectSlug": "sasha-coin",
+      "parentId": null
     }
   ]
 }

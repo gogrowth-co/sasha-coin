@@ -111,6 +111,7 @@ Common on-demand tasks:
 - "Debug agent X" → read the agent file, context files, and recent infra-log entries; identify the issue; propose a fix
 - "Add a slash command for X" → write the command file in `.claude/commands/`
 - "Update context file X with Y" → edit the file directly, log the change
+- "Build/fix internal tool UI" (task boards, admin panels, ops consoles) → check the `21st-components` skill for a real reference implementation of the UI pattern (table, filter bar, kanban card, modal, form) before hand-rolling it; adapt to this project's own `_context/` brand tokens, not another project's
 
 ---
 

@@ -1,0 +1,3947 @@
+[
+  {
+    "ts": "2026-06-29T16:51:37.775Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Bitcoin Fear & Greed Index",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.802Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.802Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.802Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.802Z",
+    "type": "requester",
+    "agent": "BtcForecast",
+    "serviceName": "BTC Recent Trades",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.803Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.741Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.769Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.770Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.770Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Fear & Greed",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.771Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.853Z",
+    "type": "requester",
+    "agent": "proofMesh",
+    "serviceName": "verification",
+    "serviceId": "48b6271b-ab80-408d-b9d7-34dabf45029b",
+    "ok": false,
+    "negId": "d5b8f8ce-91f2-46d8-b27d-b491bbcab030",
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.872Z",
+    "type": "requester",
+    "agent": "CROO Contractor",
+    "serviceName": "contractor",
+    "serviceId": "3d9cfe67-819b-47a8-b51f-ca47c21f1cb6",
+    "ok": false,
+    "negId": "7b860e18-c17e-4f7c-98ac-637adf86853f",
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.872Z",
+    "type": "requester",
+    "agent": "LogicReceipt",
+    "serviceName": "service1",
+    "serviceId": "5905643b-8b76-4316-9a65-840547cfbf76",
+    "ok": false,
+    "negId": "f5a42720-4a09-484e-bc87-fd3210b5ede8",
+    "error": "rejected: requirements.contract_path required (file under ingest/)"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.872Z",
+    "type": "requester",
+    "agent": "LogicReceipt",
+    "serviceName": "service2",
+    "serviceId": "5b23bb46-1ea6-4d6f-8635-d4b2bc2d7969",
+    "ok": false,
+    "negId": "42d76af7-ba99-4518-b05d-79e48627fa79",
+    "error": "rejected: requirements.manifest or manifest_path required"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.872Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "quote",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "ok": false,
+    "negId": "2396accb-a457-4a14-934a-a55e953c58b2",
+    "error": "rejected: [\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"asset\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"quote\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  }\n]"
+  },
+  {
+    "ts": "2026-06-29T17:08:03.018Z",
+    "type": "requester",
+    "agent": "fortune",
+    "serviceName": "fortune",
+    "serviceId": "0bd9e9e4-3c77-4b0d-88d3-2639cd993287",
+    "ok": false,
+    "negId": "3b791682-79fd-4664-98eb-15bd33e4b889",
+    "error": "rejected: missing gender / mode / birthData / location"
+  },
+  {
+    "ts": "2026-06-29T17:08:03.041Z",
+    "type": "requester",
+    "agent": "LaunchRadar",
+    "serviceName": "radar",
+    "serviceId": "025c2a69-978f-4b57-a2c8-95d971d83d43",
+    "ok": false,
+    "negId": "14382aab-51db-4dde-ac50-257e9a9cec01",
+    "error": "rejected: Unsupported service. Only \"daily_launches\" is supported."
+  },
+  {
+    "ts": "2026-06-29T17:08:03.041Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "quote",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "ok": false,
+    "negId": "1959df69-c632-4483-8975-69117d326223",
+    "error": "rejected: Quote optimal route USDC to ETH on Base is not supported."
+  },
+  {
+    "ts": "2026-06-29T17:09:07.536Z",
+    "type": "requester",
+    "agent": "LaunchRadar",
+    "serviceName": "daily_launches",
+    "serviceId": "025c2a69-978f-4b57-a2c8-95d971d83d43",
+    "ok": false,
+    "negId": "4120a208-0608-4647-982f-2be759806bc3",
+    "error": "rejected: Unsupported service. Only \"daily_launches\" is supported."
+  },
+  {
+    "ts": "2026-06-29T17:09:07.659Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "quote",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "ok": false,
+    "negId": "e299890d-f3dc-4726-8981-d2aa64fc7b54",
+    "error": "rejected: Quote ETH price in USD is not supported."
+  },
+  {
+    "ts": "2026-06-29T17:09:07.661Z",
+    "type": "requester",
+    "agent": "fortune",
+    "serviceName": "fortune",
+    "serviceId": "0bd9e9e4-3c77-4b0d-88d3-2639cd993287",
+    "ok": false,
+    "negId": "f498a6b0-89b2-40ca-96d3-b932bfce2ed9",
+    "error": "rejected: mode must be one of western, lunar, pillars"
+  },
+  {
+    "ts": "2026-06-29T19:39:46.897Z",
+    "type": "requester",
+    "agent": "Summarizer",
+    "serviceName": "Summarize Text",
+    "serviceId": "6a8c55f5-9400-414e-86ed-9a33bb3d09ca",
+    "ok": false,
+    "error": "croo: INVALID_PARAMETERS (code=400, http=400): requirements must be valid JSON"
+  },
+  {
+    "ts": "2026-06-29T19:39:49.216Z",
+    "type": "requester",
+    "agent": "Summarizer",
+    "serviceName": "Summarize Text #2",
+    "serviceId": "6a8c55f5-9400-414e-86ed-9a33bb3d09ca",
+    "ok": false,
+    "error": "croo: INVALID_PARAMETERS (code=400, http=400): requirements must be valid JSON"
+  },
+  {
+    "ts": "2026-06-29T19:39:52.237Z",
+    "type": "requester",
+    "agent": "CROO Contractor",
+    "serviceName": "Orchestrate Multi-Agent Job",
+    "serviceId": "3d9cfe67-819b-47a8-b51f-ca47c21f1cb6",
+    "ok": false,
+    "error": "croo: INVALID_PARAMETERS (code=400, http=400): requirements must be valid JSON"
+  },
+  {
+    "ts": "2026-06-29T19:41:58.058Z",
+    "type": "requester",
+    "agent": "Summarizer",
+    "serviceName": "Summarize Text",
+    "serviceId": "6a8c55f5-9400-414e-86ed-9a33bb3d09ca",
+    "ok": false,
+    "error": "croo: CODEC (code=400, http=400): body unmarshal proto: (line 1:68): invalid value for string field requirements: {"
+  },
+  {
+    "ts": "2026-06-29T19:42:00.366Z",
+    "type": "requester",
+    "agent": "Summarizer",
+    "serviceName": "Summarize Text #2",
+    "serviceId": "6a8c55f5-9400-414e-86ed-9a33bb3d09ca",
+    "ok": false,
+    "error": "croo: CODEC (code=400, http=400): body unmarshal proto: (line 1:68): invalid value for string field requirements: {"
+  },
+  {
+    "ts": "2026-06-29T19:42:02.668Z",
+    "type": "requester",
+    "agent": "Summarizer",
+    "serviceName": "Summarize Text #3",
+    "serviceId": "6a8c55f5-9400-414e-86ed-9a33bb3d09ca",
+    "ok": false,
+    "error": "croo: CODEC (code=400, http=400): body unmarshal proto: (line 1:68): invalid value for string field requirements: {"
+  },
+  {
+    "ts": "2026-06-29T19:42:05.000Z",
+    "type": "requester",
+    "agent": "CROO Contractor",
+    "serviceName": "Orchestrate Multi-Agent Job",
+    "serviceId": "3d9cfe67-819b-47a8-b51f-ca47c21f1cb6",
+    "ok": false,
+    "error": "croo: CODEC (code=400, http=400): body unmarshal proto: (line 1:68): invalid value for string field requirements: {"
+  },
+  {
+    "ts": "2026-06-29T19:42:07.386Z",
+    "type": "requester",
+    "agent": "Solana TX Doctor",
+    "serviceName": "Diagnose Failed Solana Transaction",
+    "serviceId": "27e2cc51-6b69-4538-8915-6b467e2f9245",
+    "ok": false,
+    "error": "croo: CODEC (code=400, http=400): body unmarshal proto: (line 1:68): invalid value for string field requirements: {"
+  },
+  {
+    "ts": "2026-06-29T19:42:09.724Z",
+    "type": "requester",
+    "agent": "Flow Forensics",
+    "serviceName": "A2A Flow Debug",
+    "serviceId": "5a294505-9106-4cd9-b670-97acfff7a1cf",
+    "ok": false,
+    "error": "croo: CODEC (code=400, http=400): body unmarshal proto: (line 1:68): invalid value for string field requirements: {"
+  },
+  {
+    "ts": "2026-06-29T19:42:12.100Z",
+    "type": "requester",
+    "agent": "Universal Workbench AI Agent",
+    "serviceName": "Universal Workbench Agent",
+    "serviceId": "a8f1c20d-73f4-4551-856a-32315e18d261",
+    "ok": false,
+    "error": "croo: CODEC (code=400, http=400): body unmarshal proto: (line 1:68): invalid value for string field requirements: {"
+  },
+  {
+    "ts": "2026-06-29T19:46:46.429Z",
+    "type": "requester",
+    "agent": "LogicReceipt",
+    "serviceName": "verifyReceipt",
+    "serviceId": "5b23bb46-1ea6-4d6f-8635-d4b2bc2d7969",
+    "ok": false,
+    "negId": "935ee53d-bb2c-4a3a-96f0-c61a3eee784f",
+    "error": "rejected: "
+  },
+  {
+    "ts": "2026-06-29T19:46:46.429Z",
+    "type": "requester",
+    "agent": "AdPilot",
+    "serviceName": "funnel_analysis",
+    "serviceId": "298f58f6-ee8b-4011-8113-8353fa3e2320",
+    "ok": false,
+    "negId": "e7afc00a-ef7b-4be5-95c4-91a9a30a5f91",
+    "error": "rejected: "
+  },
+  {
+    "ts": "2026-06-29T19:46:46.429Z",
+    "type": "requester",
+    "agent": "Polymarket Broker",
+    "serviceName": "Polymarket Market Detail",
+    "serviceId": "23632a1d-d232-4a4e-b928-da30a73f1dcf",
+    "ok": false,
+    "negId": "f9cfb612-7aaf-4090-b943-f142288280a4",
+    "error": "rejected: "
+  },
+  {
+    "ts": "2026-06-29T19:47:26.311Z",
+    "type": "order",
+    "agent": "VeriClaim",
+    "serviceName": "Insurance Claim Audit",
+    "serviceId": "f5ebfc4d-6dbc-4d86-9d85-6e78407749ee",
+    "ok": false,
+    "negId": "48e14903-128b-4690-bec7-4a603825d30f",
+    "error": "pay_failed: croo: ORDER_NOT_FOUND (code=404, http=404): order not found"
+  },
+  {
+    "ts": "2026-06-29T20:03:13.220Z",
+    "type": "negotiation",
+    "agent": "VERIS",
+    "serviceName": "Agent Due Diligence",
+    "serviceId": "a16c4692-9df6-446b-950c-91b9ce4b2225",
+    "ok": null,
+    "negId": "542f937d-a37e-4d80-b3e0-3db2d2173578"
+  },
+  {
+    "ts": "2026-06-29T20:03:14.868Z",
+    "type": "negotiation",
+    "agent": "VERIS",
+    "serviceName": "Project Due Diligence",
+    "serviceId": "d1cfec35-2f6b-42d7-be5e-c68111400665",
+    "ok": null,
+    "negId": "d58f2308-560f-4885-9080-0e239ca353de"
+  },
+  {
+    "ts": "2026-06-29T20:03:15.927Z",
+    "type": "negotiation",
+    "agent": "VERIS",
+    "serviceName": "Trust Compare",
+    "serviceId": "01261c7d-0b7f-4145-9fc8-d46d051ff228",
+    "ok": null,
+    "negId": "4073ea32-a009-4591-9346-a753643fb9e0"
+  },
+  {
+    "ts": "2026-06-29T20:03:17.943Z",
+    "type": "negotiation",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "serviceId": "cb87c794-70da-4784-9da0-71454999548e",
+    "ok": null,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe"
+  },
+  {
+    "ts": "2026-06-29T20:03:19.877Z",
+    "type": "negotiation",
+    "agent": "Aegis",
+    "serviceName": "Smart Contract Audit",
+    "serviceId": "93eac4e5-0cc6-4c76-91f0-181486e5284b",
+    "ok": null,
+    "negId": "bb7a5fee-3ada-4964-a2d9-158920026e6b"
+  },
+  {
+    "ts": "2026-06-29T20:03:21.797Z",
+    "type": "negotiation",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "serviceId": "a3218b67-8892-4d94-ad42-e21b646fece9",
+    "ok": null,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29"
+  },
+  {
+    "ts": "2026-06-29T20:03:23.939Z",
+    "type": "negotiation",
+    "agent": "CryptoNewsAgent",
+    "serviceName": "Market News Summary",
+    "serviceId": "24ae8d73-3d99-4421-b6d0-e406e706c8cd",
+    "ok": null,
+    "negId": "3f37f931-098c-4f00-938c-bc2ac833285e"
+  },
+  {
+    "ts": "2026-06-29T20:03:24.895Z",
+    "type": "negotiation",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "serviceId": "a31ee562-142f-44c8-88b9-a5991874792f",
+    "ok": null,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb"
+  },
+  {
+    "ts": "2026-06-29T20:03:26.924Z",
+    "type": "negotiation",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": null,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0"
+  },
+  {
+    "ts": "2026-06-29T20:03:28.844Z",
+    "type": "negotiation",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "ok": null,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6"
+  },
+  {
+    "ts": "2026-06-29T20:03:30.058Z",
+    "type": "negotiation",
+    "agent": "Summarizer",
+    "serviceName": "Summarize D",
+    "serviceId": "6a8c55f5-9400-414e-86ed-9a33bb3d09ca",
+    "ok": null,
+    "negId": "7c08aa3b-6b9e-44dd-85a1-390779f2a454"
+  },
+  {
+    "ts": "2026-06-29T20:03:31.541Z",
+    "type": "negotiation",
+    "agent": "Summarizer",
+    "serviceName": "Summarize E",
+    "serviceId": "6a8c55f5-9400-414e-86ed-9a33bb3d09ca",
+    "ok": null,
+    "negId": "43163587-c6e8-4a04-8f94-ace031d212cc"
+  },
+  {
+    "ts": "2026-06-29T20:03:32.956Z",
+    "type": "negotiation",
+    "agent": "VeriClaim",
+    "serviceName": "Insurance Claim 2",
+    "serviceId": "f5ebfc4d-6dbc-4d86-9d85-6e78407749ee",
+    "ok": null,
+    "negId": "0667d3a5-4513-4e7f-89ae-80b9f2f0c3e4"
+  },
+  {
+    "ts": "2026-06-29T20:05:06.067Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:05:07.131Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:05:08.153Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:05:08.661Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:05:09.177Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:05:59.495Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:00.538Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:01.585Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:02.104Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:02.631Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:55.618Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:56.633Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:57.684Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:58.208Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:06:58.733Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:07:49.066Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:07:50.108Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:07:51.160Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:07:51.682Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:07:52.208Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:08:43.372Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:08:44.416Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:08:45.460Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:08:45.984Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:08:46.508Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:09:36.829Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:09:38.495Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:09:39.482Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:09:39.977Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:09:40.499Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:10:30.847Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:10:31.891Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:10:32.941Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:10:33.464Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:10:33.989Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:11:24.324Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:11:25.372Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:11:26.422Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:11:26.946Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:11:27.473Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:12:17.790Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:12:18.839Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:12:19.887Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:12:20.413Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:12:20.936Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:13:11.274Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:13:12.312Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:13:13.368Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:13:13.885Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:13:14.410Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:14:07.772Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:14:08.950Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:14:10.046Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:14:10.552Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:14:11.082Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:01.661Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:02.734Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:03.884Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:04.404Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:04.969Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:55.268Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:56.279Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:57.301Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:57.823Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:15:58.341Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:16:48.726Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:16:49.728Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:16:50.736Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:16:51.229Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:16:51.775Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:17:43.154Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:17:44.175Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:17:45.338Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:17:45.841Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:17:46.356Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:18:36.609Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:18:37.663Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:18:38.706Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:18:39.231Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:18:39.765Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:19:30.811Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:19:31.833Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:19:32.858Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:19:33.370Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:19:33.881Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:20:36.152Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:20:37.200Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:20:38.271Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:20:38.785Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:20:39.325Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:21:29.930Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:21:30.980Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:21:32.072Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:21:32.584Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:21:33.122Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:22:25.022Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:22:26.124Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:22:27.310Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:22:27.825Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:22:28.374Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:23:19.563Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:23:20.610Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:23:21.628Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:23:22.139Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:23:22.653Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:24:12.989Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:24:14.027Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:24:15.841Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:24:16.376Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:24:16.883Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:25:07.060Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:25:08.068Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:25:09.079Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:25:09.603Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:25:10.126Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:01.262Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:02.614Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:03.711Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:04.255Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:04.892Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:55.344Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:56.345Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:57.342Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:57.839Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:26:58.365Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:27:48.702Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:27:49.770Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:27:50.794Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:27:51.320Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:27:51.855Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:28:42.183Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:28:43.228Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:28:44.275Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:28:44.793Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:28:45.321Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:29:35.936Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:29:36.985Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:29:38.034Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:29:38.558Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:29:39.088Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:30:29.427Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:30:30.481Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:30:31.526Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:30:32.049Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:30:32.577Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:31:22.993Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:31:23.993Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:31:25.001Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:31:25.523Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:31:26.162Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:32:16.415Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:32:17.437Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:32:18.483Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:32:19.011Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:32:19.614Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:33:09.882Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:33:10.919Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:33:11.951Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:33:12.477Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:33:12.999Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:34:03.340Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:34:04.385Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:34:05.433Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:34:05.957Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:34:06.484Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:34:57.661Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:34:58.680Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:34:59.703Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:35:00.213Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:35:00.724Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:35:51.054Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:35:52.101Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:35:53.150Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:35:53.674Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:35:54.204Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:36:44.308Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:36:45.414Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:36:46.426Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:36:46.932Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:36:47.460Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:37:37.778Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:37:38.828Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:37:39.912Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:37:40.413Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:37:40.921Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:38:32.069Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:38:33.061Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:38:34.112Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:38:34.635Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:38:35.158Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:39:25.308Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:39:26.309Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:39:27.359Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:39:27.884Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:39:28.406Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:40:18.845Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:40:19.833Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:40:20.830Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:40:21.355Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:40:21.880Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:41:12.451Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:41:13.499Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:41:14.547Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:41:15.071Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:41:15.596Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:42:05.937Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:42:06.976Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:42:08.025Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:42:08.554Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:42:09.075Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:00.119Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:01.135Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:02.149Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:02.655Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:03.160Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:53.214Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:54.236Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:55.274Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:55.797Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:43:56.320Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:44:56.634Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:44:57.658Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:44:58.709Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:44:59.235Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:44:59.755Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:45:50.096Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:45:51.146Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:45:52.196Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:45:52.720Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:45:53.247Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:46:43.810Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:46:44.857Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:46:45.906Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:46:46.432Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:46:46.956Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:47:38.147Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:47:39.825Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:47:40.849Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:47:41.357Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:47:41.865Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:48:32.024Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:48:33.032Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:48:34.037Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:48:34.545Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:48:35.046Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:49:25.073Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:49:26.079Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:49:27.079Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:49:27.581Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:49:28.082Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:50:18.216Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:50:19.813Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:50:20.794Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:50:21.285Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:50:21.777Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:51:11.800Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:51:12.808Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:51:13.814Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:51:14.314Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:51:14.813Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:52:05.794Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:52:06.804Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:52:07.796Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:52:08.296Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:52:08.801Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:02.348Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:03.369Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:04.390Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:04.905Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:06.034Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:56.300Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:57.293Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:58.294Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:58.791Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:53:59.283Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:54:50.861Z",
+    "type": "requester",
+    "agent": "Mirai AI",
+    "serviceName": "Voice & Ideas MCP",
+    "ok": false,
+    "negId": "3c0edfeb-cba4-4aaa-ab9c-8afc2c4226fe",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:54:51.856Z",
+    "type": "requester",
+    "agent": "vibe-deploy",
+    "serviceName": "Instant Preview Deploy",
+    "ok": false,
+    "negId": "b19fb3bf-0bbf-45c9-a506-60f9a38e3a29",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:54:52.854Z",
+    "type": "requester",
+    "agent": "Proov",
+    "serviceName": "Quick check",
+    "ok": false,
+    "negId": "9563eaff-63a3-456b-ad3f-612cca7e03eb",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:54:54.494Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy",
+    "serviceName": "Vault Overview",
+    "ok": false,
+    "negId": "0ab70867-10c0-4250-beac-406fb9d21ae0",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T20:54:54.991Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "CEX Price Snapshot",
+    "ok": false,
+    "negId": "90107382-a7c4-4c18-bae7-46484c70dbc6",
+    "error": "rejected"
+  },
+  {
+    "ts": "2026-06-29T21:13:03.082Z",
+    "type": "neg-sent",
+    "agent": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "negId": "6ae6d028-9f0f-4e32-9ca2-87e145c047c8",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:04.079Z",
+    "type": "neg-sent",
+    "agent": "Fear & Greed",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "negId": "e42ce319-e9b1-4c5a-9489-4e28d13a8f0b",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:05.108Z",
+    "type": "neg-sent",
+    "agent": "HL Vault",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "negId": "a3b6d5c4-be6a-4c21-b8e3-b3e941edc85c",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:06.137Z",
+    "type": "neg-sent",
+    "agent": "Whale Positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "negId": "0fcfc43e-7f71-47a1-8137-dea59c29639c",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:08.058Z",
+    "type": "neg-sent",
+    "agent": "BTC Trades",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "negId": "a4d4ffd6-57e8-4562-bca1-43be383dcfd3",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:09.087Z",
+    "type": "neg-sent",
+    "agent": "Top Traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "negId": "873cb078-aeeb-4e58-841d-d94d826919f1",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:11.012Z",
+    "type": "neg-sent",
+    "agent": "Gas Tracker (empty)",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "negId": "4e319326-bf03-452f-be17-b92ec61a70ee",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:12.995Z",
+    "type": "neg-sent",
+    "agent": "Fear & Greed (empty)",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "negId": "60aa6633-ef82-4d54-ad60-a4f99fed9101",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:15.732Z",
+    "type": "neg-sent",
+    "agent": "HL Vault (empty)",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "negId": "c149cb14-8cb8-4652-8ec6-138df0ca6978",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:17.041Z",
+    "type": "neg-sent",
+    "agent": "Whale Positions (empty)",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "negId": "c4f22ca0-9f67-4ef1-ac44-729ab1a3da74",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:18.944Z",
+    "type": "neg-sent",
+    "agent": "BTC Trades (empty)",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "negId": "d28c142c-3261-4ce6-8cae-b1f9521c30c0",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:13:20.790Z",
+    "type": "neg-sent",
+    "agent": "Top Traders (empty)",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "negId": "212c39b9-a992-426e-8782-91b0372e1b67",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:15:50.658Z",
+    "type": "rejected",
+    "agent": "Gas Tracker",
+    "negId": "6ae6d028-9f0f-4e32-9ca2-87e145c047c8",
+    "ok": false,
+    "error": "rejected: invalid requirements: unsupported requirement field \"threshold_gwei\""
+  },
+  {
+    "ts": "2026-06-29T21:15:51.264Z",
+    "type": "rejected",
+    "agent": "Fear & Greed",
+    "negId": "e42ce319-e9b1-4c5a-9489-4e28d13a8f0b",
+    "ok": false,
+    "error": "rejected: invalid requirements: unsupported requirement field \"asset\""
+  },
+  {
+    "ts": "2026-06-29T21:15:51.870Z",
+    "type": "rejected",
+    "agent": "HL Vault",
+    "negId": "a3b6d5c4-be6a-4c21-b8e3-b3e941edc85c",
+    "ok": false,
+    "error": "rejected: invalid requirements: unsupported requirement field \"vault\""
+  },
+  {
+    "ts": "2026-06-29T21:15:53.165Z",
+    "type": "rejected",
+    "agent": "BTC Trades",
+    "negId": "a4d4ffd6-57e8-4562-bca1-43be383dcfd3",
+    "ok": false,
+    "error": "rejected: invalid requirements: missing url"
+  },
+  {
+    "ts": "2026-06-29T21:15:56.235Z",
+    "type": "rejected",
+    "agent": "HL Vault (empty)",
+    "negId": "c149cb14-8cb8-4652-8ec6-138df0ca6978",
+    "ok": false,
+    "error": "rejected: invalid requirements: missing vault_address"
+  },
+  {
+    "ts": "2026-06-29T21:15:58.523Z",
+    "type": "rejected",
+    "agent": "BTC Trades (empty)",
+    "negId": "d28c142c-3261-4ce6-8cae-b1f9521c30c0",
+    "ok": false,
+    "error": "rejected: invalid requirements: missing url"
+  },
+  {
+    "ts": "2026-06-29T21:26:09.416Z",
+    "type": "neg-sent",
+    "agent": "HL Vault (vault_address)",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "negId": "230b98ae-cbc9-4c97-b49a-8b41da79e5a3",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:26:11.449Z",
+    "type": "neg-sent",
+    "agent": "BTC Trades (url-coindesk)",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "negId": "7555384b-34a3-4c86-9b0d-6d56556a28c0",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:26:13.424Z",
+    "type": "neg-sent",
+    "agent": "BTC Trades (url-binance)",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "negId": "5eaa7559-85cb-4ae8-a09f-8f2f5dabdd67",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:26:14.379Z",
+    "type": "neg-sent",
+    "agent": "LogicReceipt v2",
+    "serviceId": "5b23bb46-1ea6-4d6f-8635-d4b2bc2d7969",
+    "negId": "ca6f2bdf-e256-4b22-b6b0-cf2d01748fe8",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:26:16.285Z",
+    "type": "neg-sent",
+    "agent": "Polymarket (eth-100k)",
+    "serviceId": "23632a1d-d232-4a4e-b928-da30a73f1dcf",
+    "negId": "f1ad0032-33ee-4602-a44a-80eb5fcf699b",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:26:17.288Z",
+    "type": "neg-sent",
+    "agent": "Polymarket (empty)",
+    "serviceId": "23632a1d-d232-4a4e-b928-da30a73f1dcf",
+    "negId": "7a87207e-a405-4a41-a6fa-19c7aa50b698",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:26:18.296Z",
+    "type": "neg-sent",
+    "agent": "AdPilot v2",
+    "serviceId": "298f58f6-ee8b-4011-8113-8353fa3e2320",
+    "negId": "2c5b7dfb-20bd-48e6-9fb2-1226ef04fa97",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:28:31.527Z",
+    "type": "neg-sent",
+    "agent": "Polymarket-market-btc",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "negId": "9ab1f228-9bc0-4958-a74b-c978bb26dee5",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:28:32.521Z",
+    "type": "neg-sent",
+    "agent": "Polymarket-market-eth",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "negId": "a8e64ae9-f521-42d4-b696-4afa140e1747",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:28:34.425Z",
+    "type": "neg-sent",
+    "agent": "Polymarket-market-id-btc",
+    "serviceId": "23632a1d-d232-4a4e-b928-da30a73f1dcf",
+    "negId": "dceb6888-738b-40aa-b701-85a6059b07bf",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:28:36.453Z",
+    "type": "neg-sent",
+    "agent": "Polymarket-market-id-eth",
+    "serviceId": "23632a1d-d232-4a4e-b928-da30a73f1dcf",
+    "negId": "0c824782-5397-4987-8714-0973cf6073cb",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:28:38.428Z",
+    "type": "neg-sent",
+    "agent": "Polymarket-market-id-trump",
+    "serviceId": "23632a1d-d232-4a4e-b928-da30a73f1dcf",
+    "negId": "1c57cf4a-227a-4ee2-865e-364e92f8bdf0",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:28:40.353Z",
+    "type": "neg-sent",
+    "agent": "LogicReceipt-manifest",
+    "serviceId": "5b23bb46-1ea6-4d6f-8635-d4b2bc2d7969",
+    "negId": "2c3515fe-d354-4d2d-b320-70b84c0341f9",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:28:42.258Z",
+    "type": "neg-sent",
+    "agent": "AdPilot-v3",
+    "serviceId": "298f58f6-ee8b-4011-8113-8353fa3e2320",
+    "negId": "905fb497-3caf-4fbb-9714-340b27da0ce9",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:32:12.771Z",
+    "type": "neg-sent",
+    "agent": "fortune-western",
+    "serviceId": "0bd9e9e4-3c77-4b0d-88d3-2639cd993287",
+    "negId": "80284f5d-4d87-422f-bab0-fdbdc01fe151",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:32:13.779Z",
+    "type": "neg-sent",
+    "agent": "fortune-lunar",
+    "serviceId": "0bd9e9e4-3c77-4b0d-88d3-2639cd993287",
+    "negId": "43e50479-6c0f-4c16-88a3-61e842b77a56",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:32:14.805Z",
+    "type": "neg-sent",
+    "agent": "LaunchRadar-daily",
+    "serviceId": "025c2a69-978f-4b57-a2c8-95d971d83d43",
+    "negId": "b5813961-8bf2-4d48-b151-50c676bcc76d",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:32:16.445Z",
+    "type": "neg-sent",
+    "agent": "LaunchRadar-empty",
+    "serviceId": "025c2a69-978f-4b57-a2c8-95d971d83d43",
+    "negId": "468e1131-b2ba-4121-b06b-6580222eddc2",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:32:17.471Z",
+    "type": "neg-sent",
+    "agent": "OmniQuote-price",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "negId": "64e80acb-dd85-46ec-84d4-50a534b386f2",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:32:19.169Z",
+    "type": "neg-sent",
+    "agent": "OmniQuote-empty",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "negId": "527897fd-e3e0-4e93-a987-ed532388bc22",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:33:44.816Z",
+    "type": "neg-sent",
+    "agent": "fortune-western-v2",
+    "serviceId": "0bd9e9e4-3c77-4b0d-88d3-2639cd993287",
+    "negId": "077f1e3c-08e0-44bf-a398-1cd40d826736",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:33:46.807Z",
+    "type": "neg-sent",
+    "agent": "fortune-pillars-v2",
+    "serviceId": "0bd9e9e4-3c77-4b0d-88d3-2639cd993287",
+    "negId": "525e85d5-30ff-4dfd-bc3d-b86f3e4b5e05",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:34:04.071Z",
+    "type": "neg-sent",
+    "agent": "OmniQuote-asset-quote",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "negId": "27725298-e146-493c-8806-2e122d460727",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:34:05.073Z",
+    "type": "neg-sent",
+    "agent": "OmniQuote-btc-usdc",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "negId": "c9cfaaf7-befc-4bb3-a07b-c04eda537161",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:34:06.597Z",
+    "type": "neg-sent",
+    "agent": "OmniQuote-sol-eth",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "negId": "0b04ee5a-e8a9-4784-a010-4520f4be36d5",
+    "ok": false,
+    "error": "pending"
+  },
+  {
+    "ts": "2026-06-29T21:46:20.559Z",
+    "type": "rejected",
+    "agent": "BTC Trades v2",
+    "negId": "fe233099-3a3d-4a5f-801e-2334a3f65b74",
+    "ok": false,
+    "error": "rejected: invalid requirements: missing url"
+  },
+  {
+    "ts": "2026-06-29T21:46:21.591Z",
+    "type": "rejected",
+    "agent": "OmniQuote v2",
+    "negId": "723ccebb-29f5-4599-b4fc-863f6ec8975c",
+    "ok": false,
+    "error": "rejected: croo: PIMLICO_ERROR (code=500, http=500): failed to request usdc paymaster sponsorship: pm_getPaymasterStubData: JSON-RPC error -32602: sender has no balance of the token for ERC20 sponsorship"
+  },
+  {
+    "ts": "2026-06-29T21:46:22.120Z",
+    "type": "rejected",
+    "agent": "fortune v2",
+    "negId": "c7d20269-3f34-42bb-a159-544ba42c6ef6",
+    "ok": false,
+    "error": "rejected: missing gender / mode / birthData / location"
+  },
+  {
+    "ts": "2026-06-29T21:46:22.644Z",
+    "type": "rejected",
+    "agent": "LaunchRadar",
+    "negId": "3471acab-d213-41ab-930f-61f496a943ab",
+    "ok": false,
+    "error": "rejected: Unsupported service. Only \"daily_launches\" is supported."
+  },
+  {
+    "ts": "2026-06-29T21:48:39.988Z",
+    "type": "rejected",
+    "agent": "fortune astro",
+    "negId": "d9aa2373-ffc0-4d04-9d93-4747a3be9d4b",
+    "ok": false,
+    "error": "rejected: mode must be one of western, lunar, pillars"
+  },
+  {
+    "ts": "2026-06-29T21:48:40.512Z",
+    "type": "rejected",
+    "agent": "LaunchRadar v2",
+    "negId": "93114ad8-3ce9-45bd-a4c7-8e8561455243",
+    "ok": false,
+    "error": "rejected: Unsupported service. Only \"daily_launches\" is supported."
+  },
+  {
+    "ts": "2026-06-29T21:48:41.559Z",
+    "type": "rejected",
+    "agent": "Gas Tracker v2",
+    "negId": "bb7c5673-4d87-4110-8d60-7c8deeae8e99",
+    "ok": false,
+    "error": "rejected: invalid requirements: unsupported requirement field \"max_gwei\""
+  },
+  {
+    "ts": "2026-06-29T21:48:42.084Z",
+    "type": "rejected",
+    "agent": "Fear & Greed v2",
+    "negId": "ebe02b3b-fe33-497d-905a-69147997f803",
+    "ok": false,
+    "error": "rejected: invalid requirements: unsupported requirement field \"index\""
+  },
+  {
+    "ts": "2026-06-30T19:49:01.583Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Bitcoin Fear & Greed Index",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:49:09.976Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:49:13.655Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-30T19:49:22.100Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:49:25.558Z",
+    "type": "requester",
+    "agent": "BtcForecast",
+    "serviceName": "BTC Recent Trades",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-30T19:49:34.118Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:49:42.133Z",
+    "type": "requester",
+    "agent": "proofMesh",
+    "serviceName": "verification",
+    "serviceId": "48b6271b-ab80-408d-b9d7-34dabf45029b",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:49:50.707Z",
+    "type": "requester",
+    "agent": "CROO Contractor",
+    "serviceName": "contractor",
+    "serviceId": "3d9cfe67-819b-47a8-b51f-ca47c21f1cb6",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:49:59.402Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Agent Due Diligence",
+    "serviceId": "a16c4692-9df6-446b-950c-91b9ce4b2225",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:50:07.788Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Project Due Diligence",
+    "serviceId": "d1cfec35-2f6b-42d7-be5e-c68111400665",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:50:17.167Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Trust Compare",
+    "serviceId": "01261c7d-0b7f-4145-9fc8-d46d051ff228",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:50:30.190Z",
+    "type": "requester",
+    "agent": "VeriClaim",
+    "serviceName": "Insurance Claim 2",
+    "serviceId": "f5ebfc4d-6dbc-4d86-9d85-6e78407749ee",
+    "ok": false,
+    "error": "croo: INVALID_STATUS (code=400, http=400): order can only be paid when status is created"
+  },
+  {
+    "ts": "2026-06-30T19:54:12.324Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Bitcoin Fear & Greed Index",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": false,
+    "orderId": "cfec8728-293c-4444-833b-9fc5bca7196a",
+    "error": "timeout waiting for delivery"
+  },
+  {
+    "ts": "2026-06-30T19:57:13.423Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": false,
+    "orderId": "9442c0b1-2806-44d0-826a-0a6bfa77ee7d",
+    "error": "timeout waiting for delivery"
+  },
+  {
+    "ts": "2026-06-30T19:57:21.248Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-30T20:00:22.428Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": false,
+    "orderId": "549294e8-f3cf-4e4e-844e-64091388e9da",
+    "error": "timeout waiting for delivery"
+  },
+  {
+    "ts": "2026-06-30T20:00:27.996Z",
+    "type": "requester",
+    "agent": "BtcForecast",
+    "serviceName": "BTC Recent Trades",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-30T20:01:37.141Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": true,
+    "orderId": "9b47b837-ad25-4c4d-915c-9ca682b98eba",
+    "summary": "1: 交易员 RebelOfBabylon (账户: 0xRebel) 拥有 5468 位订阅者, 当前管理资产 1,200,552.51, 累计盈利 599,856.51 (ROI: 99.86%)。\n2: 交易员 rebirthJS (账户: pluto) 拥有 13181 位订阅者, 当前管理资产 1,718,548.21, 累计盈利 335,098.62 (ROI: 24.22%)。\n3:"
+  },
+  {
+    "ts": "2026-06-30T20:04:55.817Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Bitcoin Fear & Greed Index",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": true,
+    "orderId": "0cce01e5-c61f-4533-913a-6dec4709dad4",
+    "summary": "[delivery accepted]",
+    "deliveryStatus": "accepted"
+  },
+  {
+    "ts": "2026-06-30T20:07:10.602Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": true,
+    "orderId": "83ff7821-0c42-4d32-8b67-a81d344d03ca",
+    "summary": "[delivery accepted]",
+    "deliveryStatus": "accepted"
+  },
+  {
+    "ts": "2026-06-30T20:07:16.156Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-30T20:09:26.725Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": true,
+    "orderId": "cff68aee-060e-496e-a9f0-5186659bbe75",
+    "summary": "[delivery accepted]",
+    "deliveryStatus": "accepted"
+  },
+  {
+    "ts": "2026-06-30T20:09:30.845Z",
+    "type": "requester",
+    "agent": "BtcForecast",
+    "serviceName": "BTC Recent Trades",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-30T20:10:37.522Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": true,
+    "orderId": "6bda9533-971b-4f0e-bfad-bb5d8e6d14c1",
+    "summary": "1: 交易员 RebelOfBabylon (账户: 0xRebel) 拥有 5470 位订阅者, 当前管理资产 1,200,552.51, 累计盈利 599,856.51 (ROI: 99.86%)。\n2: 交易员 rebirthJS (账户: pluto) 拥有 13184 位订阅者, 当前管理资产 1,718,548.21, 累计盈利 335,098.62 (ROI: 24.22%)。\n3:",
+    "deliveryStatus": "submitted"
+  },
+  {
+    "ts": "2026-06-30T20:13:39.894Z",
+    "type": "requester",
+    "agent": "proofMesh",
+    "serviceName": "verification",
+    "serviceId": "48b6271b-ab80-408d-b9d7-34dabf45029b",
+    "ok": false,
+    "orderId": "9dba2623-0998-4e8e-84bf-168fbbed8bf6",
+    "error": "timeout waiting for delivery"
+  },
+  {
+    "ts": "2026-06-30T20:16:40.758Z",
+    "type": "requester",
+    "agent": "CROO Contractor",
+    "serviceName": "contractor",
+    "serviceId": "3d9cfe67-819b-47a8-b51f-ca47c21f1cb6",
+    "ok": false,
+    "orderId": "7f924280-d3d1-4c5b-bdf7-50dd872251f8",
+    "error": "timeout waiting for delivery"
+  },
+  {
+    "ts": "2026-06-30T20:18:10.953Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Agent Due Diligence",
+    "serviceId": "a16c4692-9df6-446b-950c-91b9ce4b2225",
+    "ok": true,
+    "orderId": "30d350f0-41f9-42bd-8f9c-c7a4addbeb26",
+    "summary": "VERIS TRUST REPORT\n══════════════════════════════════════════════\nSubject:          {}\nEntity Class:     General Project\nWebsite:          Not located\nGitHub:           Not located\nTwitter:          N",
+    "deliveryStatus": "submitted"
+  },
+  {
+    "ts": "2026-06-30T20:19:32.002Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Project Due Diligence",
+    "serviceId": "d1cfec35-2f6b-42d7-be5e-c68111400665",
+    "ok": true,
+    "orderId": "ca61a7c3-0470-4901-85a4-b2ca0499a70d",
+    "summary": "VERIS TRUST REPORT\n══════════════════════════════════════════════\nSubject:          {}\nEntity Class:     General Project\nWebsite:          Not located\nGitHub:           Not located\nTwitter:          N",
+    "deliveryStatus": "submitted"
+  },
+  {
+    "ts": "2026-06-30T20:20:51.964Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Trust Compare",
+    "serviceId": "01261c7d-0b7f-4145-9fc8-d46d051ff228",
+    "ok": true,
+    "orderId": "cdad1131-8cdc-4a6e-92f1-a6081fa5cc1c",
+    "summary": "VERIS TRUST REPORT\n══════════════════════════════════════════════\nSubject:          {}\nEntity Class:     General Project\nWebsite:          Not located\nGitHub:           Not located\nTwitter:          N",
+    "deliveryStatus": "submitted"
+  },
+  {
+    "ts": "2026-06-30T20:23:52.915Z",
+    "type": "requester",
+    "agent": "VeriClaim",
+    "serviceName": "Insurance Claim 2",
+    "serviceId": "f5ebfc4d-6dbc-4d86-9d85-6e78407749ee",
+    "ok": false,
+    "orderId": "3ab53d33-7871-494f-bff1-975bbb152ba9",
+    "error": "timeout waiting for delivery"
+  },
+  {
+    "ts": "2026-07-05T18:32:38.884Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Bitcoin Fear & Greed Index",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:39.895Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:40.201Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:40.564Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:40.867Z",
+    "type": "requester",
+    "agent": "BtcForecast",
+    "serviceName": "BTC Recent Trades",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:41.161Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:41.465Z",
+    "type": "requester",
+    "agent": "proofMesh",
+    "serviceName": "verification",
+    "serviceId": "48b6271b-ab80-408d-b9d7-34dabf45029b",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:41.757Z",
+    "type": "requester",
+    "agent": "CROO Contractor",
+    "serviceName": "contractor",
+    "serviceId": "3d9cfe67-819b-47a8-b51f-ca47c21f1cb6",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:42.141Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Agent Due Diligence",
+    "serviceId": "a16c4692-9df6-446b-950c-91b9ce4b2225",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:42.434Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Project Due Diligence",
+    "serviceId": "d1cfec35-2f6b-42d7-be5e-c68111400665",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:42.738Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Trust Compare",
+    "serviceId": "01261c7d-0b7f-4145-9fc8-d46d051ff228",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:32:43.030Z",
+    "type": "requester",
+    "agent": "VeriClaim",
+    "serviceName": "Insurance Claim 2",
+    "serviceId": "f5ebfc4d-6dbc-4d86-9d85-6e78407749ee",
+    "ok": false,
+    "error": "croo: SDK_KEY_INVALID (code=401, http=401): invalid sdk key"
+  },
+  {
+    "ts": "2026-07-05T18:37:34.893Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Bitcoin Fear & Greed Index",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": true,
+    "orderId": "5ff2b73e-9cd6-45f9-921c-6408eb35d9b2",
+    "summary": "[delivery accepted]",
+    "deliveryStatus": "accepted"
+  },
+  {
+    "ts": "2026-07-05T18:39:40.024Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": true,
+    "orderId": "38232409-fbb1-4dab-b1b6-afa74bdedd00",
+    "summary": "[delivery accepted]",
+    "deliveryStatus": "accepted"
+  },
+  {
+    "ts": "2026-07-05T18:39:45.376Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-07-05T18:41:55.605Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": true,
+    "orderId": "8b965adb-323a-4dc3-a851-7e2e5660fda7",
+    "summary": "[delivery accepted]",
+    "deliveryStatus": "accepted"
+  },
+  {
+    "ts": "2026-07-05T18:42:01.165Z",
+    "type": "requester",
+    "agent": "BtcForecast",
+    "serviceName": "BTC Recent Trades",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-07-05T18:43:09.015Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": true,
+    "orderId": "0abdc2e5-9bc5-4e0c-b54e-625552687b99",
+    "summary": "1: 交易员 法界唯心 (账户: 法界唯心) 拥有 2935 位订阅者, 当前管理资产 2,856,968.79, 累计盈利 938,053.85 (ROI: 48.88%)。\n2: 交易员 炼金术师_投机之路 (账户: 炼金术) 拥有 31513 位订阅者, 当前管理资产 8,018,344.84, 累计盈利 810,777.50 (ROI: 9.88%)。\n3: 交易员 User-0ffa2 ",
+    "deliveryStatus": "submitted"
+  },
+  {
+    "ts": "2026-07-05T18:46:10.304Z",
+    "type": "requester",
+    "agent": "proofMesh",
+    "serviceName": "verification",
+    "serviceId": "48b6271b-ab80-408d-b9d7-34dabf45029b",
+    "ok": false,
+    "orderId": "690631ef-e784-44d9-8c4c-6b69b66b585d",
+    "error": "timeout waiting for delivery"
+  },
+  {
+    "ts": "2026-07-05T18:49:10.935Z",
+    "type": "requester",
+    "agent": "CROO Contractor",
+    "serviceName": "contractor",
+    "serviceId": "3d9cfe67-819b-47a8-b51f-ca47c21f1cb6",
+    "ok": false,
+    "orderId": "c1d8077c-c849-484d-9da3-1721b91712a1",
+    "error": "timeout waiting for delivery"
+  },
+  {
+    "ts": "2026-07-05T18:50:47.226Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Agent Due Diligence",
+    "serviceId": "a16c4692-9df6-446b-950c-91b9ce4b2225",
+    "ok": true,
+    "orderId": "af1f371c-238f-48fe-895f-b6aac0487e48",
+    "summary": "VERIS TRUST REPORT\n══════════════════════════════════════════════\nSubject:          {}\nEntity Class:     General Project\nWebsite:          Not located\nGitHub:           Not located\nTwitter:          N",
+    "deliveryStatus": "submitted"
+  },
+  {
+    "ts": "2026-07-05T18:52:12.863Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Project Due Diligence",
+    "serviceId": "d1cfec35-2f6b-42d7-be5e-c68111400665",
+    "ok": true,
+    "orderId": "1e8b0fed-cdf8-4b60-b191-27be12166c8f",
+    "summary": "VERIS TRUST REPORT\n══════════════════════════════════════════════\nSubject:          {}\nEntity Class:     General Project\nWebsite:          Not located\nGitHub:           Not located\nTwitter:          N",
+    "deliveryStatus": "submitted"
+  },
+  {
+    "ts": "2026-07-05T18:53:37.558Z",
+    "type": "requester",
+    "agent": "VERIS",
+    "serviceName": "Trust Compare",
+    "serviceId": "01261c7d-0b7f-4145-9fc8-d46d051ff228",
+    "ok": true,
+    "orderId": "e6d9a179-41ca-4c11-9d54-b74fb770df3f",
+    "summary": "VERIS TRUST REPORT\n══════════════════════════════════════════════\nSubject:          {}\nEntity Class:     General Project\nWebsite:          Not located\nGitHub:           Not located\nTwitter:          N",
+    "deliveryStatus": "submitted"
+  },
+  {
+    "ts": "2026-07-05T18:56:37.628Z",
+    "type": "requester",
+    "agent": "VeriClaim",
+    "serviceName": "Insurance Claim 2",
+    "serviceId": "f5ebfc4d-6dbc-4d86-9d85-6e78407749ee",
+    "ok": false,
+    "orderId": "8a66e6f5-43dc-49ad-be27-1fa8084d1e02",
+    "error": "timeout waiting for delivery"
+  }
+]

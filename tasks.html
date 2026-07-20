@@ -7,17 +7,40 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #0A2540; --dark-navy: #071829; --mid-navy: #0D3558;
-    --aqua: #1FB6FF; --gold: #FFB800; --white: #FFFFFF;
-    --muted: #8B9BAD; --green: #10B981; --red: #EF4444;
-    --orange: #F59E0B; --purple: #A78BFA;
+    /* Sasha Coin Ops Board — wired to .claude/skills/sasha-board-design/colors_and_type.css
+       (ENG-022, 2026-07-08). Local var NAMES kept unchanged so none of the 300+ existing
+       var(--navy) etc. call sites in this file needed touching; VALUES repointed to Sasha's
+       actual brand tokens (was: literal mangabeira.net Navy/Aqua/Gold, zero Sasha identity).
+       Mapping: --navy/--dark-navy/--mid-navy -> surface stack (raised/base/overlay), purple-
+       tinted per style-guide.md's #0D0D1A background, never neutral gray or MangaOS navy.
+       --aqua -> the ONE interactive accent (#00D4FF, unchanged semantic role).
+       --gold -> --color-state-scheduled (#FBBF24 warm gold) — this var is used almost
+       exclusively for status/attention semantics throughout this file (scheduled column,
+       gate badges, pending approval, overdue-soon, high priority), never brand structural,
+       so it maps to the new non-brand status token, NOT to brand purple.
+       --purple -> --color-brand-primary (#7B2FBE), Sasha's real brand purple, replacing the
+       old generic lavender (#A78BFA) that had zero connection to the brand palette. Used only
+       for structural/decorative roles (category tags, dividers, brand mark) per ENG-022's
+       explicit decision — never for status. One pre-existing bug fixed as part of this: the
+       Linked Ops Tasks status legend used var(--purple) for the "scheduled" status color
+       (functionally a task-status legend, not a decorative use) while the board's own column
+       dot used var(--gold) for the same status — inconsistent AND a purple-as-status violation.
+       Fixed to var(--gold) below, matching the column dot and the ENG-022 rule.
+       --green/--red/--orange -> --color-state-done/--color-state-blocked/--color-state-review.
+       --white/--muted -> emphasis/secondary text tones, purple-warmed per style-guide.md.
+       --text (used at 3 sites, never previously defined here -> silent inherit bug) -> added,
+       aliased to the new body-text token. */
+    --navy: #17172B; --dark-navy: #0D0D1A; --mid-navy: #201F3D;
+    --aqua: #00D4FF; --gold: #FBBF24; --white: #F5F3FF;
+    --muted: #9B8FC4; --green: #22C55E; --red: #EF4444;
+    --orange: #F59E0B; --purple: #7B2FBE; --text: #D6D0E8;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', system-ui, sans-serif; background: var(--dark-navy); color: var(--white); min-height: 100vh; }
 
   /* ── HEADER ── */
   .header {
-    background: var(--navy); border-bottom: 1px solid rgba(31,182,255,0.08);
+    background: var(--navy); border-bottom: 1px solid rgba(0,212,255,0.08);
     padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;
     position: sticky; top: 74px; z-index: 100;
   }
@@ -64,15 +87,15 @@
   .add-btn {
     font-family: 'Montserrat'; font-size: 10px; font-weight: 700;
     padding: 4px 12px; border-radius: 5px; margin-left: 4px;
-    border: 1px solid rgba(255,184,0,0.3); background: rgba(255,184,0,0.08); color: var(--gold);
+    border: 1px solid rgba(251,191,36,0.3); background: rgba(251,191,36,0.08); color: var(--gold);
     cursor: pointer;
   }
-  .add-btn:hover { background: rgba(255,184,0,0.15); }
+  .add-btn:hover { background: rgba(251,191,36,0.15); }
 
   /* ── GLOBAL NAV ── */
   .global-nav {
-    background: #071829;
-    border-bottom: 1px solid rgba(31,182,255,0.12);
+    background: var(--dark-navy);
+    border-bottom: 1px solid rgba(0,212,255,0.12);
     padding: 0 24px;
     display: flex;
     align-items: center;
@@ -86,7 +109,7 @@
     font-family: 'Montserrat', sans-serif;
     font-size: 10px;
     font-weight: 800;
-    color: #FFB800;
+    color: var(--gold);
     letter-spacing: 1px;
     text-transform: uppercase;
     margin-right: 12px;
@@ -95,7 +118,7 @@
     font-family: 'Montserrat', sans-serif;
     font-size: 10px;
     font-weight: 700;
-    color: #8B9BAD;
+    color: var(--muted);
     text-decoration: none;
     padding: 6px 12px;
     border-radius: 5px;
@@ -103,13 +126,13 @@
     transition: all 0.15s;
   }
   .global-nav a:hover { color: #FFFFFF; background: rgba(255,255,255,0.05); }
-  .global-nav a.active { color: #1FB6FF; background: rgba(31,182,255,0.08); }
+  .global-nav a.active { color: var(--aqua); background: rgba(0,212,255,0.08); }
 
   /* ── TAB NAV ── */
   .tab-nav {
     background: var(--navy); padding: 0 24px;
     display: flex; align-items: center; gap: 2px;
-    border-bottom: 1px solid rgba(31,182,255,0.12);
+    border-bottom: 1px solid rgba(0,212,255,0.12);
     height: 36px;
     position: sticky; top: 38px; z-index: 150;
   }
@@ -145,7 +168,7 @@
     background: rgba(255,255,255,0.008); border-radius: 10px; padding: 12px 10px;
     min-height: 200px; transition: background 0.2s;
   }
-  .column.drag-over { background: rgba(31,182,255,0.04); outline: 2px dashed rgba(31,182,255,0.2); outline-offset: -2px; }
+  .column.drag-over { background: rgba(0,212,255,0.04); outline: 2px dashed rgba(0,212,255,0.2); outline-offset: -2px; }
   .col-header {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 10px; padding: 0 4px;
@@ -160,10 +183,10 @@
     display: flex; align-items: center; justify-content: center;
   }
   .col-count.todo { background: rgba(139,155,173,0.12); color: var(--muted); }
-  .col-count.inprogress { background: rgba(31,182,255,0.12); color: var(--aqua); }
+  .col-count.inprogress { background: rgba(0,212,255,0.12); color: var(--aqua); }
   .col-count.review { background: rgba(245,158,11,0.12); color: var(--orange); }
-  .col-count.done { background: rgba(16,185,129,0.12); color: var(--green); }
-  .col-count.scheduled { background: rgba(255,184,0,0.12); color: var(--gold); }
+  .col-count.done { background: rgba(34,197,94,0.12); color: var(--green); }
+  .col-count.scheduled { background: rgba(251,191,36,0.12); color: var(--gold); }
   .status-dot.scheduled { background: var(--gold); }
 
   /* ── TASK CARD ── */
@@ -172,7 +195,7 @@
     border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;
     cursor: grab; transition: all 0.15s; position: relative;
   }
-  .task:hover { border-color: rgba(31,182,255,0.2); background: #0f2f4d; }
+  .task:hover { border-color: rgba(0,212,255,0.2); background: #0f2f4d; }
   .task:active { cursor: grabbing; }
   .task.dragging { opacity: 0.4; transform: rotate(2deg); }
   .task.high { border-left: 3px solid var(--gold); }
@@ -189,10 +212,10 @@
     font-size: 8px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
     padding: 2px 6px; border-radius: 3px;
   }
-  .tag.content { background: rgba(167,139,250,0.12); color: var(--purple); }
-  .tag.x-growth { background: rgba(31,182,255,0.12); color: var(--aqua); }
-  .tag.infrastructure { background: rgba(255,184,0,0.12); color: var(--gold); }
-  .tag.research { background: rgba(16,185,129,0.12); color: var(--green); }
+  .tag.content { background: rgba(123,47,190,0.12); color: var(--purple); }
+  .tag.x-growth { background: rgba(0,212,255,0.12); color: var(--aqua); }
+  .tag.infrastructure { background: rgba(251,191,36,0.12); color: var(--gold); }
+  .tag.research { background: rgba(34,197,94,0.12); color: var(--green); }
   .tag.sop { background: rgba(255,255,255,0.04); color: var(--muted); }
   .blocked-badge {
     font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
@@ -203,27 +226,27 @@
     font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
     letter-spacing: 0.5px; text-transform: uppercase;
   }
-  .approval-badge.pending { background: rgba(255,184,0,0.15); color: var(--gold); }
-  .approval-badge.approved { background: rgba(16,185,129,0.12); color: var(--green); }
+  .approval-badge.pending { background: rgba(251,191,36,0.15); color: var(--gold); }
+  .approval-badge.approved { background: rgba(34,197,94,0.12); color: var(--green); }
   .approval-badge.rejected { background: rgba(239,68,68,0.12); color: var(--red); }
   .tag.channel { background: rgba(255,255,255,0.04); color: var(--muted); }
   .due-date-badge {
     font-size: 8px; font-weight: 600; padding: 1px 5px; border-radius: 3px;
-    background: rgba(31,182,255,0.08); color: var(--aqua);
+    background: rgba(0,212,255,0.08); color: var(--aqua);
     letter-spacing: 0.3px;
   }
   .due-date-badge.overdue { background: rgba(239,68,68,0.12); color: var(--red); }
-  .due-date-badge.soon { background: rgba(255,184,0,0.15); color: var(--gold); }
+  .due-date-badge.soon { background: rgba(251,191,36,0.15); color: var(--gold); }
   .dispatch-btn {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 3px;
-    background: rgba(31,182,255,0.08); color: var(--aqua);
-    border: 1px solid rgba(31,182,255,0.2); cursor: pointer;
+    background: rgba(0,212,255,0.08); color: var(--aqua);
+    border: 1px solid rgba(0,212,255,0.2); cursor: pointer;
     letter-spacing: 0.5px; text-transform: uppercase; transition: background 0.15s;
     margin-top: 4px;
   }
-  .dispatch-btn:hover { background: rgba(31,182,255,0.18); }
-  .dispatch-btn.copied { background: rgba(16,185,129,0.15); color: var(--green); border-color: rgba(16,185,129,0.3); }
+  .dispatch-btn:hover { background: rgba(0,212,255,0.18); }
+  .dispatch-btn.copied { background: rgba(34,197,94,0.15); color: var(--green); border-color: rgba(34,197,94,0.3); }
   /* ── CAMPAIGN VIEW ── */
   .campaigns-view { padding: 14px 24px 40px; }
   .campaign-section {
@@ -240,8 +263,8 @@
     font-family: 'Montserrat'; font-size: 9px; font-weight: 700;
     padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;
   }
-  .campaign-status-badge.active { background: rgba(16,185,129,0.15); color: var(--green); }
-  .campaign-status-badge.paused { background: rgba(255,184,0,0.12); color: var(--gold); }
+  .campaign-status-badge.active { background: rgba(34,197,94,0.15); color: var(--green); }
+  .campaign-status-badge.paused { background: rgba(251,191,36,0.12); color: var(--gold); }
   .campaign-status-badge.draft { background: rgba(139,155,173,0.12); color: var(--muted); }
   .campaign-meta { font-size: 10px; color: var(--muted); display: flex; gap: 16px; }
   .campaign-tasks-list { padding: 0; }
@@ -278,7 +301,7 @@
   }
   .modal-overlay.open { display: flex; }
   .modal {
-    background: var(--navy); border: 1px solid rgba(31,182,255,0.1);
+    background: var(--navy); border: 1px solid rgba(0,212,255,0.1);
     border-radius: 14px; width: 100%; max-width: 560px; max-height: 90vh;
     overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
   }
@@ -333,10 +356,10 @@
   }
   .task-link-badge {
     font-size: 8px; font-weight: 600; padding: 1px 5px; border-radius: 3px;
-    background: rgba(31,182,255,0.08); color: var(--aqua);
+    background: rgba(0,212,255,0.08); color: var(--aqua);
     text-decoration: none; cursor: pointer; letter-spacing: 0.3px;
   }
-  .task-link-badge:hover { background: rgba(31,182,255,0.15); }
+  .task-link-badge:hover { background: rgba(0,212,255,0.15); }
 
   /* ── LINK LIST IN MODAL ── */
   .link-item {
@@ -382,7 +405,7 @@
     position: relative;
   }
   .file-zone:hover, .file-zone.drag-active {
-    border-color: var(--aqua); background: rgba(31,182,255,0.03);
+    border-color: var(--aqua); background: rgba(0,212,255,0.03);
   }
   .file-zone-text {
     font-size: 12px; color: var(--muted);
@@ -430,7 +453,7 @@
     background: rgba(255,255,255,0.008); border-radius: 10px; padding: 10px 8px;
     min-width: 170px; min-height: 200px;
   }
-  .ce-column.drag-over { background: rgba(31,182,255,0.04); outline: 2px dashed rgba(31,182,255,0.2); outline-offset: -2px; }
+  .ce-column.drag-over { background: rgba(0,212,255,0.04); outline: 2px dashed rgba(0,212,255,0.2); outline-offset: -2px; }
   .ce-col-header {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 10px; padding: 0 4px;
@@ -447,9 +470,9 @@
     padding: 2px 6px; border-radius: 4px;
     background: rgba(255,255,255,0.06); color: var(--muted);
   }
-  .ce-col-title.gate + .ce-col-count { background: rgba(255,184,0,0.12); color: var(--gold); }
+  .ce-col-title.gate + .ce-col-count { background: rgba(251,191,36,0.12); color: var(--gold); }
   .ce-col-title.milestone + .ce-col-count,
-  .ce-col-title.done + .ce-col-count { background: rgba(16,185,129,0.12); color: var(--green); }
+  .ce-col-title.done + .ce-col-count { background: rgba(34,197,94,0.12); color: var(--green); }
 
   .ce-card {
     background: #0D2842; border: 1px solid rgba(255,255,255,0.06);
@@ -457,12 +480,12 @@
     cursor: pointer; transition: all 0.15s; position: relative;
     border-left: 3px solid rgba(139,155,173,0.3);
   }
-  .ce-card:hover { border-color: rgba(31,182,255,0.22); background: #0f2f4d; }
+  .ce-card:hover { border-color: rgba(0,212,255,0.22); background: #0f2f4d; }
   .ce-card.parent { border-left-color: var(--aqua); border-left-width: 4px; }
-  .ce-card.child { border-left-color: rgba(31,182,255,0.3); margin-left: 8px; }
-  .ce-card.pending-approval { box-shadow: 0 0 0 1px rgba(255,184,0,0.3); }
+  .ce-card.child { border-left-color: rgba(0,212,255,0.3); margin-left: 8px; }
+  .ce-card.pending-approval { box-shadow: 0 0 0 1px rgba(251,191,36,0.3); }
   .ce-card.dragging { opacity: 0.4; transform: rotate(1deg); cursor: grabbing; }
-  .ce-col-body.drag-over { background: rgba(31,182,255,0.04); outline: 2px dashed rgba(31,182,255,0.2); outline-offset: -2px; border-radius: 6px; }
+  .ce-col-body.drag-over { background: rgba(0,212,255,0.04); outline: 2px dashed rgba(0,212,255,0.2); outline-offset: -2px; border-radius: 6px; }
   .ce-card-title {
     font-family: 'Montserrat'; font-size: 11px; font-weight: 600;
     color: var(--white); line-height: 1.35; margin-bottom: 6px;
@@ -473,12 +496,12 @@
     background: rgba(255,255,255,0.06); color: var(--muted); text-transform: uppercase;
     letter-spacing: 0.4px;
   }
-  .ce-ch-icon.blog { background: rgba(167,139,250,0.15); color: var(--purple); }
-  .ce-ch-icon.linkedin { background: rgba(31,182,255,0.15); color: var(--aqua); }
+  .ce-ch-icon.blog { background: rgba(123,47,190,0.15); color: var(--purple); }
+  .ce-ch-icon.linkedin { background: rgba(0,212,255,0.15); color: var(--aqua); }
   .ce-ch-icon.x { background: rgba(255,255,255,0.1); color: var(--white); }
   .ce-camp-tag {
     font-size: 8px; font-weight: 600; padding: 1px 5px; border-radius: 3px;
-    background: rgba(255,184,0,0.1); color: var(--gold);
+    background: rgba(251,191,36,0.1); color: var(--gold);
     letter-spacing: 0.4px; text-transform: uppercase;
   }
   .ce-days {
@@ -486,7 +509,7 @@
     background: rgba(255,255,255,0.05); color: var(--muted);
     letter-spacing: 0.3px;
   }
-  .ce-days.warn { background: rgba(255,184,0,0.15); color: var(--gold); }
+  .ce-days.warn { background: rgba(251,191,36,0.15); color: var(--gold); }
   .ce-days.overdue { background: rgba(239,68,68,0.15); color: var(--red); }
   .ce-approval-dot {
     display: inline-block; width: 7px; height: 7px; border-radius: 50%;
@@ -495,7 +518,7 @@
   @keyframes ce-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
   .ce-parent-badge {
     font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
-    background: rgba(31,182,255,0.1); color: var(--aqua);
+    background: rgba(0,212,255,0.1); color: var(--aqua);
     letter-spacing: 0.3px;
   }
   .ce-rollup {
@@ -506,11 +529,11 @@
   .ce-rollup .rollup-pending { color: var(--gold); font-weight: 700; }
 
   .ce-brief-snip { margin-top: 5px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-  .ce-brief-kw { font-size: 9px; color: rgba(167,139,250,0.75); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+  .ce-brief-kw { font-size: 9px; color: rgba(123,47,190,0.75); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
   .ce-funnel-pill { font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.3px; flex-shrink: 0; }
-  .ce-funnel-pill.awareness { background: rgba(31,182,255,0.1); color: var(--aqua); }
-  .ce-funnel-pill.consideration { background: rgba(167,139,250,0.15); color: var(--purple); }
-  .ce-funnel-pill.decision { background: rgba(255,184,0,0.15); color: var(--gold); }
+  .ce-funnel-pill.awareness { background: rgba(0,212,255,0.1); color: var(--aqua); }
+  .ce-funnel-pill.consideration { background: rgba(123,47,190,0.15); color: var(--purple); }
+  .ce-funnel-pill.decision { background: rgba(251,191,36,0.15); color: var(--gold); }
 
   .rp-brief-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
   .rp-brief-cell { background: rgba(255,255,255,0.03); border-radius: 6px; padding: 7px 10px; }
@@ -520,12 +543,12 @@
   .rp-brief-list { list-style: none; padding: 0; margin: 0; }
   .rp-brief-list li { padding: 4px 0; font-size: 11px; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,0.04); line-height: 1.4; }
   .rp-brief-list li::before { content: "→ "; color: var(--aqua); }
-  .rp-brief-angle { background: rgba(31,182,255,0.06); border-radius: 6px; padding: 10px 14px; font-size: 12px; color: var(--aqua); font-style: italic; line-height: 1.6; margin-bottom: 10px; }
-  .rp-brief-gap-box { background: rgba(255,184,0,0.05); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 8px 12px; font-size: 11px; color: var(--text); line-height: 1.5; }
+  .rp-brief-angle { background: rgba(0,212,255,0.06); border-radius: 6px; padding: 10px 14px; font-size: 12px; color: var(--aqua); font-style: italic; line-height: 1.6; margin-bottom: 10px; }
+  .rp-brief-gap-box { background: rgba(251,191,36,0.05); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 8px 12px; font-size: 11px; color: var(--text); line-height: 1.5; }
   .rp-brief-competitor { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .rp-brief-competitor-domain { font-size: 10px; font-weight: 700; color: #f87171; flex-shrink: 0; min-width: 120px; }
   .rp-brief-competitor-reason { font-size: 10px; color: var(--muted); line-height: 1.4; }
-  .rp-brief-cta-box { background: rgba(255,184,0,0.1); border: 1px solid rgba(255,184,0,0.25); border-radius: 6px; padding: 8px 12px; font-size: 11px; color: var(--gold); font-weight: 600; }
+  .rp-brief-cta-box { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); border-radius: 6px; padding: 8px 12px; font-size: 11px; color: var(--gold); font-weight: 600; }
 
   .ce-actions {
     display: flex; gap: 4px; margin-top: 7px; flex-wrap: wrap;
@@ -573,12 +596,12 @@
     background: rgba(255,255,255,0.05); color: var(--muted);
     text-transform: uppercase; letter-spacing: 0.4px;
   }
-  .ce-table .stage-pill.gate { background: rgba(255,184,0,0.12); color: var(--gold); }
+  .ce-table .stage-pill.gate { background: rgba(251,191,36,0.12); color: var(--gold); }
   .ce-table .stage-pill.milestone,
-  .ce-table .stage-pill.done { background: rgba(16,185,129,0.12); color: var(--green); }
+  .ce-table .stage-pill.done { background: rgba(34,197,94,0.12); color: var(--green); }
 
   .family-indicator {
-    background: rgba(31,182,255,0.08); border: 1px solid rgba(31,182,255,0.22);
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.22);
     padding: 8px 14px; border-radius: 7px; margin: 10px 24px 0;
     font-size: 11px; color: var(--aqua); display: flex; align-items: center; gap: 10px;
   }
@@ -619,7 +642,7 @@
   .review-overlay.open { display:block; }
   .review-panel {
     position:fixed; right:0; top:0; bottom:0; width:700px; max-width:93vw;
-    background:var(--navy); border-left:2px solid rgba(31,182,255,0.18);
+    background:var(--navy); border-left:2px solid rgba(0,212,255,0.18);
     z-index:901; transform:translateX(100%);
     transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
     display:flex; flex-direction:column; overflow:hidden;
@@ -664,20 +687,20 @@
   .rp-md li { margin-bottom:4px; }
   .rp-md strong { font-weight:700; color:var(--white); }
   .rp-md em { color:rgba(255,255,255,0.7); font-style:italic; }
-  .rp-md code { background:rgba(31,182,255,0.1); padding:2px 6px; border-radius:3px; font-family:monospace; font-size:11.5px; color:var(--aqua); }
+  .rp-md code { background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:3px; font-family:monospace; font-size:11.5px; color:var(--aqua); }
   .rp-md blockquote { border-left:3px solid var(--aqua); padding-left:12px; color:var(--muted); margin:10px 0; }
   .rp-md hr { border:none; border-top:1px solid rgba(255,255,255,0.08); margin:14px 0; }
   .rp-md table { width:100%; border-collapse:collapse; font-size:11.5px; margin-bottom:12px; }
   .rp-md td,.rp-md th { padding:6px 10px; border:1px solid rgba(255,255,255,0.07); }
   .rp-md th { font-family:'Montserrat'; font-weight:700; font-size:8px; text-transform:uppercase; letter-spacing:0.5px; background:rgba(255,255,255,0.03); color:var(--muted); }
   .rp-text { font-size:13px; line-height:1.72; white-space:pre-wrap; color:var(--white); word-break:break-word; }
-  .rp-notes { background:rgba(255,184,0,0.06); border:1px solid rgba(255,184,0,0.15); border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:12px; color:var(--muted); line-height:1.6; }
+  .rp-notes { background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.15); border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:12px; color:var(--muted); line-height:1.6; }
   .rp-notes strong { color:var(--gold); }
   .rp-gdoc-btn { display:flex; align-items:center; gap:8px; background:#1a73e8; color:#fff; border:none; border-radius:8px; padding:11px 18px; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none; margin-bottom:16px; transition:background 0.15s; }
   .rp-gdoc-btn:hover { background:#1558b0; }
   .rp-gdoc-btn svg { flex-shrink:0; }
-  .rp-stage-guide { background:rgba(31,182,255,0.07); border-left:3px solid var(--aqua); border-radius:0 6px 6px 0; padding:9px 14px; margin-bottom:16px; font-size:12px; color:var(--aqua); line-height:1.5; }
-  .rp-stage-guide.gate { background:rgba(255,184,0,0.08); border-left-color:var(--gold); color:var(--gold); }
+  .rp-stage-guide { background:rgba(0,212,255,0.07); border-left:3px solid var(--aqua); border-radius:0 6px 6px 0; padding:9px 14px; margin-bottom:16px; font-size:12px; color:var(--aqua); line-height:1.5; }
+  .rp-stage-guide.gate { background:rgba(251,191,36,0.08); border-left-color:var(--gold); color:var(--gold); }
   .rp-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
   .rp-meta-cell { background:rgba(255,255,255,0.04); border-radius:6px; padding:8px 12px; }
   .rp-meta-cell-label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px; }
@@ -704,8 +727,8 @@
     font-family: 'Montserrat'; font-size: 10px; font-weight: 700;
     padding: 3px 10px; border-radius: 5px; letter-spacing: 0.3px;
   }
-  .cal-stat-chip.gold { background: rgba(255,184,0,0.12); color: var(--gold); border: 1px solid rgba(255,184,0,0.2); }
-  .cal-stat-chip.aqua { background: rgba(31,182,255,0.1); color: var(--aqua); border: 1px solid rgba(31,182,255,0.18); }
+  .cal-stat-chip.gold { background: rgba(251,191,36,0.12); color: var(--gold); border: 1px solid rgba(251,191,36,0.2); }
+  .cal-stat-chip.aqua { background: rgba(0,212,255,0.1); color: var(--aqua); border: 1px solid rgba(0,212,255,0.18); }
   .cal-stat-chip.muted { background: rgba(139,155,173,0.08); color: var(--muted); border: 1px solid rgba(139,155,173,0.15); }
   .cal-grid {
     display: grid; grid-template-columns: repeat(7, 1fr);
@@ -721,7 +744,7 @@
     cursor: default; transition: background 0.1s; vertical-align: top;
   }
   .cal-cell.other-month { opacity: 0.25; }
-  .cal-cell.today { background: rgba(31,182,255,0.05); outline: 1px solid rgba(31,182,255,0.18); outline-offset: -1px; }
+  .cal-cell.today { background: rgba(0,212,255,0.05); outline: 1px solid rgba(0,212,255,0.18); outline-offset: -1px; }
   .cal-cell:hover { background: rgba(255,255,255,0.025); }
   .cal-day-num {
     font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.3);
@@ -742,9 +765,9 @@
   .cal-pill:hover { filter: brightness(1.15); }
   .cal-pill.linkedin { background: rgba(0,119,181,0.38); color: #90c8ff; }
   .cal-pill.x        { background: rgba(255,255,255,0.13); color: #ffffff; }
-  .cal-pill.blog     { background: rgba(16,185,129,0.28); color: #6ee7b7; }
+  .cal-pill.blog     { background: rgba(34,197,94,0.28); color: #6ee7b7; }
   .cal-pill.ops      { background: rgba(139,155,173,0.16); color: rgba(139,155,173,0.9); }
-  .cal-pill.newsletter { background: rgba(167,139,250,0.25); color: #c4b5fd; }
+  .cal-pill.newsletter { background: rgba(123,47,190,0.25); color: #c4b5fd; }
   .cal-pill.done     { opacity: 0.35; text-decoration: line-through; }
   .cal-more { font-size: 9px; color: rgba(139,155,173,0.6); padding: 1px 4px; font-style: italic; }
 
@@ -753,7 +776,7 @@
     display: inline-block; padding: 2px 7px; border-radius: 4px;
     font-family: 'Montserrat'; font-size: 9px; font-weight: 700; letter-spacing: 0.4px;
   }
-  .blog-age-fresh  { background: rgba(16,185,129,0.15); color: var(--green); }
+  .blog-age-fresh  { background: rgba(34,197,94,0.15); color: var(--green); }
   .blog-age-aging  { background: rgba(245,158,11,0.15); color: var(--orange); }
   .blog-age-stale  { background: rgba(239,68,68,0.15);  color: var(--red); }
 
@@ -769,7 +792,7 @@
 
   .blog-cluster-pill {
     display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: 600;
-    background: rgba(31,182,255,0.1); color: var(--aqua); white-space: nowrap;
+    background: rgba(0,212,255,0.1); color: var(--aqua); white-space: nowrap;
   }
   .blog-lang-pill {
     display: inline-block; margin-right: 3px; padding: 1px 5px; border-radius: 3px;
@@ -782,15 +805,15 @@
     text-decoration: none; transition: background 0.15s;
   }
   .blog-icon-btn:hover { background: rgba(255,255,255,0.12); color: var(--white); }
-  .blog-icon-btn.has-link { color: var(--aqua); background: rgba(31,182,255,0.08); }
+  .blog-icon-btn.has-link { color: var(--aqua); background: rgba(0,212,255,0.08); }
 
   .blog-status-pill {
     display: inline-block; padding: 2px 8px; border-radius: 4px;
     font-family: 'Montserrat'; font-size: 9px; font-weight: 700; letter-spacing: 0.4px;
   }
-  .blog-status-published     { background: rgba(16,185,129,0.1); color: var(--green); }
+  .blog-status-published     { background: rgba(34,197,94,0.1); color: var(--green); }
   .blog-status-needs-refresh { background: rgba(245,158,11,0.12); color: var(--orange); }
-  .blog-status-in-refresh    { background: rgba(31,182,255,0.12); color: var(--aqua); cursor: pointer; }
+  .blog-status-in-refresh    { background: rgba(0,212,255,0.12); color: var(--aqua); cursor: pointer; }
 
   .blog-source-icon { font-size: 10px; margin-left: 4px; color: var(--muted); }
 
@@ -803,21 +826,43 @@
   .blog-drive-links-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .cal-pill.refresh-due {
-    background: rgba(255,184,0,0.18); color: var(--gold);
-    border: 1px dashed rgba(255,184,0,0.4); font-style: italic;
+    background: rgba(251,191,36,0.18); color: var(--gold);
+    border: 1px dashed rgba(251,191,36,0.4); font-style: italic;
   }
 .track-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
 .track-card { border: 2px solid rgba(139,148,158,0.2); border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-.track-card:hover { border-color: rgba(31,182,255,0.4); background: rgba(31,182,255,0.04); }
-.track-card.selected { border-color: var(--aqua); background: rgba(31,182,255,0.08); }
-.track-card-label { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--aqua); margin-bottom: 6px; }
+.track-card:hover { border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.04); }
+.track-card.selected { border-color: var(--aqua); background: rgba(0,212,255,0.08); }
+.track-card-label { font-family: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--aqua); margin-bottom: 6px; }
 .track-card-title { font-weight: 700; font-size: 13px; margin-bottom: 8px; color: var(--white); }
 .track-card-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
 .track-card-when { font-size: 10px; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
 .track-card-when strong { color: var(--white); display: block; margin-bottom: 4px; font-size: 10px; }
-.track-badge { display: inline-block; font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 3px; margin-bottom: 8px; }
+.track-badge { display: inline-block; font-family: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace; font-size: 9px; padding: 2px 7px; border-radius: 3px; margin-bottom: 8px; }
 .track-badge.a { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
-.track-badge.b { background: rgba(255,184,0,0.12); color: var(--gold); border: 1px solid rgba(255,184,0,0.25); }
+.track-badge.b { background: rgba(251,191,36,0.12); color: var(--gold); border: 1px solid rgba(251,191,36,0.25); }
+
+/* ── SKELETON LOADER — ported from .claude/skills/sasha-board-design/components.css
+   (ENG-022 prescribed addition). CSS primitive only, not wired into any render
+   function in this pass — see task report for why. Available for the next
+   loading-state build instead of a spinner or a bare "Loading…" string. ── */
+.skeleton {
+  background: var(--mid-navy); border-radius: 4px;
+  position: relative; overflow: hidden;
+}
+.skeleton::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(155,143,196,0.10), transparent);
+  transform: translateX(-100%);
+  animation: skeleton-sheen 1400ms ease-in-out infinite;
+}
+.skeleton--card { height: 64px; }
+.skeleton--row  { height: 32px; margin-bottom: 8px; }
+.skeleton--line { height: 10px; }
+.skeleton--wide { width: 100%; }
+.skeleton--half { width: 50%; }
+@keyframes skeleton-sheen { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .skeleton::after { animation: none; } }
 </style>
 </head>
 <body>
@@ -856,7 +901,7 @@
       <button class="filter-btn" onclick="filterCat('infrastructure')">Infra</button>
       <button class="filter-btn" onclick="filterCat('research')">Research</button>
       <button class="filter-btn" id="campaignViewBtn" onclick="toggleCampaignView()">Campaign View</button>
-      <button class="filter-btn" onclick="openNewCampaign()" style="background:rgba(255,184,0,0.1);border-color:rgba(255,184,0,0.3);color:var(--gold)">+ Campaign</button>
+      <button class="filter-btn" onclick="openNewCampaign()" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);color:var(--gold)">+ Campaign</button>
       <button class="add-btn" onclick="openNewTask()">+ Add Task</button>
       <span class="sync-status" id="syncStatus">Connecting...</span>
     </div>
@@ -1011,7 +1056,7 @@
         <button id="blogBtnRefresh" onclick="setBlogView('needs-refresh')">Needs Refresh</button>
         <button id="blogBtnDrive" onclick="setBlogView('drive-links')">Drive Links</button>
       </div>
-      <button class="filter-btn" id="blogSyncBtn" onclick="syncBlogRegistry()" style="border-color:rgba(31,182,255,0.3);color:var(--aqua)">&#8635; Sync</button>
+      <button class="filter-btn" id="blogSyncBtn" onclick="syncBlogRegistry()" style="border-color:rgba(0,212,255,0.3);color:var(--aqua)">&#8635; Sync</button>
       <span class="sync-status" id="blogSyncStatus">Loading...</span>
     </div>
   </div>
@@ -1039,7 +1084,7 @@
   <div id="blogWrap" style="padding:14px 24px 40px;overflow-x:auto"></div>
 
   <!-- Inline override panel -->
-  <div id="blogOverridePanel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy);border-top:1px solid rgba(31,182,255,0.15);padding:16px 24px;z-index:200">
+  <div id="blogOverridePanel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy);border-top:1px solid rgba(0,212,255,0.15);padding:16px 24px;z-index:200">
     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
       <strong id="blogOverrideTitle" style="font-family:Montserrat;font-size:13px;max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></strong>
       <div style="display:flex;align-items:center;gap:8px">
@@ -1081,13 +1126,13 @@
       </div>
     </div>
     <div class="header-right" style="display:flex;gap:8px">
-      <button class="filter-btn" onclick="syncEngagement(this)" style="background:rgba(31,182,255,0.1);border-color:rgba(31,182,255,0.3)">⟳ Sync Engagement</button>
+      <button class="filter-btn" onclick="syncEngagement(this)" style="background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3)">⟳ Sync Engagement</button>
       <button class="filter-btn active" onclick="loadTwitterActivity()">↻ Refresh</button>
     </div>
   </div>
 
   <!-- Sub-tabs -->
-  <div style="background:var(--navy);padding:0 24px;border-bottom:1px solid rgba(31,182,255,0.08);display:flex;gap:0">
+  <div style="background:var(--navy);padding:0 24px;border-bottom:1px solid rgba(0,212,255,0.08);display:flex;gap:0">
     <button class="tab active" id="tw-tab-posts" data-twtab="posts" onclick="switchTwitterTab('posts')" style="font-size:12px;padding:10px 18px">Posts (<span id="tw-posts-count">0</span>)</button>
     <button class="tab" id="tw-tab-replies" data-twtab="replies" onclick="switchTwitterTab('replies')" style="font-size:12px;padding:10px 18px">Replies (<span id="tw-replies-count">0</span>)</button>
   </div>
@@ -1103,15 +1148,15 @@
   <div id="tw-panel-replies" style="display:none">
 
     <!-- Guidelines collapsible -->
-    <div id="reply-guidelines" style="margin:16px 24px 0;border:1px solid rgba(255,184,0,0.25);border-radius:8px;overflow:hidden">
-      <div onclick="toggleGuidelines()" style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:rgba(255,184,0,0.06);cursor:pointer;user-select:none">
-        <span style="font-size:12px;font-weight:700;color:#FFB800;letter-spacing:.06em">📋 REPLY GUIDELINES</span>
+    <div id="reply-guidelines" style="margin:16px 24px 0;border:1px solid rgba(251,191,36,0.25);border-radius:8px;overflow:hidden">
+      <div onclick="toggleGuidelines()" style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:rgba(251,191,36,0.06);cursor:pointer;user-select:none">
+        <span style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.06em">📋 REPLY GUIDELINES</span>
         <span id="guidelines-chevron" style="font-size:11px;color:var(--muted)">▼ show</span>
       </div>
       <div id="guidelines-body" style="display:none;padding:14px 16px;background:rgba(10,37,64,0.6)">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;font-size:12px;line-height:1.6">
           <div>
-            <div style="color:#1FB6FF;font-weight:700;margin-bottom:6px;font-size:11px;letter-spacing:.05em">✅ DO</div>
+            <div style="color:var(--aqua);font-weight:700;margin-bottom:6px;font-size:11px;letter-spacing:.05em">✅ DO</div>
             <ul style="margin:0;padding-left:16px;color:var(--white);opacity:.85">
               <li>Max 240 chars</li>
               <li>Start with the substance — open with a fact, observation, or question</li>
@@ -1123,7 +1168,7 @@
             </ul>
           </div>
           <div>
-            <div style="color:#ef4444;font-weight:700;margin-bottom:6px;font-size:11px;letter-spacing:.05em">🚫 DON'T</div>
+            <div style="color:var(--red);font-weight:700;margin-bottom:6px;font-size:11px;letter-spacing:.05em">🚫 DON'T</div>
             <ul style="margin:0;padding-left:16px;color:var(--white);opacity:.85">
               <li>No hashtags · no links · no @mentions</li>
               <li>No emojis unless the original uses them</li>
@@ -1134,7 +1179,7 @@
           </div>
         </div>
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:var(--muted)">
-          📁 Full rules: <code style="font-size:10px;color:#1FB6FF">scripts/morning-reply-run.js</code> — Gemini prompt block (generateReply function)
+          📁 Full rules: <code style="font-size:10px;color:var(--aqua)">scripts/morning-reply-run.js</code> — Gemini prompt block (generateReply function)
         </div>
       </div>
     </div>
@@ -1143,10 +1188,10 @@
     <div style="display:flex;align-items:center;gap:12px;padding:12px 24px 0">
       <span style="font-size:11px;color:var(--muted)" id="reply-stats-label">Loading…</span>
       <div style="flex:1"></div>
-      <select id="reply-filter-handle" onchange="renderRepliesTable()" style="background:var(--mid-navy);color:var(--white);border:1px solid rgba(31,182,255,0.15);border-radius:4px;padding:4px 8px;font-size:11px">
+      <select id="reply-filter-handle" onchange="renderRepliesTable()" style="background:var(--mid-navy);color:var(--white);border:1px solid rgba(0,212,255,0.15);border-radius:4px;padding:4px 8px;font-size:11px">
         <option value="">All KOLs</option>
       </select>
-      <select id="reply-filter-score" onchange="renderRepliesTable()" style="background:var(--mid-navy);color:var(--white);border:1px solid rgba(31,182,255,0.15);border-radius:4px;padding:4px 8px;font-size:11px">
+      <select id="reply-filter-score" onchange="renderRepliesTable()" style="background:var(--mid-navy);color:var(--white);border:1px solid rgba(0,212,255,0.15);border-radius:4px;padding:4px 8px;font-size:11px">
         <option value="">All scores</option>
         <option value="A">A</option>
         <option value="B">B</option>
@@ -1160,7 +1205,7 @@
     <div style="padding:12px 24px 24px;overflow-x:auto">
       <table id="replies-table" style="width:100%;border-collapse:collapse;font-size:12px">
         <thead>
-          <tr style="border-bottom:1px solid rgba(31,182,255,0.15);text-align:left">
+          <tr style="border-bottom:1px solid rgba(0,212,255,0.15);text-align:left">
             <th style="padding:8px 10px;color:var(--muted);font-weight:600;white-space:nowrap;width:90px">Time</th>
             <th style="padding:8px 10px;color:var(--muted);font-weight:600;width:120px">KOL</th>
             <th style="padding:8px 10px;color:var(--muted);font-weight:600">Original Tweet</th>
@@ -1293,7 +1338,7 @@
             <option value="other">Other Link</option>
           </select>
           <input class="field-input" id="newLinkUrl" style="flex:1;font-size:11px;padding:6px 8px" placeholder="Paste URL here">
-          <button class="modal-btn" style="font-size:10px;padding:5px 10px;background:var(--mid-navy);color:var(--aqua);border:1px solid rgba(31,182,255,0.2)" onclick="addLink()">Add</button>
+          <button class="modal-btn" style="font-size:10px;padding:5px 10px;background:var(--mid-navy);color:var(--aqua);border:1px solid rgba(0,212,255,0.2)" onclick="addLink()">Add</button>
         </div>
       </div>
       <div class="field">
@@ -1600,7 +1645,7 @@ function showToast(msg, duration = 2800) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'mangaToast';
-    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1FB6FF;color:#fff;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;';
+    el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--aqua);color:#fff;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;';
     document.body.appendChild(el);
   }
   el.textContent = msg;
@@ -1888,10 +1933,10 @@ function renderKanban() {
       const ceTask = tasks.find(x => x.id === t.contentId);
       if (ceTask) {
         const stageInfo = PIPELINE_STAGES.find(s => s.id === ceTask.pipelineStage) || { label: ceTask.pipelineStage, kind: '' };
-        ceStageBadge = `<span class="tag channel" style="cursor:pointer;background:rgba(31,182,255,0.12);border:1px solid rgba(31,182,255,0.25)" onclick="event.stopPropagation();switchToCe('${t.contentId}')" title="Open in Content Engine">CE: ${escHtml(stageInfo.label)}</span>`;
+        ceStageBadge = `<span class="tag channel" style="cursor:pointer;background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.25)" onclick="event.stopPropagation();switchToCe('${t.contentId}')" title="Open in Content Engine">CE: ${escHtml(stageInfo.label)}</span>`;
       }
     } else if (t.category === 'content') {
-      linkCeBtn = `<button class="dispatch-btn" style="margin-top:4px;font-size:9px;background:rgba(31,182,255,0.05);border:1px solid rgba(31,182,255,0.2);color:var(--aqua)" onclick="event.stopPropagation();openLinkCeModal('${t.id}')">&#x1F517; Link CE</button>`;
+      linkCeBtn = `<button class="dispatch-btn" style="margin-top:4px;font-size:9px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);color:var(--aqua)" onclick="event.stopPropagation();openLinkCeModal('${t.id}')">&#x1F517; Link CE</button>`;
     }
 
     card.innerHTML = `
@@ -2896,7 +2941,7 @@ function renderCeLinkList() {
       : t.status;
     return `<div onclick="confirmCeLink('${escHtml(t.id)}')"
       style="cursor:pointer;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:8px"
-      onmouseover="this.style.background='rgba(31,182,255,0.07)'"
+      onmouseover="this.style.background='rgba(0,212,255,0.07)'"
       onmouseout="this.style.background=''">
       <span style="flex:1;font-size:12px;color:var(--white)">${escHtml(t.title || '')}</span>
       <span style="font-size:10px;color:var(--aqua);white-space:nowrap">${escHtml(badge)}</span>
@@ -3263,7 +3308,7 @@ function populateRpBody(t, container) {
   if (t.type === 'content-piece') {
     const linkedIds = t.relatedTaskIds || [];
     const linkedTasks = linkedIds.map(lid => tasks.find(x => x.id === lid)).filter(Boolean);
-    const STATUS_COLORS = { done:'var(--green)', inprogress:'var(--aqua)', blocked:'var(--red)', review:'var(--gold)', todo:'var(--muted)', scheduled:'var(--purple)' };
+    const STATUS_COLORS = { done:'var(--green)', inprogress:'var(--aqua)', blocked:'var(--red)', review:'var(--orange)', todo:'var(--muted)', scheduled:'var(--gold)' };
     const rows = linkedTasks.map(lt => {
       const col = STATUS_COLORS[lt.status] || 'var(--muted)';
       return `<div onclick="closeReview();switchToOps('${lt.id}')" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
@@ -3287,7 +3332,7 @@ function populateRpBody(t, container) {
       const info  = CHANNEL_ICONS[child.channel] || { glyph: child.channel, cls: '' };
       return `<div onclick="closeReview();switchToCe('${child.id}')"
         style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)"
-        onmouseover="this.style.background='rgba(31,182,255,0.07)'"
+        onmouseover="this.style.background='rgba(0,212,255,0.07)'"
         onmouseout="this.style.background=''">
         <span class="ce-ch-icon ${info.cls}">${info.glyph}</span>
         <span style="flex:1;font-size:11px;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(child.title)}</span>
@@ -3305,7 +3350,7 @@ function populateRpBody(t, container) {
     if (parent) {
       parts.push(rpArtifact('Source', `<div onclick="closeReview();switchToCe('${parent.id}')"
         style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 0"
-        onmouseover="this.style.background='rgba(31,182,255,0.07)'"
+        onmouseover="this.style.background='rgba(0,212,255,0.07)'"
         onmouseout="this.style.background=''">
         <span style="font-size:12px;color:var(--muted)">↑</span>
         <span style="font-size:12px;color:var(--aqua)">${escHtml(parent.title)}</span>
@@ -4003,7 +4048,7 @@ function switchTwitterTab(tab) {
 function gradeLabel(entry) {
   const g = entry.grade;
   if (!g) return '';
-  const map = { A: '#22c55e', B: '#1FB6FF', C: '#FFB800', D: '#ef4444' };
+  const map = { A: 'var(--green)', B: 'var(--aqua)', C: 'var(--gold)', D: 'var(--red)' };
   const color = map[g] || 'var(--muted)';
   return `<span style="font-size:10px;font-weight:700;color:${color};border:1px solid ${color};padding:1px 6px;border-radius:3px;margin-left:8px">${g}</span>`;
 }
@@ -4011,10 +4056,10 @@ function gradeLabel(entry) {
 function renderTwitterCard(entry, type) {
   const ts = entry.posted_at || entry.queued_at || '';
   const time = ts ? new Date(ts).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
-  const statusColor = { posted:'#22c55e', queued:'#1FB6FF', failed:'#ef4444' }[entry.status] || 'var(--muted)';
+  const statusColor = { posted:'var(--green)', queued:'var(--aqua)', failed:'var(--red)' }[entry.status] || 'var(--muted)';
   const handle = entry.target_handle ? `<span style="color:var(--muted);font-size:11px">↩ @${entry.target_handle}</span>` : '';
   const tweetId = entry.tweet_id ? `<a href="https://x.com/i/status/${entry.tweet_id}" target="_blank" style="color:var(--muted);font-size:10px;text-decoration:none">↗ view</a>` : '';
-  return `<div style="background:var(--mid-navy);border:1px solid rgba(31,182,255,0.08);border-radius:8px;padding:14px 16px">
+  return `<div style="background:var(--mid-navy);border:1px solid rgba(0,212,255,0.08);border-radius:8px;padding:14px 16px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:10px;font-weight:700;color:${statusColor};border:1px solid ${statusColor};padding:1px 6px;border-radius:3px">${(entry.status||'').toUpperCase()}</span>
@@ -4052,8 +4097,8 @@ async function loadTwitterActivity() {
 
     renderRepliesTable();
   } catch (e) {
-    document.getElementById('tw-posts-list').innerHTML = `<div style="color:#ef4444;font-size:13px">Error loading activity: ${e.message}</div>`;
-    document.getElementById('replies-tbody').innerHTML = `<tr><td colspan="7" style="padding:20px;text-align:center;color:#ef4444">Error: ${e.message}</td></tr>`;
+    document.getElementById('tw-posts-list').innerHTML = `<div style="color:var(--red);font-size:13px">Error loading activity: ${e.message}</div>`;
+    document.getElementById('replies-tbody').innerHTML = `<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--red)">Error: ${e.message}</td></tr>`;
   }
 }
 
@@ -4090,7 +4135,7 @@ function renderRepliesTable() {
     statsEl.textContent = `${total} replies · ${scored} scored · ${total - scored} pending review`;
   }
 
-  const SCORE_COLORS = { A:'#22c55e', B:'#1FB6FF', C:'#FFB800', D:'#ef4444' };
+  const SCORE_COLORS = { A:'var(--green)', B:'var(--aqua)', C:'var(--gold)', D:'var(--red)' };
   const SCORES = ['A','B','C','D'];
 
   const tbody = document.getElementById('replies-tbody');
@@ -4105,7 +4150,7 @@ function renderRepliesTable() {
 
     // KOL cell: link goes to the ORIGINAL tweet; Sasha reply link separate
     const kolCell = r.target_handle
-      ? `<a href="${r.tweet_url || '#'}" target="_blank" style="color:#1FB6FF;text-decoration:none;font-weight:600">@${r.target_handle}</a>`
+      ? `<a href="${r.tweet_url || '#'}" target="_blank" style="color:var(--aqua);text-decoration:none;font-weight:600">@${r.target_handle}</a>`
       : '—';
 
     const origText = r.original_text
@@ -4126,7 +4171,7 @@ function renderRepliesTable() {
       : `<span style="color:var(--muted);font-size:11px">not synced${replyLink}</span>`;
 
     const topics = (r.topics || []).length
-      ? r.topics.map(t => `<span style="background:rgba(31,182,255,0.1);color:#1FB6FF;border-radius:3px;padding:1px 5px;font-size:10px;white-space:nowrap">${t}</span>`).join(' ')
+      ? r.topics.map(t => `<span style="background:rgba(0,212,255,0.1);color:var(--aqua);border-radius:3px;padding:1px 5px;font-size:10px;white-space:nowrap">${t}</span>`).join(' ')
       : '<span style="color:var(--muted)">—</span>';
 
     const scoreCell = SCORES.map(s => {
@@ -4135,7 +4180,7 @@ function renderRepliesTable() {
       return `<button onclick="setReplyScore('${r.id}','${s}')" title="${s}" style="width:24px;height:22px;border-radius:3px;border:1px solid ${col};background:${active ? col : 'transparent'};color:${active ? '#000' : col};font-size:10px;font-weight:800;cursor:pointer;padding:0;line-height:1">${s}</button>`;
     }).join('');
 
-    const rowBg = r.grade ? '' : 'background:rgba(255,184,0,0.03)';
+    const rowBg = r.grade ? '' : 'background:rgba(251,191,36,0.03)';
     return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);${rowBg}" id="reply-row-${r.id}">
       <td style="padding:10px 10px;color:var(--muted);white-space:nowrap;vertical-align:top">${time}</td>
       <td style="padding:10px 10px;vertical-align:top">${kolCell}</td>

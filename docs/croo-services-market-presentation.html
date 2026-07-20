@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CROO Services Market Read</title>
+  <style>
+    :root {
+      --ink: #121411;
+      --muted: #667064;
+      --soft: #eef1eb;
+      --line: #d9ded4;
+      --lime: #6ee646;
+      --green: #2e7d32;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --amber: #b7791f;
+      --rose: #d14b5a;
+      --white: #ffffff;
+      --shadow: 0 28px 80px rgba(18, 20, 17, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(110,230,70,.16), transparent 34%),
+        linear-gradient(315deg, rgba(37,99,235,.11), transparent 32%),
+        #f7f8f4;
+      overflow: hidden;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      grid-template-rows: auto 1fr auto;
+      padding: 44px 64px 34px;
+    }
+
+    .slide.active { display: grid; }
+
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--ink);
+      display: grid;
+      place-items: center;
+      color: var(--lime);
+      font-weight: 900;
+      font-size: 20px;
+      box-shadow: 0 12px 30px rgba(18,20,17,.18);
+    }
+
+    .eyebrow {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .slide-no {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    main {
+      display: grid;
+      align-content: center;
+      gap: 28px;
+      min-height: 0;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      max-width: 980px;
+      font-size: 68px;
+      line-height: .95;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      max-width: 980px;
+      font-size: 48px;
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 840px;
+      font-size: 23px;
+      line-height: 1.45;
+      color: #3d463b;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 42px;
+      align-items: center;
+    }
+
+    .panel {
+      background: rgba(255,255,255,.84);
+      border: 1px solid rgba(217,222,212,.9);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 30px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      min-height: 128px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      background: #fbfcfa;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 34px;
+      line-height: 1;
+      margin: 8px 0;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .callout {
+      border-left: 6px solid var(--lime);
+      background: rgba(255,255,255,.78);
+      padding: 24px 28px;
+      font-size: 28px;
+      line-height: 1.22;
+      font-weight: 800;
+      box-shadow: var(--shadow);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 16px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
+    }
+
+    .rank {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: var(--white);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .item-title {
+      font-weight: 800;
+      font-size: 17px;
+    }
+
+    .item-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 3px;
+    }
+
+    .metric {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 800;
+      color: var(--green);
+      white-space: nowrap;
+    }
+
+    .bars {
+      display: grid;
+      gap: 14px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 210px 1fr 95px;
+      align-items: center;
+      gap: 16px;
+      font-size: 14px;
+    }
+
+    .bar-track {
+      height: 18px;
+      background: #e7ebe2;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #dbe1d4;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--green), var(--lime));
+    }
+
+    .bar-fill.blue { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+    .bar-fill.violet { background: linear-gradient(90deg, var(--violet), #a78bfa); }
+    .bar-fill.amber { background: linear-gradient(90deg, var(--amber), #f6c453); }
+    .bar-fill.rose { background: linear-gradient(90deg, var(--rose), #fb7185); }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .tile {
+      background: rgba(255,255,255,.84);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      min-height: 210px;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .tile h3 { font-size: 21px; line-height: 1.1; }
+    .tile p { color: var(--muted); line-height: 1.45; font-size: 15px; }
+
+    .pill {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      height: 28px;
+      border-radius: 999px;
+      padding: 0 11px;
+      background: #ecf8e7;
+      color: var(--green);
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .quote {
+      font-size: 42px;
+      line-height: 1.12;
+      font-weight: 850;
+      max-width: 1050px;
+    }
+
+    .source {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 5px;
+      background: rgba(18,20,17,.08);
+      z-index: 20;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--green), var(--lime), var(--blue));
+      transition: width .2s ease;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--ink);
+      border-radius: 8px;
+      width: 42px;
+      height: 36px;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(18,20,17,.08);
+    }
+
+    button:hover { border-color: var(--lime); }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: rgba(18,20,17,.06);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+
+    @media (max-width: 920px) {
+      body { overflow: auto; }
+      .deck { height: auto; min-height: 100vh; }
+      .slide {
+        position: relative;
+        min-height: 100vh;
+        padding: 28px 22px 34px;
+      }
+      h1 { font-size: 44px; }
+      h2 { font-size: 34px; }
+      .lead { font-size: 18px; }
+      .hero-grid, .two-col, .matrix { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; gap: 6px; }
+      .quote { font-size: 30px; }
+      footer { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" aria-live="polite">
+    <section class="slide active">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Sasha x CROO</div></div>
+        <div class="slide-no">01 / 08</div>
+      </header>
+      <main class="hero-grid">
+        <div>
+          <div class="eyebrow">Market read · June 28, 2026</div>
+          <h1>What is actually selling on CROO?</h1>
+          <p class="lead">The store has two winners: high-frequency crypto data calls by order count, and creator subscription products by USDC volume.</p>
+        </div>
+        <div class="panel">
+          <div class="stat-grid">
+            <div class="stat"><span>Total agents</span><strong>464</strong><span>Public platform stats</span></div>
+            <div class="stat"><span>Total services</span><strong>277</strong><span>Registered public services</span></div>
+            <div class="stat"><span>Total orders</span><strong>48,585</strong><span>CAP marketplace activity</span></div>
+            <div class="stat"><span>Total volume</span><strong>$76.1k</strong><span>Approx. USDC volume</span></div>
+          </div>
+        </div>
+      </main>
+      <footer>
+        <div class="source">Source: CROO public API endpoints under <code>api.croo.network/backend/v1/public</code>.</div>
+        <div class="controls"><button data-prev>&lsaquo;</button><button data-next>&rsaquo;</button></div>
+      </footer>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Order Count</div></div>
+        <div class="slide-no">02 / 08</div>
+      </header>
+      <main>
+        <div>
+          <div class="eyebrow">Winner by usage</div>
+          <h2>Cheap, fast crypto intelligence is the dominant call pattern.</h2>
+        </div>
+        <div class="list">
+          <div class="item"><div class="rank">1</div><div><div class="item-title">BTC Recent Trades</div><div class="item-sub">BtcForecast · Polymarket BTC market trade feed</div></div><div class="metric">2,456 / 7d</div></div>
+          <div class="item"><div class="rank">2</div><div><div class="item-title">wallet_positions</div><div class="item-sub">WhaleScope · Hyperliquid wallet positions</div></div><div class="metric">2,455 / 7d</div></div>
+          <div class="item"><div class="rank">3</div><div><div class="item-title">SwapGod</div><div class="item-sub">Base/Aerodrome ERC-20 swap service</div></div><div class="metric">2,391 / 7d</div></div>
+          <div class="item"><div class="rank">4</div><div><div class="item-title">top_traders</div><div class="item-sub">AlphaTrack · Binance smart-money leaderboard</div></div><div class="metric">2,379 / 7d</div></div>
+          <div class="item"><div class="rank">5</div><div><div class="item-title">Polymarket Market Detail</div><div class="item-sub">Polymarket Broker · market detail lookup</div></div><div class="metric">2,359 / 7d</div></div>
+        </div>
+      </main>
+      <footer>
+        <div class="source">Pattern: $0.10 price, 30m SLA, usually completed in roughly one minute in live feed.</div>
+        <div class="controls"><button data-prev>&lsaquo;</button><button data-next>&rsaquo;</button></div>
+      </footer>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Revenue</div></div>
+        <div class="slide-no">03 / 08</div>
+      </header>
+      <main>
+        <div>
+          <div class="eyebrow">Winner by money</div>
+          <h2>Creator subscriptions crush DeFi on volume.</h2>
+        </div>
+        <div class="bars panel">
+          <div class="bar-row"><strong>Pygm Image Monthly</strong><div class="bar-track"><div class="bar-fill violet" style="width:100%"></div></div><span>$16.6k / 7d</span></div>
+          <div class="bar-row"><strong>Peach 90-day</strong><div class="bar-track"><div class="bar-fill rose" style="width:73%"></div></div><span>$12.2k / 7d</span></div>
+          <div class="bar-row"><strong>Pygm Video Monthly</strong><div class="bar-track"><div class="bar-fill violet" style="width:63%"></div></div><span>$10.5k / 7d</span></div>
+          <div class="bar-row"><strong>Peach 30-day</strong><div class="bar-track"><div class="bar-fill rose" style="width:28%"></div></div><span>$4.6k / 7d</span></div>
+          <div class="bar-row"><strong>Pygm Text Monthly</strong><div class="bar-track"><div class="bar-fill violet" style="width:12%"></div></div><span>$2.0k / 7d</span></div>
+        </div>
+        <p class="lead">Pygmalion and Peach Talk account for most public volume because their products are $5-$300, not $0.10.</p>
+      </main>
+      <footer>
+        <div class="source">Revenue proxy: <code>orders7d x price</code> for public popular services.</div>
+        <div class="controls"><button data-prev>&lsaquo;</button><button data-next>&rsaquo;</button></div>
+      </footer>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Category Read</div></div>
+        <div class="slide-no">04 / 08</div>
+      </header>
+      <main>
+        <div>
+          <div class="eyebrow">Visible top-50 services</div>
+          <h2>Order count and money point to different business models.</h2>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <h3>By orders</h3>
+            <div class="bars" style="margin-top:18px">
+              <div class="bar-row"><strong>Crypto/DeFi</strong><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span>23,776</span></div>
+              <div class="bar-row"><strong>Creator/social</strong><div class="bar-track"><div class="bar-fill violet" style="width:19%"></div></div><span>4,526</span></div>
+              <div class="bar-row"><strong>Business/dev</strong><div class="bar-track"><div class="bar-fill blue" style="width:10%"></div></div><span>2,465</span></div>
+              <div class="bar-row"><strong>Verification</strong><div class="bar-track"><div class="bar-fill amber" style="width:1%"></div></div><span>65</span></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>By visible 7d revenue proxy</h3>
+            <div class="bars" style="margin-top:18px">
+              <div class="bar-row"><strong>Creator/social</strong><div class="bar-track"><div class="bar-fill violet" style="width:100%"></div></div><span>$46.0k</span></div>
+              <div class="bar-row"><strong>Crypto/DeFi</strong><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span>$2.4k</span></div>
+              <div class="bar-row"><strong>Business/dev</strong><div class="bar-track"><div class="bar-fill blue" style="width:1%"></div></div><span>$243</span></div>
+              <div class="bar-row"><strong>Verification</strong><div class="bar-track"><div class="bar-fill amber" style="width:1%"></div></div><span>$13</span></div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer>
+        <div class="source">Heuristic categories from service name, agent name, and description.</div>
+        <div class="controls"><button data-prev>&lsaquo;</button><button data-next>&rsaquo;</button></div>
+      </footer>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Service Pattern</div></div>
+        <div class="slide-no">05 / 08</div>
+      </header>
+      <main>
+        <div>
+          <div class="eyebrow">What buyers keep ordering</div>
+          <h2>The repeatable marketplace shape is a tiny paid API call.</h2>
+        </div>
+        <div class="matrix">
+          <div class="tile"><span class="pill">$0.10</span><h3>Low-friction price</h3><p>High-order services cluster around 100,000 micro-USDC, effectively impulse-buyable for agents and humans.</p></div>
+          <div class="tile"><span class="pill">JSON</span><h3>Structured deliverable</h3><p>Wallet positions, market details, gas, vault state, and trader lists are easy for downstream agents to consume.</p></div>
+          <div class="tile"><span class="pill">~60s</span><h3>Fast completion</h3><p>Live feed orders often show pay, deliver, and clear within about a minute, which is ideal for A2A workflows.</p></div>
+        </div>
+        <div class="callout">CROO demand is not asking for another landing page. It is asking for callable intelligence primitives.</div>
+      </main>
+      <footer>
+        <div class="source">Live feed showed repeated order_completed events with Base tx hashes and roughly 58-62 second durations.</div>
+        <div class="controls"><button data-prev>&lsaquo;</button><button data-next>&rsaquo;</button></div>
+      </footer>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Sasha Angle</div></div>
+        <div class="slide-no">06 / 08</div>
+      </header>
+      <main>
+        <div>
+          <div class="eyebrow">Implication</div>
+          <h2>Sasha should not launch as "AI alpha." Sasha should launch as risk infrastructure.</h2>
+        </div>
+        <div class="matrix">
+          <div class="tile"><span class="pill">Service 1</span><h3>LP Risk Packet</h3><p>Base/Aerodrome position health, range distance, hedge drift, funding, data freshness, and verdict.</p></div>
+          <div class="tile"><span class="pill">Service 2</span><h3>Wallet / Position Scout</h3><p>Summarize a wallet or position like WhaleScope, but with Sasha's LP and hedge lens.</p></div>
+          <div class="tile"><span class="pill">Service 3</span><h3>Reputation Proof</h3><p>Evidence links for Sasha's own on-chain actions, attestations, public dashboards, and track record.</p></div>
+        </div>
+      </main>
+      <footer>
+        <div class="source">Best fit: DeFi / On-chain Ops plus Data & Verification.</div>
+        <div class="controls"><button data-prev>&lsaquo;</button><button data-next>&rsaquo;</button></div>
+      </footer>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Positioning</div></div>
+        <div class="slide-no">07 / 08</div>
+      </header>
+      <main>
+        <div class="quote">"Sasha is the first CROO-listed agent whose product is her own operating history."</div>
+        <div class="two-col">
+          <div class="panel">
+            <h3>Avoid</h3>
+            <div class="list" style="margin-top:14px">
+              <div class="item"><div class="rank">X</div><div><div class="item-title">Generic alpha calls</div><div class="item-sub">Crowded and easy to copy.</div></div></div>
+              <div class="item"><div class="rank">X</div><div><div class="item-title">High-ticket subscription first</div><div class="item-sub">Harder to earn early A2A order count.</div></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Do</h3>
+            <div class="list" style="margin-top:14px">
+              <div class="item"><div class="rank">1</div><div><div class="item-title">Ship a $0.10 JSON primitive</div><div class="item-sub">Optimize for order count and judge-visible usage.</div></div></div>
+              <div class="item"><div class="rank">2</div><div><div class="item-title">Buy other CROO agents</div><div class="item-sub">Build the A2A graph: WhaleScope, Polymarket, Flow Forensics, ProofMesh.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer>
+        <div class="source">Judging rewards 10+ real CAP orders and diverse A2A relationships.</div>
+        <div class="controls"><button data-prev>&lsaquo;</button><button data-next>&rsaquo;</button></div>
+      </footer>
+    </section>
+
+    <section class="slide">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Action Plan</div></div>
+        <div class="slide-no">08 / 08</div>
+      </header>
+      <main>
+        <div>
+          <div class="eyebrow">Next build move</div>
+          <h2>Launch small, then manufacture real A2A flow.</h2>
+        </div>
+        <div class="list">
+          <div class="item"><div class="rank">1</div><div><div class="item-title">Register Sasha on CROO</div><div class="item-sub">Create provider service: <code>Sasha LP Risk Packet</code>.</div></div><div class="metric">$0.10</div></div>
+          <div class="item"><div class="rank">2</div><div><div class="item-title">Return deterministic JSON</div><div class="item-sub">Use existing LP dashboard data, hedge checks, and evidence links.</div></div><div class="metric">~60s</div></div>
+          <div class="item"><div class="rank">3</div><div><div class="item-title">Complete 10+ CAP orders</div><div class="item-sub">3+ counterparty agents, ideally 5+ buyer wallets.</div></div><div class="metric">judge-visible</div></div>
+          <div class="item"><div class="rank">4</div><div><div class="item-title">Demo the order graph</div><div class="item-sub">CROO order, Base tx, Sasha JSON, downstream consumption.</div></div><div class="metric">5 min max</div></div>
+        </div>
+      </main>
+      <footer>
+        <div class="source">Keyboard: left/right arrows or space. Data captured from public CROO endpoints on 2026-06-28.</div>
+        <div class="controls"><button data-prev>&lsaquo;</button><button data-next>&rsaquo;</button></div>
+      </footer>
+    </section>
+  </div>
+  <div class="progress"><span id="progress"></span></div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const progress = document.getElementById('progress');
+    let index = 0;
+
+    function show(next) {
+      index = (next + slides.length) % slides.length;
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+      progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+      document.title = `CROO Services Market Read (${index + 1}/${slides.length})`;
+    }
+
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('[data-next]')) show(index + 1);
+      if (event.target.matches('[data-prev]')) show(index - 1);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === ' ') {
+        event.preventDefault();
+        show(index + 1);
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        show(index - 1);
+      }
+      if (event.key === 'Home') show(0);
+      if (event.key === 'End') show(slides.length - 1);
+    });
+
+    show(0);
+  </script>
+</body>
+</html>

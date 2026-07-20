@@ -30,7 +30,7 @@ fi
 # Safely load specific vars from .env without sourcing the whole file
 _load_var() {
   local key="$1"
-  grep -E "^${key}=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2-
+  { grep -E "^${key}=" "$ENV_FILE" 2>/dev/null || true; } | head -1 | cut -d= -f2-
 }
 
 if [ -n "$ENV_FILE" ] && [ -f "$ENV_FILE" ]; then

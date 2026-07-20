@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ClawPump — Migration Risk Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Surface stack */
+      --bg:          #06070A;
+      --surface-1:   #0A0B0F;
+      --surface-2:   #13141A;
+      --surface-3:   #1B1D26;
+      /* Borders */
+      --border-1:    #22242E;
+      --border-2:    #2D2F3B;
+      --border-3:    #3E4150;
+      /* Text */
+      --text-1:      #F0F1F5;
+      --text-2:      #9EA3B8;
+      --text-3:      #6B7090;
+      /* Accent */
+      --aqua:        #00D4FF;
+      --aqua-dim:    rgba(0,212,255,.12);
+      --purple:      #7B2FBE;
+      --purple-dim:  rgba(123,47,190,.18);
+      /* Semantic */
+      --green:       #34D399;
+      --green-dim:   rgba(52,211,153,.12);
+      --amber:       #FBBF24;
+      --amber-dim:   rgba(251,191,36,.12);
+      --red:         #F87171;
+      --red-dim:     rgba(248,113,113,.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    }
+
+    /* ── Deck container ── */
+    .deck { width: 100vw; height: 100vh; position: relative; }
+
+    .slide {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      padding: 40px 64px 32px;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .slide.active { display: flex; }
+
+    /* ── Header / Footer ── */
+    .slide-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      margin-bottom: 32px;
+    }
+
+    .brand-mark {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .mark-box {
+      width: 34px; height: 34px; border-radius: 7px;
+      background: var(--aqua);
+      display: grid; place-items: center;
+      font-family: "Inter Tight", sans-serif;
+      font-weight: 900; font-size: 15px; color: #000;
+      letter-spacing: -.02em;
+    }
+    .brand-name {
+      font-family: "Inter Tight", sans-serif;
+      font-weight: 700; font-size: 14px;
+      color: var(--text-2); letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .14em;
+      color: var(--aqua);
+    }
+
+    .slide-no {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px; color: var(--text-3);
+    }
+
+    /* ── Main content area ── */
+    .slide-body {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ── Typography ── */
+    h1 {
+      font-family: "Inter Tight", sans-serif;
+      font-weight: 800; line-height: .93;
+      letter-spacing: -.03em; color: var(--text-1);
+    }
+    .h1-xl { font-size: 72px; }
+    .h1-lg { font-size: 58px; }
+    .h1-md { font-size: 46px; }
+
+    h2 {
+      font-family: "Inter Tight", sans-serif;
+      font-weight: 700; font-size: 38px;
+      line-height: 1.05; letter-spacing: -.02em;
+    }
+
+    .lead {
+      font-size: 22px; line-height: 1.48;
+      color: var(--text-2); max-width: 760px;
+    }
+    .lead-sm {
+      font-size: 17px; line-height: 1.55;
+      color: var(--text-2); max-width: 720px;
+    }
+
+    .mono { font-family: "JetBrains Mono", monospace; }
+
+    /* ── Hairline divider ── */
+    .hairline {
+      width: 100%; height: 1px;
+      background: var(--border-1);
+      flex-shrink: 0; margin: 24px 0;
+    }
+
+    /* ── Pill badges ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 4px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .1em;
+    }
+    .badge-green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(52,211,153,.28); }
+    .badge-amber  { background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(251,191,36,.28); }
+    .badge-red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(248,113,113,.28); }
+    .badge-aqua   { background: var(--aqua-dim);   color: var(--aqua);   border: 1px solid rgba(0,212,255,.28); }
+    .badge-purple { background: var(--purple-dim); color: #C084FC;       border: 1px solid rgba(123,47,190,.4); }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border-1);
+      border-radius: 8px;
+      padding: 24px 26px;
+    }
+    .card-sm { padding: 16px 20px; }
+
+    /* ── Two-column grid ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    /* ── Stat block ── */
+    .stat-block { display: flex; flex-direction: column; gap: 6px; }
+    .stat-value {
+      font-family: "Inter Tight", sans-serif;
+      font-size: 40px; font-weight: 800;
+      letter-spacing: -.03em; line-height: 1;
+      color: var(--text-1);
+    }
+    .stat-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; font-weight: 600;
+      color: var(--text-3); text-transform: uppercase; letter-spacing: .1em;
+    }
+
+    /* ── List items ── */
+    .dot-list { display: flex; flex-direction: column; gap: 10px; }
+    .dot-item {
+      display: grid; grid-template-columns: 8px 1fr;
+      gap: 12px; align-items: start;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      margin-top: 7px; flex-shrink: 0;
+    }
+    .dot-green { background: var(--green); }
+    .dot-amber { background: var(--amber); }
+    .dot-red   { background: var(--red);   }
+    .dot-aqua  { background: var(--aqua);  }
+    .dot-text { font-size: 16px; color: var(--text-2); line-height: 1.45; }
+    .dot-text strong { color: var(--text-1); font-weight: 600; }
+
+    /* ── Verdict table ── */
+    .verdict-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 15px;
+    }
+    .verdict-table th {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .12em;
+      color: var(--text-3);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-2);
+      text-align: left;
+    }
+    .verdict-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-1);
+      color: var(--text-2);
+      vertical-align: middle;
+      line-height: 1.4;
+    }
+    .verdict-table td:first-child {
+      font-family: "Inter Tight", sans-serif;
+      font-weight: 600; font-size: 14px;
+      color: var(--text-1); white-space: nowrap;
+    }
+    .verdict-table tr:last-child td { border-bottom: none; }
+
+    /* ── Risk pill for table ── */
+    .risk-pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 3px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+
+    /* ── Accent left-border card ── */
+    .accent-card {
+      border-left: 3px solid;
+      border-radius: 0 6px 6px 0;
+      padding: 18px 22px;
+      background: var(--surface-2);
+      border-top: 1px solid var(--border-1);
+      border-right: 1px solid var(--border-1);
+      border-bottom: 1px solid var(--border-1);
+    }
+    .accent-green  { border-left-color: var(--green); }
+    .accent-amber  { border-left-color: var(--amber); }
+    .accent-red    { border-left-color: var(--red);   }
+
+    /* ── Verdict hero text ── */
+    .verdict-hero {
+      font-family: "Inter Tight", sans-serif;
+      font-size: 52px; font-weight: 800;
+      line-height: 1; letter-spacing: -.03em;
+    }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: 40px;
+      padding: 8px 16px;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    nav button {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-3);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      padding: 4px 10px; border-radius: 20px;
+      transition: color .15s, background .15s;
+    }
+    nav button:hover { color: var(--text-1); background: var(--surface-3); }
+    nav button.active { color: var(--aqua); }
+    #nav-counter {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px; color: var(--text-3);
+      padding: 0 8px;
+      border-left: 1px solid var(--border-2);
+      border-right: 1px solid var(--border-2);
+    }
+
+    /* ── Slide-specific overrides ── */
+
+    /* Title slide accent stripe */
+    .title-stripe {
+      width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--aqua), transparent);
+      position: absolute; left: 0; top: 0;
+    }
+
+    /* Tag cluster */
+    .tag-cluster { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    /* Chain badge large */
+    .chain-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 6px;
+      font-family: "Inter Tight", sans-serif;
+      font-weight: 700; font-size: 20px;
+      border: 2px solid;
+    }
+    .chain-solana { border-color: #9945FF; color: #9945FF; background: rgba(153,69,255,.1); }
+    .chain-base   { border-color: var(--aqua); color: var(--aqua); background: var(--aqua-dim); }
+
+    /* Step blocks */
+    .step-list { display: flex; flex-direction: column; gap: 10px; }
+    .step-item {
+      display: grid; grid-template-columns: 28px 1fr;
+      gap: 14px; align-items: start;
+    }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--surface-3); border: 1px solid var(--border-2);
+      display: grid; place-items: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px; font-weight: 600; color: var(--text-3);
+      flex-shrink: 0;
+    }
+    .step-text { font-size: 16px; color: var(--text-2); line-height: 1.45; padding-top: 2px; }
+    .step-text strong { color: var(--text-1); }
+
+    /* Blocker banner */
+    .blocker-banner {
+      background: var(--red-dim);
+      border: 1px solid rgba(248,113,113,.3);
+      border-radius: 8px;
+      padding: 20px 24px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .blocker-icon {
+      font-size: 28px; flex-shrink: 0;
+    }
+
+    /* Large number display */
+    .big-num {
+      font-family: "Inter Tight", sans-serif;
+      font-weight: 800; font-size: 64px;
+      letter-spacing: -.04em; line-height: 1;
+    }
+
+    /* Compact info rows */
+    .info-row {
+      display: flex; align-items: baseline; gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border-1);
+      font-size: 15px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; font-weight: 600; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: .1em;
+      width: 160px; flex-shrink: 0;
+    }
+    .info-val { color: var(--text-1); font-weight: 500; flex: 1; }
+
+    /* Footer */
+    .slide-footer {
+      margin-top: 20px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-note {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px; color: var(--text-3);
+      max-width: 34%;
+    }
+    .footer-note:last-child { text-align: right; }
+  </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 1: Title -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide active" data-slide="1">
+    <div class="title-stripe"></div>
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">Migration Risk Assessment</div>
+    </div>
+
+    <div class="slide-body" style="justify-content:flex-end; padding-bottom: 60px;">
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <div class="eyebrow" style="color: var(--text-3);">2026-07-09 &nbsp;|&nbsp; Operator-Confidential</div>
+        <h1 class="h1-xl">ClawPump</h1>
+        <div style="display:flex; align-items:center; gap:16px; margin-top:-4px;">
+          <span class="mono" style="font-size:22px; color:var(--aqua); font-weight:600; letter-spacing:-.01em;">clawpump.tech</span>
+          <div class="badge badge-amber">Early Stage</div>
+          <div class="badge badge-aqua">Solana-Only</div>
+        </div>
+        <div class="hairline" style="margin:8px 0;"></div>
+        <p class="lead">Should Sasha migrate her OpenCLAW runtime to ClawPump? This brief gives you the facts, the risks, and the verdict so you can decide.</p>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <div class="footer-note">Research by Sasha Intelligence Agent &nbsp;|&nbsp; 2026-07-09</div>
+      <div class="footer-note">Sources: Firecrawl scrape (clawpump.tech, GitHub, Solana podcast) + web search (15+ results)</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 2: The Question -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide" data-slide="2">
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">The Question</div>
+      <div class="slide-no">02 / 09</div>
+    </div>
+
+    <div class="slide-body" style="gap: 32px;">
+      <h2 style="max-width: 780px;">Should Sasha migrate from<br><span style="color:var(--aqua);">OpenCLAW</span> to <span style="color:#9945FF;">ClawPump</span>?</h2>
+
+      <div class="two-col" style="gap: 24px; margin-top: 8px;">
+        <div class="card">
+          <div class="eyebrow" style="margin-bottom:14px; color:var(--text-3);">Current stack</div>
+          <div class="dot-list">
+            <div class="dot-item">
+              <div class="dot dot-aqua"></div>
+              <div class="dot-text"><strong>Runtime:</strong> OpenCLAW on Hostinger VPS</div>
+            </div>
+            <div class="dot-item">
+              <div class="dot dot-aqua"></div>
+              <div class="dot-text"><strong>Chain:</strong> Base (LP miner, CROO, Gnosis Safe)</div>
+            </div>
+            <div class="dot-item">
+              <div class="dot dot-aqua"></div>
+              <div class="dot-text"><strong>Solana:</strong> Independent pipeline (byreal-cli)</div>
+            </div>
+            <div class="dot-item">
+              <div class="dot dot-aqua"></div>
+              <div class="dot-text"><strong>Social:</strong> Buffer + ADB reply pipeline</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow" style="margin-bottom:14px; color:var(--text-3);">What a migration would mean</div>
+          <div class="dot-list">
+            <div class="dot-item">
+              <div class="dot dot-red"></div>
+              <div class="dot-text">Abandon Base LP miner, CROO, Gnosis Safe</div>
+            </div>
+            <div class="dot-item">
+              <div class="dot dot-red"></div>
+              <div class="dot-text">Rebuild DeFi stack on Solana from scratch</div>
+            </div>
+            <div class="dot-item">
+              <div class="dot dot-amber"></div>
+              <div class="dot-text">Hand X OAuth credentials to a 5-month-old platform</div>
+            </div>
+            <div class="dot-item">
+              <div class="dot dot-amber"></div>
+              <div class="dot-text">Depend on a 2-person team for Sasha's runtime</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accent-card accent-amber" style="margin-top: 4px;">
+        <div class="eyebrow" style="margin-bottom: 8px; color: var(--amber);">What this brief answers</div>
+        <p style="font-size:17px; color:var(--text-1); line-height:1.45;">Is ClawPump legit enough to trust? What is the real technical blocker? And if not a full migration, is there an additive play?</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 3: What ClawPump Is -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide" data-slide="3">
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">What ClawPump Is</div>
+      <div class="slide-no">03 / 09</div>
+    </div>
+
+    <div class="slide-body" style="gap:24px;">
+      <div style="display:flex; align-items:baseline; gap:20px;">
+        <h2>Solana agent infrastructure</h2>
+        <div class="chain-badge chain-solana" style="font-size:14px; padding:5px 12px;">Solana only</div>
+      </div>
+
+      <div class="three-col" style="margin-top:4px;">
+        <div class="card card-sm">
+          <div class="eyebrow" style="margin-bottom:12px; color:var(--text-3);">Core capabilities</div>
+          <div class="dot-list">
+            <div class="dot-item"><div class="dot dot-aqua"></div><div class="dot-text">Non-custodial Solana wallet per agent</div></div>
+            <div class="dot-item"><div class="dot dot-aqua"></div><div class="dot-text">Gasless token launch on pump.fun</div></div>
+            <div class="dot-item"><div class="dot dot-aqua"></div><div class="dot-text">Full DeFi: Jupiter, Raydium, OKX DEX, Phoenix perps</div></div>
+            <div class="dot-item"><div class="dot dot-aqua"></div><div class="dot-text">X/Twitter + Moltbook via OAuth</div></div>
+            <div class="dot-item"><div class="dot dot-aqua"></div><div class="dot-text">x402/Pay.sh in USDC (API payments)</div></div>
+          </div>
+        </div>
+
+        <div class="card card-sm">
+          <div class="eyebrow" style="margin-bottom:12px; color:var(--text-3);">Key metrics</div>
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="stat-block">
+              <div class="stat-value">$722K+</div>
+              <div class="stat-label">Cumulative agent trading volume</div>
+            </div>
+            <div class="hairline" style="margin:0;"></div>
+            <div class="stat-block">
+              <div class="stat-value">126</div>
+              <div class="stat-label">MCP server tools</div>
+            </div>
+            <div class="hairline" style="margin:0;"></div>
+            <div class="stat-block">
+              <div class="stat-value">65</div>
+              <div class="stat-label">Skills (15 built-in, 50 community)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-sm">
+          <div class="eyebrow" style="margin-bottom:12px; color:var(--text-3);">Revenue model</div>
+          <div class="dot-list">
+            <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text"><strong>30%</strong> markup on LLM inference</div></div>
+            <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text"><strong>10-85 bps</strong> swap fees (tier-based)</div></div>
+            <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text"><strong>35%</strong> platform share of pump.fun fees</div></div>
+            <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text">API keys: $49/mo Builder to Enterprise</div></div>
+            <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text"><strong>$0.01/query</strong> for x402 intelligence</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accent-card accent-green" style="margin-top: 4px;">
+        <p style="font-size:15px; color:var(--text-2); line-height:1.45;"><strong style="color:var(--green);">OpenClaw connection:</strong> ClawPump was explicitly built to give OpenClaw agents Solana execution. From andy's launch tweet: "created Clawpump to let any agent, such as the ones running on @openclaw, connect to @solana." Sasha runs on OpenCLAW. This is architecturally relevant.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 4: Legitimacy -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide" data-slide="4">
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">Legitimacy Assessment</div>
+      <div class="slide-no">04 / 09</div>
+    </div>
+
+    <div class="slide-body" style="gap: 22px;">
+      <h2>Named founders. Institutional signal. Real volume.</h2>
+
+      <div class="two-col">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div class="card card-sm">
+            <div class="eyebrow" style="margin-bottom:10px; color:var(--green);">Founder 1</div>
+            <div class="info-row"><div class="info-key">Handle</div><div class="info-val mono">@andy8052</div></div>
+            <div class="info-row"><div class="info-key">Contribution</div><div class="info-val">Built initial version as weekend project, Feb 2 2026</div></div>
+            <div class="info-row"><div class="info-key">GitHub</div><div class="info-val mono">andy8052/clawpump (public)</div></div>
+          </div>
+          <div class="card card-sm">
+            <div class="eyebrow" style="margin-bottom:10px; color:var(--green);">Founder 2</div>
+            <div class="info-row"><div class="info-key">Name</div><div class="info-val">Bunny / Mauricio Trujillo Ramirez</div></div>
+            <div class="info-row"><div class="info-key">Role</div><div class="info-val">CEO, co-founder of Tektonic</div></div>
+            <div class="info-row"><div class="info-key">LinkedIn</div><div class="info-val">Confirmed (Peru)</div></div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div class="accent-card accent-green">
+            <div class="eyebrow" style="margin-bottom:10px; color:var(--green);">Institutional Signal</div>
+            <p style="font-size:15px; color:var(--text-1); line-height:1.5;"><strong>Solana Foundation podcast "The Index"</strong><br>June 20, 2026 with host Nicky Scanella. The Foundation is selective. This is not typical for a rug or scam.</p>
+          </div>
+
+          <div class="card card-sm">
+            <div class="eyebrow" style="margin-bottom:12px; color:var(--text-3);">Scam signal scan</div>
+            <div class="dot-list">
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">No scam allegations found</div></div>
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">No rug reports</div></div>
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">No phishing complaints</div></div>
+              <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text">5 months old, weekend-hack origin, small community</div></div>
+              <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text">Low social footprint (no Reddit, no Farcaster)</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="blocker-banner" style="background:var(--green-dim); border-color:rgba(52,211,153,.3);">
+        <div class="blocker-icon">✅</div>
+        <div>
+          <div class="eyebrow" style="color:var(--green); margin-bottom:6px;">Verdict: Not a scam</div>
+          <p style="font-size:15px; color:var(--text-2);">Named founders, Solana Foundation podcast, public GitHub, live $722K trading volume. Scam risk is low. The risks are maturity and infrastructure reliability, not intent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 5: Custody & Credential Model -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide" data-slide="5">
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">Custody and Credential Model</div>
+      <div class="slide-no">05 / 09</div>
+    </div>
+
+    <div class="slide-body" style="gap: 24px;">
+      <h2>Non-custodial wallets. Custodial OAuth.</h2>
+
+      <div class="two-col">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div class="card card-sm">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+              <div class="eyebrow" style="color:var(--green);">Solana Wallet Custody</div>
+              <div class="badge badge-green">Non-custodial (claimed)</div>
+            </div>
+            <div class="dot-list">
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">Each agent gets its own Solana keypair</div></div>
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">"ClawPump never holds your keys" (their claim)</div></div>
+              <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text">Actual mechanism unverified: client-side vs server-side TEE vs MPC not documented</div></div>
+              <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text">No public audit confirming the claim</div></div>
+            </div>
+          </div>
+
+          <div class="card card-sm">
+            <div class="eyebrow" style="margin-bottom:10px; color:var(--text-3);">x402 compatibility</div>
+            <div class="dot-list">
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">Native x402/Pay.sh support built in</div></div>
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">Aligns with Sasha's existing sasha-x402-kit</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="blocker-banner" style="margin-bottom:14px;">
+            <div class="blocker-icon">⚠</div>
+            <div>
+              <div class="eyebrow" style="color:var(--red); margin-bottom:6px;">Highest-Stakes Risk: X OAuth</div>
+              <p style="font-size:14px; color:var(--text-2); line-height:1.5;">ClawPump stores Twitter/X OAuth tokens on their backend. If their infrastructure is compromised or seized, <strong style="color:var(--text-1);">@SashaCoin95 account control is at risk.</strong> Two-person team, no security documentation, no bug bounty.</p>
+            </div>
+          </div>
+
+          <div class="card card-sm">
+            <div class="eyebrow" style="margin-bottom:12px; color:var(--text-3);">Open security questions</div>
+            <div class="dot-list">
+              <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text">Keypair generation: client-side or server-side?</div></div>
+              <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text">No public audits or bug bounty found</div></div>
+              <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text">No security documentation published</div></div>
+              <div class="dot-item"><div class="dot dot-amber"></div><div class="dot-text">Infrastructure reliability unknown for live-trading agents</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accent-card accent-amber">
+        <p style="font-size:14px; color:var(--text-2); line-height:1.45;"><strong style="color:var(--amber);">Mitigation path:</strong> Read the @clawpump/agents npm source code at github.com/andy8052/clawpump before connecting any wallet. Use a throwaway X account for the social skill, never @SashaCoin95.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 6: The Blocker -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide" data-slide="6">
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">The Blocker</div>
+      <div class="slide-no">06 / 09</div>
+    </div>
+
+    <div class="slide-body" style="gap:28px;">
+      <div style="display:flex; align-items:center; gap:20px;">
+        <h2>Solana-only</h2>
+        <span style="font-size:36px; color:var(--text-3);">vs</span>
+        <h2>Sasha's Base stack</h2>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:24px; margin-top:4px;">
+        <div class="chain-badge chain-solana" style="font-size:18px;">Solana &nbsp;(ClawPump)</div>
+        <div style="flex:1; height:2px; background:linear-gradient(90deg, #9945FF, var(--red), var(--aqua));"></div>
+        <div class="chain-badge chain-base" style="font-size:18px;">Base &nbsp;(Sasha)</div>
+      </div>
+
+      <div class="two-col">
+        <div class="card card-sm">
+          <div class="eyebrow" style="margin-bottom:14px; color:var(--red);">What ClawPump does NOT cover</div>
+          <div class="dot-list">
+            <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text"><strong>LP miner</strong> on Base (WETH/USDC Uniswap v3, Aerodrome)</div></div>
+            <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text"><strong>CROO services</strong> (LP risk packets on Base)</div></div>
+            <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text"><strong>Gnosis Safe</strong> treasury on Base</div></div>
+            <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text"><strong>Hyperliquid hedge</strong> (BTC short, delta-neutral)</div></div>
+            <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text"><strong>OKX X Layer oracle</strong> heartbeat keeper</div></div>
+          </div>
+        </div>
+        <div class="card card-sm">
+          <div class="eyebrow" style="margin-bottom:14px; color:var(--green);">What IS compatible</div>
+          <div class="dot-list">
+            <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text"><strong>Solana LP positions</strong> (SOL/USDC, byreal-cli)</div></div>
+            <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text"><strong>Pump.fun token launches</strong> (new capability)</div></div>
+            <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text"><strong>Solana DEX trading</strong> (Jupiter, Raydium)</div></div>
+            <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text"><strong>x402 payments</strong> (native, same as Sasha's kit)</div></div>
+            <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">OpenCLAW runtime compatibility (built for it)</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="blocker-banner">
+        <div class="blocker-icon">🔴</div>
+        <div>
+          <div class="eyebrow" style="color:var(--red); margin-bottom:6px;">Primary Technical Blocker</div>
+          <p style="font-size:15px; color:var(--text-1);">ClawPump is Solana-only. This is not a minor compatibility issue. A full migration would require abandoning Sasha's entire Base infrastructure and rebuilding from scratch. That is not a migration. It is a rewrite.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 7: The Squatter / Name Collision -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide" data-slide="7">
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">Name Collision Warning</div>
+      <div class="slide-no">07 / 09</div>
+    </div>
+
+    <div class="slide-body" style="gap: 24px;">
+      <h2>clawpump.net <span style="color:var(--red);">is not</span> clawpump.tech</h2>
+
+      <div class="two-col">
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px; color:var(--green);">The real platform</div>
+          <div class="card card-sm">
+            <div class="info-row"><div class="info-key">Domain</div><div class="info-val mono" style="color:var(--aqua);">clawpump.tech</div></div>
+            <div class="info-row"><div class="info-key">Founders</div><div class="info-val">andy (@andy8052) + Bunny (Mauricio Trujillo Ramirez)</div></div>
+            <div class="info-row"><div class="info-key">Product</div><div class="info-val">Solana agent infra + DeFi skills + MCP server</div></div>
+            <div class="info-row"><div class="info-key">Volume</div><div class="info-val">$722K+ cumulative agent trading</div></div>
+            <div class="info-row"><div class="info-key">Status</div><div class="info-val"><span class="badge badge-green">Legit</span></div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px; color:var(--red);">The squatter / fork</div>
+          <div class="card card-sm">
+            <div class="info-row"><div class="info-key">Domain</div><div class="info-val mono" style="color:var(--red);">clawpump.net</div></div>
+            <div class="info-row"><div class="info-key">Token</div><div class="info-val mono">$CLAWPUMP</div></div>
+            <div class="info-row"><div class="info-key">Contract</div><div class="info-val mono" style="font-size:11px;">DMvsGEm3VZLfJCyQUnTnhLdH7vyFP9oQSFcrcrgBCLAW</div></div>
+            <div class="info-row"><div class="info-key">Market cap</div><div class="info-val">~$112K (fewer than 100 tokens launched)</div></div>
+            <div class="info-row"><div class="info-key">Relationship</div><div class="info-val"><span class="badge badge-red">No official link confirmed</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="blocker-banner" style="background:var(--amber-dim); border-color:rgba(251,191,36,.3);">
+        <div class="blocker-icon">⚠</div>
+        <div>
+          <div class="eyebrow" style="color:var(--amber); margin-bottom:6px;">Action: Ignore clawpump.net entirely</div>
+          <p style="font-size:15px; color:var(--text-2);">The $CLAWPUMP meme token ($112K market cap, community fork) is noise. Do not send funds to clawpump.net addresses. Do not treat $CLAWPUMP as a signal about the clawpump.tech platform's health. They are unrelated entities sharing a name.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 8: Verdict Table -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide" data-slide="8">
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">Assessment</div>
+      <div class="slide-no">08 / 09</div>
+    </div>
+
+    <div class="slide-body" style="gap: 24px;">
+
+      <div style="display:flex; align-items:baseline; gap:20px;">
+        <div class="verdict-hero" style="color:var(--green);">Legit platform,</div>
+        <div class="verdict-hero" style="color:var(--red);">wrong chain.</div>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <table class="verdict-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Assessment</th>
+              <th>Signal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Scam / rug risk</td>
+              <td>Named founders, Solana Foundation podcast, public GitHub, live trading volume</td>
+              <td><span class="risk-pill badge-green">Low</span></td>
+            </tr>
+            <tr>
+              <td>Platform maturity</td>
+              <td>Weekend hack origin, 5 months old, small community, "still rough around the edges"</td>
+              <td><span class="risk-pill badge-amber">Early</span></td>
+            </tr>
+            <tr>
+              <td>Custody model</td>
+              <td>Non-custodial for Solana wallets (claimed, unverified). Custodial for X/Twitter OAuth credentials</td>
+              <td><span class="risk-pill badge-amber">Mixed</span></td>
+            </tr>
+            <tr>
+              <td>Chain compatibility</td>
+              <td>Solana-only. Sasha's LP miner, CROO, and Gnosis Safe are all on Base</td>
+              <td><span class="risk-pill badge-red">Blocker</span></td>
+            </tr>
+            <tr>
+              <td>OpenClaw compatibility</td>
+              <td>High. ClawPump was explicitly built so OpenClaw agents can reach Solana</td>
+              <td><span class="risk-pill badge-green">High</span></td>
+            </tr>
+            <tr>
+              <td>x402 compatibility</td>
+              <td>Native x402/Pay.sh support. Same as Sasha's existing kit</td>
+              <td><span class="risk-pill badge-green">High</span></td>
+            </tr>
+            <tr>
+              <td>Twitter credential risk</td>
+              <td>OAuth stored on ClawPump backend. Standard model, but 2-person team infra</td>
+              <td><span class="risk-pill badge-red">Medium-High</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SLIDE 9: Recommendation -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="slide" data-slide="9">
+    <div class="slide-header">
+      <div class="brand-mark">
+        <div class="mark-box">S</div>
+        <div class="brand-name">Sasha / Intelligence Brief</div>
+      </div>
+      <div class="eyebrow">Recommendation</div>
+      <div class="slide-no">09 / 09</div>
+    </div>
+
+    <div class="slide-body" style="gap: 22px;">
+      <div style="display:flex; align-items:center; gap:20px;">
+        <div class="badge badge-red" style="font-size:14px; padding:7px 14px;">NO full migration</div>
+        <h2>Consider additive Solana layer</h2>
+      </div>
+
+      <div class="two-col" style="align-items:start;">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="accent-card accent-red">
+            <div class="eyebrow" style="color:var(--red); margin-bottom:8px;">Do not do</div>
+            <div class="dot-list">
+              <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text">Full runtime migration to ClawPump</div></div>
+              <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text">Connect @SashaCoin95 Twitter OAuth to ClawPump</div></div>
+              <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text">Fund a ClawPump wallet with significant capital before verifying key custody</div></div>
+              <div class="dot-item"><div class="dot dot-red"></div><div class="dot-text">Treat clawpump.net or $CLAWPUMP as relevant</div></div>
+            </div>
+          </div>
+
+          <div class="accent-card accent-green">
+            <div class="eyebrow" style="color:var(--green); margin-bottom:8px;">Consider</div>
+            <div class="dot-list">
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">Evaluate ClawPump as an <strong>additive Solana execution layer</strong> (pump.fun launches, Raydium/Jupiter DEX)</div></div>
+              <div class="dot-item"><div class="dot dot-green"></div><div class="dot-text">This is exactly what the platform was built for: OpenClaw agents on Solana</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="eyebrow" style="margin-bottom:14px; color:var(--aqua);">Safe test path (if pursuing additive)</div>
+          <div class="step-list">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-text"><strong>Read source first.</strong> Check github.com/andy8052/clawpump npm source to verify key custody claims on-chain.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-text"><strong>Burner Solana wallet only.</strong> Never connect the main Gnosis Safe or base wallet.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-text"><strong>$20 max</strong> funding during evaluation period. No exceptions.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">4</div>
+              <div class="step-text"><strong>Throwaway X account</strong> for the ClawPump social skill. Never @SashaCoin95.</div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">5</div>
+              <div class="step-text"><strong>Validate on-chain</strong> custody behavior before increasing any exposure.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <div class="footer-note">ClawPump research completed 2026-07-09 &nbsp;|&nbsp; No scam allegations found &nbsp;|&nbsp; No guarantee of platform security given early stage and lack of public audits</div>
+        <div class="footer-note">Sasha Intelligence Brief</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- ── Navigation ── -->
+<nav>
+  <button id="btn-prev" onclick="navigate(-1)">&#8592; Prev</button>
+  <span id="nav-counter">1 / 9</span>
+  <button id="btn-next" onclick="navigate(1)">Next &#8594;</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    document.getElementById('nav-counter').textContent = (current + 1) + ' / ' + slides.length;
+  }
+
+  function navigate(dir) { showSlide(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); navigate(-1); }
+  });
+
+  // Click anywhere on slide body to advance
+  document.getElementById('deck').addEventListener('click', e => {
+    if (e.target.closest('nav') || e.target.closest('button')) return;
+    navigate(1);
+  });
+</script>
+
+</body>
+</html>

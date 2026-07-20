@@ -11,8 +11,12 @@
  *   DELEVERAGE    — HF falling: repay portion of Morpho loan
  *
  * Kill-switch (killSwitch:true): executes CLOSE_POSITION only, no reopen. Fires Telegram alert.
- * KILL execution stays gated on Gabriel's explicit confirmation (run with --execute) — the
- * monitor only writes the signal; nothing closes autonomously.
+ * As of 2026-07-05 (H-3, security-audit-fable5-2026-07-04.md) EVERY killSwitch action also
+ * carries confirmGated:true — stop-loss, HF emergency, and funding-kill used to auto-execute
+ * from the 30-min cron with no human gate and no historical validation of the thresholds.
+ * All KILL actions now require --confirm-kill / LP_KILL_OK=1 until a price-history backtest
+ * validates the thresholds, at which point stop-loss/HF-emergency/funding-kill may be
+ * un-gated for speed (OOR-distance/hedge-liq-proximity should likely stay manual either way).
  *
  * Usage:
  *   node scripts/lp-rebalancer.js                    # dry-run (default)

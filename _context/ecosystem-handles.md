@@ -16,6 +16,7 @@
 | Aerodrome | @AerodromeFi | DEX on Base (verified 2026-06-03; prior @AerodromeFinance was incorrect) |
 | Coinbase | @coinbase | |
 | OpenCLAW | @openclaw_ai | Sasha's runtime (tag when relevant) |
+| Casper Network | @Casper_Network | L1 blockchain, host of the Casper Agentic Buildathon (verified via web search 2026-07-05) |
 
 ## AI Agent Projects
 

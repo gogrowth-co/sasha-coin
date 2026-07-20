@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CROO x Sasha War Room</title>
+  <style>
+    :root {
+      --ink: #11140f;
+      --paper: #f8faf4;
+      --soft: #eef3e8;
+      --line: #d9e2d1;
+      --muted: #5e6b59;
+      --lime: #76ed4d;
+      --blue: #2166f3;
+      --plum: #7a3bb8;
+      --gold: #c18420;
+      --red: #cc4356;
+      --white: #fff;
+      --shadow: 0 24px 70px rgba(17, 20, 15, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(118,237,77,.18), transparent 36%),
+        linear-gradient(315deg, rgba(33,102,243,.10), transparent 34%),
+        var(--paper);
+      overflow: hidden;
+    }
+
+    .deck { width: 100vw; height: 100vh; position: relative; }
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      grid-template-rows: auto 1fr auto;
+      padding: 42px 60px 32px;
+    }
+    .slide.active { display: grid; }
+
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--ink);
+      color: var(--lime);
+      font-weight: 900;
+    }
+
+    .eyebrow {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: #2e7d32;
+      font-weight: 800;
+    }
+
+    .slide-no, .hint {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    main {
+      display: grid;
+      align-content: center;
+      gap: 28px;
+      min-height: 0;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      max-width: 1040px;
+      font-size: 66px;
+      line-height: .95;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      max-width: 1020px;
+      font-size: 46px;
+      line-height: 1.03;
+      letter-spacing: 0;
+    }
+
+    h3 { font-size: 18px; }
+
+    .lead {
+      max-width: 880px;
+      font-size: 23px;
+      line-height: 1.42;
+      color: #364232;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .panel, .stat, .row, .quote {
+      background: rgba(255, 255, 255, .86);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel { padding: 28px; }
+    .quote {
+      border-left: 7px solid var(--lime);
+      border-radius: 0 8px 8px 0;
+      padding: 24px 28px;
+      font-size: 27px;
+      line-height: 1.18;
+      font-weight: 900;
+    }
+
+    .stat {
+      min-height: 142px;
+      padding: 20px;
+      box-shadow: none;
+    }
+    .stat strong {
+      display: block;
+      font-size: 34px;
+      line-height: 1;
+      margin: 8px 0;
+    }
+    .stat span, .small {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .rows { display: grid; gap: 10px; }
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      box-shadow: none;
+    }
+
+    .rank {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--ink);
+      color: var(--white);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .title { font-weight: 900; font-size: 17px; }
+    .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: #2d4425;
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .blue { color: var(--blue); }
+    .plum { color: var(--plum); }
+    .gold { color: var(--gold); }
+    .red { color: var(--red); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.86);
+      padding: 18px;
+      min-height: 160px;
+    }
+    .step b { display: block; font-size: 16px; margin: 10px 0 8px; }
+    .step span { color: var(--muted); font-size: 13px; line-height: 1.35; }
+
+    .json {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #11140f;
+      color: #e8ffe1;
+      border-radius: 8px;
+      padding: 18px;
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      overflow: hidden;
+      min-height: 350px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--ink);
+      font-size: 19px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .deck { height: auto; min-height: 100vh; }
+      .slide { position: relative; min-height: 100vh; padding: 26px 20px; }
+      h1 { font-size: 42px; }
+      h2 { font-size: 34px; }
+      .lead { font-size: 18px; }
+      .grid-2, .grid-3, .steps { grid-template-columns: 1fr; }
+      .row { grid-template-columns: auto 1fr; }
+      .row .pill { grid-column: 2; justify-self: start; }
+      footer { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+    <section class="slide active">
+      <header>
+        <div class="brand"><div class="mark">S</div><div>Sasha x CROO</div></div>
+        <div class="slide-no">01 / 09</div>
+      </header>
+      <main>
+        <div class="eyebrow">war room thesis</div>
+        <h1>Win by proving Sasha is not a bot. She is an agent business.</h1>
+        <p class="lead">CROO is rewarding commercial fulfillment: ordered work, locked terms, verifiable delivery, on-chain settlement, and portable reputation.</p>
+        <div class="quote">Sasha buys intelligence, sells LP risk receipts, settles via CAP, and compounds reputation through every delivery.</div>
+      </main>
+      <footer><div class="hint">Use arrow keys</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">C</div><div>CROO Narrative</div></div><div class="slide-no">02 / 09</div></header>
+      <main>
+        <h2>The official doctrine is commerce rails, not generic agent intelligence.</h2>
+        <div class="grid-3">
+          <div class="stat"><div class="eyebrow">news thesis</div><strong>Post</strong><span>Agents need order formation, not just task execution.</span></div>
+          <div class="stat"><div class="eyebrow">cap</div><strong>Lock</strong><span>Terms, price, SLA, and escrow must be explicit.</span></div>
+          <div class="stat"><div class="eyebrow">delivery</div><strong>Clear</strong><span>Payment and reputation finalize only after proof of work.</span></div>
+        </div>
+        <p class="lead">Their articles hammer the same gap: MCP gives tools, A2A gives messaging, AP2 patches payments, but CROO wants the commercial lifecycle.</p>
+      </main>
+      <footer><div class="hint">Sources: CROO news, Protocol Wars, ERC-8183 article</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">$</div><div>Store Reality</div></div><div class="slide-no">03 / 09</div></header>
+      <main>
+        <h2>The Store already tells us what sells.</h2>
+        <div class="grid-3">
+          <div class="stat"><div class="eyebrow">agents</div><strong>464</strong><span>Public Store count at pull time.</span></div>
+          <div class="stat"><div class="eyebrow">orders</div><strong>48,585</strong><span>Completed/recorded marketplace orders.</span></div>
+          <div class="stat"><div class="eyebrow">volume</div><strong>$76k</strong><span>Approx public volume from micro-USDC units.</span></div>
+        </div>
+        <div class="quote">Order-count winners are mostly $0.10 DeFi/data microservices. Revenue winners are subscriptions and access codes.</div>
+      </main>
+      <footer><div class="hint">Source: CROO public Store API, pulled 2026-06-28</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">#</div><div>Order Leaders</div></div><div class="slide-no">04 / 09</div></header>
+      <main>
+        <h2>Microservices are the fastest route to traction.</h2>
+        <div class="rows">
+          <div class="row"><div class="rank">1</div><div><div class="title">BTC Recent Trades</div><div class="sub">BtcForecast</div></div><div class="pill">2,456 orders / $0.10</div></div>
+          <div class="row"><div class="rank">2</div><div><div class="title">wallet_positions</div><div class="sub">WhaleScope</div></div><div class="pill">2,455 orders / $0.10</div></div>
+          <div class="row"><div class="rank">3</div><div><div class="title">SwapGod</div><div class="sub">Swap execution / degen ops</div></div><div class="pill">2,391 orders / $0.10</div></div>
+          <div class="row"><div class="rank">4</div><div><div class="title">Polymarket Market Detail</div><div class="sub">Prediction-market intelligence</div></div><div class="pill">2,359 orders / $0.10</div></div>
+          <div class="row"><div class="rank">5</div><div><div class="title">Gas Tracker + Hyperliquid Vault Overview</div><div class="sub">Execution context and risk analysis</div></div><div class="pill">2.2k+ each / $0.10</div></div>
+        </div>
+      </main>
+      <footer><div class="hint">Implication: launch Sasha at $0.10 first</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">X</div><div>Social Signal</div></div><div class="slide-no">05 / 09</div></header>
+      <main>
+        <h2>CROO's feed is now spotlighting real Store agents and builder onboarding.</h2>
+        <div class="grid-2">
+          <div class="panel">
+            <h3>Official tweet themes</h3>
+            <div class="rows" style="margin-top:16px">
+              <div class="row"><div class="rank">44</div><div><div class="title">CAP / commerce / paid orders</div></div><div class="pill">dominant</div></div>
+              <div class="row"><div class="rank">35</div><div><div class="title">Builder events / hackathon</div></div><div class="pill">active push</div></div>
+              <div class="row"><div class="rank">30</div><div><div class="title">DeFi / degen / on-chain ops</div></div><div class="pill">Sasha fit</div></div>
+              <div class="row"><div class="rank">25</div><div><div class="title">Reputation / trust / verification</div></div><div class="pill">receipt fit</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Latest CROO product language</h3>
+            <p class="lead" style="font-size:20px;margin-top:16px">"Trust me bro" is not a deposit strategy. That exact frame can become Sasha's strongest hook: trust me bro is not an LP strategy either.</p>
+            <p class="small" style="margin-top:18px">Recent posts also highlight grassroots deployments, Store listings, DeFi track spotlights, and verification agents.</p>
+          </div>
+        </div>
+      </main>
+      <footer><div class="hint">Source: Apify scrape of @CROONetwork + search corpus</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">1</div><div>Core Product</div></div><div class="slide-no">06 / 09</div></header>
+      <main>
+        <h2>Launch one killer service: Sasha LP Risk Packet.</h2>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="eyebrow">service spec</div>
+            <h3 style="font-size:30px;margin-top:10px">$0.10 / 5 minute SLA</h3>
+            <p class="lead" style="font-size:19px;margin-top:16px">A structured LP verdict for a pool, wallet, or position: hold, rebalance, exit, or monitor.</p>
+            <div class="rows" style="margin-top:18px">
+              <div class="row"><div class="rank">A</div><div><div class="title">Fits DeFi / On-chain Ops</div></div><div class="pill">primary track</div></div>
+              <div class="row"><div class="rank">B</div><div><div class="title">Uses external CROO agents</div></div><div class="pill">A2A proof</div></div>
+              <div class="row"><div class="rank">C</div><div><div class="title">Ships delivery hash</div></div><div class="pill">verification</div></div>
+            </div>
+          </div>
+          <pre class="json">{
+  "verdict": "rebalance",
+  "risk_score": 72,
+  "range_distance_pct": 1.8,
+  "gas_context": "moderate",
+  "external_agent_inputs": [
+    { "agent": "Gas Tracker", "order_id": "..." },
+    { "agent": "Polymarket Broker", "order_id": "..." }
+  ],
+  "evidence": ["tx", "source", "timestamp"],
+  "delivery_hash": "sha256:..."
+}</pre>
+        </div>
+      </main>
+      <footer><div class="hint">Sasha-native, CROO-native, judge-readable</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">A</div><div>A2A Loop</div></div><div class="slide-no">07 / 09</div></header>
+      <main>
+        <h2>Make Sasha both a buyer and seller.</h2>
+        <div class="steps">
+          <div class="step"><div class="rank">1</div><b>Order</b><span>Requester buys Sasha LP Risk Packet.</span></div>
+          <div class="step"><div class="rank">2</div><b>Source</b><span>Sasha buys Gas Tracker, Polymarket, wallet, or vault intel.</span></div>
+          <div class="step"><div class="rank">3</div><b>Synthesize</b><span>Sasha fuses her own LP state with supplier outputs.</span></div>
+          <div class="step"><div class="rank">4</div><b>Deliver</b><span>Structured JSON, human summary, delivery hash.</span></div>
+          <div class="step"><div class="rank">5</div><b>Reputation</b><span>Every completed order becomes operating history.</span></div>
+        </div>
+        <div class="quote">The demo must show agents hiring agents. A human clicking a button is only the wrapper.</div>
+      </main>
+      <footer><div class="hint">This maps directly to CROO judging: A2A composability + technical execution</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">5</div><div>Build Sprint</div></div><div class="slide-no">08 / 09</div></header>
+      <main>
+        <h2>Five-day path to a judge-proof submission.</h2>
+        <div class="rows">
+          <div class="row"><div class="rank">D1</div><div><div class="title">List Sasha LP Risk Packet</div><div class="sub">CROO SDK handler, $0.10 price, deterministic JSON delivery.</div></div><div class="pill">commerce loop</div></div>
+          <div class="row"><div class="rank">D2</div><div><div class="title">Buy from 3+ CROO agents</div><div class="sub">Gas, wallet, Polymarket, BTC, Hyperliquid, swap context.</div></div><div class="pill">A2A</div></div>
+          <div class="row"><div class="rank">D3</div><div><div class="title">Receipt dashboard</div><div class="sub">Order IDs, supplier IDs, verdicts, timestamps, delivery hashes.</div></div><div class="pill">proof</div></div>
+          <div class="row"><div class="rank">D4</div><div><div class="title">Order graph sprint</div><div class="sub">10+ orders, 3+ counterparties, 5+ buyer wallets if possible.</div></div><div class="pill">anti-sybil</div></div>
+          <div class="row"><div class="rank">D5</div><div><div class="title">Demo and README</div><div class="sub">Show order, supplier purchase, delivery, settlement, reputation.</div></div><div class="pill">submission</div></div>
+        </div>
+      </main>
+      <footer><div class="hint">The build is mostly integration and proof packaging</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">W</div><div>Winning Close</div></div><div class="slide-no">09 / 09</div></header>
+      <main>
+        <h2>Final positioning for DoraHacks.</h2>
+        <div class="quote">Sasha Risk Desk: the DeFi agent that buys intelligence, sells risk receipts, and builds reputation on-chain.</div>
+        <div class="grid-3">
+          <div class="stat"><div class="eyebrow">primary</div><strong>DeFi Ops</strong><span>LP risk, gas, execution, on-chain monitoring.</span></div>
+          <div class="stat"><div class="eyebrow">secondary</div><strong>Research</strong><span>Paid intelligence with verifiable sources.</span></div>
+          <div class="stat"><div class="eyebrow">bonus</div><strong>Open A2A</strong><span>Sasha buys from other agents to fulfill orders.</span></div>
+        </div>
+        <p class="lead">CROO says the missing piece is commercial fulfillment. Sasha proves it in one loop: source, sell, settle, deliver, remember.</p>
+      </main>
+      <footer><div class="hint">Full brief: docs/croo-deep-intelligence-brief-2026-06-28.md</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let index = 0;
+    function show(next) {
+      slides[index].classList.remove('active');
+      index = (next + slides.length) % slides.length;
+      slides[index].classList.add('active');
+    }
+    document.querySelectorAll('[data-next]').forEach((button) => button.addEventListener('click', () => show(index + 1)));
+    document.querySelectorAll('[data-prev]').forEach((button) => button.addEventListener('click', () => show(index - 1)));
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === ' ') show(index + 1);
+      if (event.key === 'ArrowLeft') show(index - 1);
+    });
+  </script>
+</body>
+</html>

@@ -27,6 +27,7 @@
 | `social-graphics` | Branded social visuals via nanobanana MCP |
 | `canvas-design` | Illustrations, infographics, icons |
 | `frontend-design` | Production-ready HTML/CSS UI components |
+| `21st-components` | Reference engine — search 21st.dev registry (MCP + CLI) for real UI component code before building patterns from scratch |
 | `branded-deck` | Branded strategy/campaign decks (.pptx) |
 | `pptx` | Generic .pptx read/create/edit |
 | `visual-references` | Vision board of design references |

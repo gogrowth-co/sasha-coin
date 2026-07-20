@@ -50,6 +50,7 @@ const SIGNAL_PATH    = path.join(WORKSPACE, 'content', 'lp-rebalance-signal.json
 
 const KILL = {
     oorTimeoutMinutes:    720,   // OOR for 12h -> informational OOR_ALERT (no auto-recenter; hold & evaluate)
+    oorSustainedEscalateMinutes: 1440,  // OOR for 24h -> escalate to a confirm-gated KILL (matches the manual policy in lp-positions.json _comment)
     oorDistanceKillPct:   5,     // price >= 5% beyond the breached band -> KILL (a deep excursion = trend, fires regardless of timer)
     hedgeLiqProximityPct: 3,     // hedge mark within 3% of its liquidation price -> KILL (protect margin), regardless of timer
     hedgeDriftPct:     0.05,     // 5% drift from target hedge size
@@ -253,10 +254,13 @@ async function evaluatePosition(position) {
         const slPct       = position.stopLossPct ?? KILL.stopLossPct
         log(`  PnL: $${pnlUsd.toFixed(2)} (${pnlPct.toFixed(1)}%) | stop-loss: ${slPct}% | emergency: ${slEmergency}%`)
 
+        // confirmGated 2026-07-05 pending backtest (H-3): these auto-executed from cron with
+        // no human gate and no historical validation of the thresholds. Held for Gabriel via
+        // --confirm-kill until a price-history replay confirms the thresholds behave sanely.
         if (pnlPct <= slEmergency) {
-            actions.push({ type: 'CLOSE_POSITION', reason: `STOP-LOSS EMERGENCY: PnL ${pnlPct.toFixed(1)}% ≤ ${slEmergency}%`, pnlPct, pnlUsd, killSwitch: true })
+            actions.push({ type: 'CLOSE_POSITION', reason: `STOP-LOSS EMERGENCY: PnL ${pnlPct.toFixed(1)}% ≤ ${slEmergency}%`, pnlPct, pnlUsd, killSwitch: true, confirmGated: true })
         } else if (pnlPct <= slPct) {
-            actions.push({ type: 'CLOSE_POSITION', reason: `Stop-loss: PnL ${pnlPct.toFixed(1)}% ≤ ${slPct}%`, pnlPct, pnlUsd, killSwitch: true })
+            actions.push({ type: 'CLOSE_POSITION', reason: `Stop-loss: PnL ${pnlPct.toFixed(1)}% ≤ ${slPct}%`, pnlPct, pnlUsd, killSwitch: true, confirmGated: true })
         }
     }
 
@@ -274,14 +278,22 @@ async function evaluatePosition(position) {
         const beyondPct = oorSide === 'low'
             ? (state.lowerPrice - state.currentPrice) / state.lowerPrice * 100
             : (state.currentPrice - state.upperPrice) / state.upperPrice * 100
-        const distKill = position.oorDistanceKillPct ?? KILL.oorDistanceKillPct
-        const timeout  = position.oorTimeoutMinutes  ?? KILL.oorTimeoutMinutes
+        const distKill    = position.oorDistanceKillPct ?? KILL.oorDistanceKillPct
+        const timeout     = position.oorTimeoutMinutes  ?? KILL.oorTimeoutMinutes
+        const escalateMin = position.oorSustainedEscalateMinutes ?? KILL.oorSustainedEscalateMinutes
         state.oorBeyondPct = beyondPct
-        log(`  OOR ${oorMinutes.toFixed(0)} min, ${beyondPct.toFixed(1)}% beyond ${oorSide} band (timer: ${timeout} min, distance-kill: ${distKill}%)`)
+        log(`  OOR ${oorMinutes.toFixed(0)} min, ${beyondPct.toFixed(1)}% beyond ${oorSide} band (timer: ${timeout} min, escalate: ${escalateMin} min, distance-kill: ${distKill}%)`)
         if (beyondPct >= distKill) {
             // Hard — trend: deep excursion past the band. Fires regardless of the timer.
             // confirmGated: the rebalancer must NOT auto-execute this from cron — Gabriel confirms (see lp-rebalancer --confirm-kill).
             actions.push({ type: 'KILL', reason: `OOR-${oorSide} ${beyondPct.toFixed(1)}% beyond band (trend)`, killSwitch: true, confirmGated: true })
+        } else if (oorMinutes >= escalateMin) {
+            // Escalated — sustained OOR past 24h (the manual policy documented in lp-positions.json's
+            // _comment, previously enforced only by Gabriel remembering to check). Every prior cycle
+            // already alerted at the 12h OOR_ALERT tier; this promotes to a confirm-gated KILL so the
+            // repeat-Telegram-while-breached mechanism (position-monitor + lp-rebalancer, both already
+            // re-alert every cycle a confirmGated action is held) actually escalates the urgency.
+            actions.push({ type: 'KILL', reason: `OOR sustained ${(oorMinutes / 60).toFixed(1)}h > ${escalateMin / 60}h — evaluate close`, killSwitch: true, confirmGated: true })
         } else if (oorMinutes >= timeout) {
             // Soft — sustained OOR: informational only. Default = hold and wait for reversion.
             actions.push({ type: 'OOR_ALERT', reason: `OOR ${oorMinutes.toFixed(0)}min, ${beyondPct.toFixed(1)}% beyond (${oorSide}) — evaluate hold vs close`, killSwitch: false })
@@ -311,7 +323,8 @@ async function evaluatePosition(position) {
         const hf = position.morpho.healthFactor || 0
         log(`  Morpho HF: ${hf.toFixed(3)}`)
         if (hf < KILL.hfEmergency) {
-            actions.push({ type: 'DELEVERAGE', reason: `HF EMERGENCY ${hf.toFixed(3)}`, currentHf: hf, killSwitch: true })
+            // confirmGated 2026-07-05 pending backtest (H-3) — see stop-loss comment above.
+            actions.push({ type: 'DELEVERAGE', reason: `HF EMERGENCY ${hf.toFixed(3)}`, currentHf: hf, killSwitch: true, confirmGated: true })
         } else if (hf < KILL.hfDeleverage) {
             actions.push({ type: 'DELEVERAGE', reason: `HF low ${hf.toFixed(3)}`, currentHf: hf, killSwitch: false })
         }
@@ -329,7 +342,8 @@ async function evaluatePosition(position) {
             const last3 = position.fundingHistory.slice(-3)
             const consecutiveKill = last3.length === 3 && last3.every(r => r.rate * 3 * 365 * 100 < KILL.fundingKillAnn)
             if (consecutiveKill) {
-                actions.push({ type: 'CLOSE_HEDGE', reason: `Funding kill: ${funding.annualized.toFixed(1)}% ann`, killSwitch: true })
+                // confirmGated 2026-07-05 pending backtest (H-3) — see stop-loss comment above.
+                actions.push({ type: 'CLOSE_HEDGE', reason: `Funding kill: ${funding.annualized.toFixed(1)}% ann`, killSwitch: true, confirmGated: true })
             }
 
             // Hard — hedge protection: mark within X% of liquidation -> KILL (regardless of OOR timer).

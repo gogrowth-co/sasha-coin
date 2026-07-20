@@ -93,7 +93,7 @@ When any content task lands here, hand it off to `marketing/`. Set 2026-05-27.
 | Anything onchain | `Clawlett/clawlett/scripts/` — ALL execution requires explicit Gabriel confirmation |
 | LP pool scan | `scripts/pool-scanner.js` + `defi-lp-math` + `base-defi-stack` / `solana-clmm` |
 | LP position health | `scripts/position-monitor.js` — reads `state/lp-positions.json` |
-| LP rebalance | `scripts/lp-rebalancer.js --execute` — requires Gabriel confirmation |
+| LP rebalance | `scripts/lp-rebalancer.js --execute` — ALL kill actions (stop-loss/HF-emergency/funding-kill/OOR/liq-proximity) are confirm-gated as of 2026-07-05, pending threshold backtest. See handover doc §10. |
 | LP math / hedge / Base / Solana | See `.claude/docs/workspace-reference.md` for full DeFi route table |
 
 ---

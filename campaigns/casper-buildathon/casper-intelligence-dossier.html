@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casper Network — Intelligence Dossier · Agentic Buildathon Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0C;
+    --bg2:#111114;
+    --panel:#16161A;
+    --panel2:#1C1C22;
+    --line:#2A2A31;
+    --line-soft:#202026;
+    --ink:#F2EDE3;
+    --ink-dim:#9A9AA4;
+    --ink-faint:#65656E;
+    --red:#FF4B3A;
+    --red-deep:#C8281A;
+    --gold:#E8B23A;
+    --green:#54C28B;
+    --blue:#5EA0FF;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --serif:'Fraunces',Georgia,serif;
+    --sans:'Archivo',system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  /* grain overlay */
+  body::after{
+    content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ===== scroll deck ===== */
+  #deck{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  #deck::-webkit-scrollbar{width:0}
+  .slide{
+    min-height:100vh;scroll-snap-align:start;scroll-snap-stop:always;
+    position:relative;display:flex;flex-direction:column;justify-content:center;
+    padding:84px 7vw 70px;
+  }
+  @media(max-width:760px){.slide{padding:74px 6vw 64px}}
+
+  /* atmosphere */
+  .slide::before{
+    content:"";position:absolute;inset:0;z-index:-1;
+    background:radial-gradient(1100px 600px at 82% -10%, rgba(255,75,58,.10), transparent 60%);
+  }
+  .slide:nth-child(even)::before{background:radial-gradient(900px 560px at 12% 110%, rgba(94,160,255,.06), transparent 60%)}
+
+  /* ===== chrome ===== */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;height:54px;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 7vw;background:linear-gradient(180deg,rgba(10,10,12,.92),rgba(10,10,12,0));
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);
+  }
+  .topbar .brand{color:var(--ink-dim)}
+  .topbar .brand b{color:var(--red);font-weight:700}
+  .topbar .count b{color:var(--ink);font-weight:700}
+  .progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold));z-index:101;width:0;transition:width .35s ease}
+
+  .dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:11px}
+  .dots button{width:8px;height:8px;border-radius:50%;border:1px solid var(--line);background:transparent;cursor:pointer;padding:0;transition:all .25s}
+  .dots button:hover{border-color:var(--ink-dim)}
+  .dots button.on{background:var(--red);border-color:var(--red);box-shadow:0 0 0 4px rgba(255,75,58,.14)}
+  @media(max-width:760px){.dots{display:none}}
+
+  .hint{position:fixed;bottom:16px;left:7vw;z-index:100;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase}
+  .hint b{color:var(--ink-dim)}
+
+  /* ===== type ===== */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:18px;display:flex;align-items:center;gap:12px}
+  .kicker::before{content:"";width:30px;height:1px;background:var(--red)}
+  h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.6rem,7vw,6.2rem);line-height:.98;letter-spacing:-.02em;font-optical-sizing:auto}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.9rem,4.2vw,3.5rem);line-height:1.04;letter-spacing:-.015em;margin-bottom:6px}
+  h2 em{font-style:italic;color:var(--red);font-weight:600}
+  .lede{font-size:clamp(1rem,1.5vw,1.25rem);color:var(--ink-dim);max-width:58ch;margin-top:14px;line-height:1.5}
+  .sectionhead{display:flex;align-items:baseline;gap:18px;margin-bottom:30px;flex-wrap:wrap}
+  .sectionhead .no{font-family:var(--mono);font-size:13px;color:var(--ink-faint);letter-spacing:.1em}
+  strong{color:var(--ink);font-weight:600}
+  .red{color:var(--red)}.gold{color:var(--gold)}.green{color:var(--green)}.blue{color:var(--blue)}.dim{color:var(--ink-dim)}
+  .mono{font-family:var(--mono)}
+  a{color:var(--blue);text-decoration:none;border-bottom:1px solid rgba(94,160,255,.3)}
+  a:hover{border-color:var(--blue)}
+
+  /* ===== components ===== */
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:900px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:20px 22px;transition:border-color .25s,transform .25s,background .25s}
+  .card:hover{border-color:var(--line);transform:translateY(-2px);background:var(--panel2)}
+  .card .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px}
+  .card .big{font-family:var(--serif);font-weight:900;font-size:clamp(2rem,3.4vw,2.9rem);line-height:1;letter-spacing:-.02em}
+  .card .sub{font-size:13.5px;color:var(--ink-dim);margin-top:8px;line-height:1.45}
+  .card.accent{border-color:rgba(255,75,58,.4);background:linear-gradient(160deg,rgba(255,75,58,.07),var(--panel))}
+  .card.accent .big{color:var(--red)}
+  .card.goldc{border-color:rgba(232,178,58,.35);background:linear-gradient(160deg,rgba(232,178,58,.06),var(--panel))}
+  .card.goldc .big{color:var(--gold)}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:30px;border:1px solid var(--line);color:var(--ink-dim);margin:2px 3px 2px 0}
+  .tag.hot{border-color:var(--red);color:var(--red)}
+  .tag.ok{border-color:var(--green);color:var(--green)}
+  .tag.warn{border-color:var(--gold);color:var(--gold)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);padding:0 14px 10px;border-bottom:1px solid var(--line)}
+  td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--ink-dim);vertical-align:top}
+  td b,td strong{color:var(--ink)}
+  tr:hover td{background:rgba(255,255,255,.012)}
+  td.num{font-family:var(--mono);color:var(--ink);text-align:right;white-space:nowrap}
+  .scroller{max-height:60vh;overflow:auto}
+  .scroller::-webkit-scrollbar{width:6px}.scroller::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+
+  ul.clean{list-style:none}
+  ul.clean li{position:relative;padding-left:22px;margin-bottom:11px;color:var(--ink-dim);font-size:14.5px;line-height:1.5}
+  ul.clean li::before{content:"▸";position:absolute;left:0;color:var(--red);font-size:12px;top:2px}
+  ul.clean li.warnli::before{content:"!";color:var(--gold);font-weight:700}
+  ul.clean li.okli::before{content:"✓";color:var(--green)}
+
+  .splitcols{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:start}
+  @media(max-width:860px){.splitcols{grid-template-columns:1fr;gap:24px}}
+
+  .pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .timeline{display:flex;gap:0;margin-top:8px;flex-wrap:wrap}
+  .tl{flex:1;min-width:120px;border-left:2px solid var(--line);padding:0 0 0 16px;position:relative}
+  .tl::before{content:"";position:absolute;left:-6px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--ink-faint)}
+  .tl.now::before{background:var(--red);border-color:var(--red);box-shadow:0 0 0 5px rgba(255,75,58,.2)}
+  .tl .d{font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.06em}
+  .tl .e{font-size:13px;color:var(--ink);margin-top:3px}
+  .tl.now .d{color:var(--red)}
+
+  .barwrap{margin-top:6px}
+  .barrow{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+  .barrow .name{flex:0 0 168px;font-size:13.5px;color:var(--ink)}
+  .barrow .name span{display:block;font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:.08em}
+  .bar{flex:1;height:26px;background:var(--panel);border-radius:6px;overflow:hidden;position:relative;border:1px solid var(--line-soft)}
+  .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;font-family:var(--mono);font-size:11px;color:#0A0A0C;font-weight:700}
+
+  /* cover */
+  .cover-meta{display:flex;gap:34px;flex-wrap:wrap;margin-top:38px;font-family:var(--mono);font-size:12px;color:var(--ink-faint);letter-spacing:.1em}
+  .cover-meta div b{display:block;color:var(--ink);font-size:13px;letter-spacing:0;font-family:var(--sans);margin-top:4px}
+  .glyph{position:absolute;right:6vw;top:50%;transform:translateY(-50%);font-family:var(--serif);font-weight:900;font-size:34vw;line-height:0;color:rgba(255,75,58,.05);z-index:-1;user-select:none}
+
+  /* reveal */
+  .slide.active [data-rv]{animation:rv .7s cubic-bezier(.2,.7,.2,1) both}
+  .slide.active [data-rv="2"]{animation-delay:.08s}
+  .slide.active [data-rv="3"]{animation-delay:.16s}
+  .slide.active [data-rv="4"]{animation-delay:.24s}
+  .slide.active [data-rv="5"]{animation-delay:.32s}
+  @keyframes rv{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+  .foot{position:absolute;bottom:20px;right:7vw;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase}
+  .verdict{border-left:3px solid var(--red);padding:14px 0 14px 20px;margin-top:18px;font-size:15px;color:var(--ink);max-width:70ch;line-height:1.55}
+  .verdict.gold{border-color:var(--gold)}
+  .verdict.green{border-color:var(--green)}
+  .src{font-family:var(--mono);font-size:12px;color:var(--ink-dim);line-height:1.9;word-break:break-word}
+  .src b{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+<div class="topbar">
+  <div class="brand"><b>CASPER</b> // INTELLIGENCE DOSSIER</div>
+  <div class="count">SHEET <b id="cnum">01</b> / 12</div>
+</div>
+<div class="dots" id="dots"></div>
+<div class="hint">↑ ↓ / SPACE <b>NAVIGATE</b></div>
+
+<div id="deck">
+
+  <!-- 01 COVER -->
+  <section class="slide" data-label="Cover">
+    <div class="glyph">C</div>
+    <div class="kicker" data-rv>Field Intelligence · 2026-06-06 · For Sasha Coin</div>
+    <h1 data-rv="2">Casper<br>Network.</h1>
+    <p class="lede" data-rv="3">A complete reconnaissance of the chain positioning itself as <em class="red">the trust layer for the agent economy</em> — every channel, repo, doc, and the $150K buildathon Sasha is built to win.</p>
+    <div class="cover-meta" data-rv="4">
+      <div>EVENT<b>Agentic Buildathon 2026</b></div>
+      <div>DEADLINE<b>June 30 · ~24 days</b></div>
+      <div>PRIZE POOL<b>$150,000 USD</b></div>
+      <div>METHOD<b>5-agent live sweep</b></div>
+    </div>
+    <div class="foot">All figures live-verified 2026-06-06</div>
+  </section>
+
+  <!-- 02 EXEC SUMMARY -->
+  <section class="slide" data-label="The Read">
+    <div class="sectionhead">
+      <span class="no" data-rv>02 / EXECUTIVE READ</span>
+    </div>
+    <h2 data-rv>The one-screen <em>take.</em></h2>
+    <div class="grid g4" style="margin-top:26px" data-rv="2">
+      <div class="card accent"><div class="lab">Competition</div><div class="big">6</div><div class="sub">BUIDLs submitted, 11 applications, ~125 hackers, <b>1</b> formal team. Flat since June 2 — a low-density field.</div></div>
+      <div class="card"><div class="lab">Casper's whole story</div><div class="big">100%</div><div class="sub">of @Casper_Network's recent posts are AI-agent / x402. They <b>need</b> this narrative to be real.</div></div>
+      <div class="card goldc"><div class="lab">Open lane</div><div class="big">0</div><div class="sub">videos on Casper's 28.5K-sub YouTube in 2026. The AI Toolkit has <b>zero</b> video coverage.</div></div>
+      <div class="card"><div class="lab">Build feasibility</div><div class="big">1 tx</div><div class="sub">"One agentic Testnet transaction" is reachable in a single session via Odra livenet.</div></div>
+    </div>
+    <div class="splitcols" style="margin-top:30px" data-rv="3">
+      <div>
+        <div class="kicker" style="color:var(--green)">Sasha's structural edge</div>
+        <ul class="clean">
+          <li class="okli"><b>"Real project with socials + deployment plans"</b> is a judging criterion most teams fabricate. Sasha already <em class="green">is</em> one — live token, treasury, dashboard, X, YouTube, a shipped Mantle hackathon.</li>
+          <li class="okli">"Meaningful use of AI / agentic systems" and "DeFi-RWA applicability" describe Sasha's <b>daily existence</b> (delta-neutral LP, autonomous treasury).</li>
+          <li class="okli">An <b>AI agent entering an AI-agent buildathon</b> is the most legible content story in the entire space right now.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="kicker" style="color:var(--gold)">The honest risks</div>
+        <ul class="clean">
+          <li class="warnli">The x402 agent-payment theme is <b>already contested</b> — AgentPay, Phoenix Zero + ~5 GitHub "agent-pay-guard" repos. Differentiation, not feasibility, is the risk.</li>
+          <li class="warnli"><b>Non-EVM Rust/WASM</b> is net-new to Sasha's Base + Solana stack. Mitigated by Odra's llms.txt + hosted MCP, but budget real ramp.</li>
+          <li class="warnli">The vote path needs Sasha <b>posting</b> — the content engine is the open dependency, and CSPR.fans' own reach is dead.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 THE HACKATHON -->
+  <section class="slide" data-label="The Buildathon">
+    <div class="sectionhead">
+      <span class="no" data-rv>03 / THE BUILDATHON</span>
+    </div>
+    <h2 data-rv>$150K, two ways <em>in.</em></h2>
+    <div class="splitcols" style="margin-top:24px" data-rv="2">
+      <div>
+        <div class="grid g3" style="margin-bottom:18px">
+          <div class="card accent"><div class="lab">Cash</div><div class="big">$30K</div></div>
+          <div class="card"><div class="lab">x402 credits</div><div class="big">$100K</div></div>
+          <div class="card"><div class="lab">In-kind</div><div class="big">$20K</div></div>
+        </div>
+        <div class="kicker">Timeline</div>
+        <div class="timeline">
+          <div class="tl"><div class="d">JUN 1</div><div class="e">Qualification opens</div></div>
+          <div class="tl now"><div class="d">JUN 6 · NOW</div><div class="e">~24 days left</div></div>
+          <div class="tl"><div class="d">JUN 30</div><div class="e">Submission deadline</div></div>
+          <div class="tl"><div class="d">JUL 6–19</div><div class="e">Final round</div></div>
+          <div class="tl"><div class="d">LATE JUL</div><div class="e">Winners</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="kicker">Two advancement paths</div>
+        <div class="card" style="margin-bottom:12px"><div class="lab" style="color:var(--red)">Path A · Community vote</div><div class="sub" style="margin-top:0;color:var(--ink)">Top <b>3 by vote on CSPR.fans</b> skip judging entirely and advance to finals. Sasha's natural lane — but the conversation is quiet.</div></div>
+        <div class="card"><div class="lab">Path B · Builder merit</div><div class="sub" style="margin-top:0">Everyone else must show a working Testnet prototype with a <b>transaction-producing on-chain component</b>, then face the jury.</div></div>
+        <div class="kicker" style="margin-top:20px">Hard submission bar (all 3)</div>
+        <div class="pill-row">
+          <span class="tag hot">Testnet prototype + on-chain tx</span>
+          <span class="tag hot">Open-source repo + README</span>
+          <span class="tag hot">Public demo video</span>
+        </div>
+      </div>
+    </div>
+    <div class="verdict" data-rv="3"><strong>Judging (8 criteria):</strong> Technical Execution · Innovation · Use of AI/Agentic Systems · Real-World Applicability (DeFi/RWA) · UX &amp; Design · Working Smart Contracts (deployed) · <span class="red">Long-Term Launch Plans — real socials + deployment</span> · Long-Term Impact. <span class="dim">Host: Casper Association · Platform: DoraHacks (id 2202) · Event partner: Istanbul Blockchain Week. Co-sponsor &amp; judge names not yet public.</span></div>
+  </section>
+
+  <!-- 04 COMPETITIVE FIELD -->
+  <section class="slide" data-label="The Field">
+    <div class="sectionhead"><span class="no" data-rv>04 / WHO ELSE IS BUILDING</span></div>
+    <h2 data-rv>The field, <em>read cold.</em></h2>
+    <p class="lede" data-rv="2" style="margin-bottom:18px">Six BUIDLs. Only two are genuinely on-theme and credible. The x402-payment thesis is the crowded center.</p>
+    <div data-rv="3">
+      <table>
+        <thead><tr><th>BUIDL</th><th>What it is</th><th>Casper stack?</th><th>Threat</th></tr></thead>
+        <tbody>
+          <tr><td><b>Phoenix Zero</b><br><span class="mono dim" style="font-size:11px">#44171</span></td><td>x402 sequencer-health oracle across 6 chains; agents pay $0.001/call. Claims live since Mar 2026, 206K+ datapoints.</td><td><span class="tag ok">Yes · multi-chain</span></td><td><span class="red">Strongest</span></td></tr>
+          <tr><td><b>AgentPay</b><br><span class="mono dim" style="font-size:11px">#43705</span></td><td>x402 micropayment marketplace for agents (M2M commerce). Stacks x402 + Casper MCP + CSPR.cloud + Odra + CSPR.trade.</td><td><span class="tag ok">Yes · full stack</span></td><td><span class="red">High</span></td></tr>
+          <tr><td><b>Kawi</b><br><span class="mono dim" style="font-size:11px">#44260</span></td><td>Cross-border remittances to Brazil. On-theme for RWA, not obviously agentic.</td><td><span class="tag warn">Partial</span></td><td><span class="gold">Medium</span></td></tr>
+          <tr><td><b>AiFinPay</b><br><span class="mono dim" style="font-size:11px">#43882</span></td><td>Payment infra for AI agents / enterprise AI. Thin detail, no Casper stack listed.</td><td><span class="tag warn">Unclear</span></td><td class="dim">Low</td></tr>
+          <tr><td><b>credmesh.xyz</b><br><span class="mono dim" style="font-size:11px">#44158</span></td><td>Programmable working capital for autonomous agents.</td><td><span class="tag" style="border-color:var(--red);color:var(--red)">Solana/Arbitrum — not Casper</span></td><td class="dim">Low</td></tr>
+          <tr><td><b>Asasanta AI</b><br><span class="mono dim" style="font-size:11px">#44178</span></td><td>Generic "AI agents that simplify digital services," 16+ unrelated chain tags.</td><td><span class="tag" style="border-color:var(--red);color:var(--red)">None shown</span></td><td class="dim">Low</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="verdict gold" data-rv="4">GitHub shows ~5 more <span class="mono">agent-pay-guard / x402-firewall</span> repos pushed in the last days. <strong>The "agent pays per request" angle is saturated.</strong> Sasha's wedge isn't another payment rail — it's being the <span class="gold">one entrant that is already a live, autonomous economic agent</span> with a treasury, an audience, and a track record.</div>
+  </section>
+
+  <!-- 05 AI TOOLKIT -->
+  <section class="slide" data-label="AI Toolkit">
+    <div class="sectionhead"><span class="no" data-rv>05 / THE CASPER AI TOOLKIT</span></div>
+    <h2 data-rv>The stack, built <em>for agents.</em></h2>
+    <p class="lede" data-rv="2" style="margin-bottom:18px">Launched <b>June 4, 2026</b> — "the most comprehensive AI offering of any L1." This collapses the usual "new non-EVM chain = huge lift" assumption.</p>
+    <div class="grid g3" data-rv="3">
+      <div class="card"><div class="lab red">Payments</div><b>x402 Facilitator</b><div class="sub">HTTP-native pay-per-request. Agent hits endpoint → 402 → signs CEP-18 auth (EIP-712) → retries with proof → data. Non-custodial /verify + /settle. <span class="mono dim" style="font-size:11px">$100K of prize = x402 credits.</span></div></div>
+      <div class="card"><div class="lab red">Data / actions</div><b>Casper MCP Server</b><div class="sub">Model Context Protocol access — balances, deploys, contract state, staking. Read-path for any agent.</div></div>
+      <div class="card"><div class="lab red">DeFi</div><b>CSPR.trade MCP</b><div class="sub">Hosted at <span class="mono">mcp.cspr.trade/mcp</span> — zero setup, <b>24 tools</b>: quotes, swaps, liquidity, IL, portfolio. Highest-value plug-in for Sasha.</div></div>
+      <div class="card"><div class="lab red">Wallet / signing</div><b>CSPR.click Agent Skill</b><div class="sub">Installable coding skill (Claude/Cursor/Windsurf). Wallet aggregation, tx sign+send, CSPR.cloud proxy. <span class="gold">Note: browser/human-sign oriented.</span></div></div>
+      <div class="card"><div class="lab red">Contracts</div><b>Odra + llms.txt</b><div class="sub">Rust→WASM framework. <span class="mono">odra.dev/llms.txt</span> lets an AI read the whole API and generate + deploy a contract from a prompt.</div></div>
+      <div class="card"><div class="lab red">Infra / identity</div><b>CSPR.cloud + EIP-712</b><div class="sub">REST / Streaming / Node middleware, plus casper-eip-712 for gasless meta-tx and agent-to-agent commerce signing.</div></div>
+    </div>
+    <div class="verdict" data-rv="4"><strong>The Casper Manifest</strong> frames 9 initiatives across Developers / Users / Institutions / <span class="red">Machines</span>. The Machines track — <em>AI agents paying per service via x402, no billing cycles</em> — is the exact use case Sasha embodies.</div>
+  </section>
+
+  <!-- 06 GITHUB -->
+  <section class="slide" data-label="GitHub">
+    <div class="sectionhead"><span class="no" data-rv>06 / OPEN-SOURCE SURFACE</span></div>
+    <h2 data-rv>Four orgs, one <em>Rust spine.</em></h2>
+    <div class="splitcols" style="margin-top:22px" data-rv="2">
+      <div>
+        <table>
+          <thead><tr><th>Org</th><th>Repos</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td><b>casper-network</b></td><td class="num">77</td><td>Protocol / node</td></tr>
+            <tr><td><b>casper-ecosystem</b></td><td class="num">79</td><td>SDKs + standards</td></tr>
+            <tr><td><b>make-software</b></td><td class="num">38</td><td>CSPR.click/cloud, x402, MCP</td></tr>
+            <tr><td><b>odradev</b></td><td class="num">30</td><td>Odra Rust framework</td></tr>
+          </tbody>
+        </table>
+        <div class="kicker" style="margin-top:24px">Flagship repos · by stars</div>
+        <div class="barwrap">
+          <div class="barrow"><div class="name">casper-node<span>RUST · v2.2.1</span></div><div class="bar"><i style="width:100%;background:linear-gradient(90deg,var(--red-deep),var(--red))">402★</i></div></div>
+          <div class="barrow"><div class="name">casper-js-sdk<span>TS · most active client</span></div><div class="bar"><i style="width:24%;background:#3a6ea5">73★</i></div></div>
+          <div class="barrow"><div class="name">odra<span>RUST · v2.7.2 · MIT</span></div><div class="bar"><i style="width:21%;background:#3a6ea5">63★</i></div></div>
+          <div class="barrow"><div class="name">casper-wallet<span>TS</span></div><div class="bar"><i style="width:12%;background:var(--line)">27★</i></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="kicker">The agentic-layer repos (fresh)</div>
+        <ul class="clean">
+          <li><b>make-software/casper-x402</b> <span class="mono dim" style="font-size:11px">Go · Apache-2.0 · pushed Jun 4</span> — the official M2M payment rail (CEP-18 + EIP-712 transfer_with_authorization).</li>
+          <li><b>make-software/cspr-trade-mcp</b> <span class="mono dim" style="font-size:11px">TS · v0.7.0</span> — hosted MCP, 24 tools, optional <span class="mono">--signer</span>.</li>
+          <li><b>odradev/casper-x402-poc</b> <span class="mono dim" style="font-size:11px">Rust</span> — on-chain Odra counterpart.</li>
+          <li><b>msanlisavas/casper-mcp</b> <span class="mono dim" style="font-size:11px">C# · v3.0.0</span> — read-only data MCP, Docker + dotnet tool.</li>
+        </ul>
+        <div class="verdict green">Activity is <span class="green">healthy</span>: node ships on cadence, wallet/SDK/MCP repos all pushed within the last week, Odra genuinely active. <strong>Feasibility is solved.</strong></div>
+        <div class="verdict gold" style="margin-top:12px">But stars are uniformly <span class="gold">low</span> (x402 = 1★, cspr-trade-mcp = 1★). Thin community testing → expect rough edges. Avoid the dead lookalike <span class="mono">casper-network/casper-rust-sdk</span>; use <span class="mono">casper-ecosystem/casper-rust-wasm-sdk</span>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 DOCS / DEVEX -->
+  <section class="slide" data-label="DevEx">
+    <div class="sectionhead"><span class="no" data-rv>07 / DOCS &amp; DEVELOPER PATH</span></div>
+    <h2 data-rv>From zero to <em>one Testnet tx.</em></h2>
+    <div class="splitcols" style="margin-top:22px" data-rv="2">
+      <div>
+        <div class="kicker">The fastest legitimate route (Odra livenet)</div>
+        <ul class="clean">
+          <li><span class="mono">cargo odra new</span> — scaffold a Rust contract.</li>
+          <li>Get a Testnet key + faucet at <span class="mono">testnet.cspr.live/tools/faucet</span> (PEM key).</li>
+          <li>Set 3 env vars: secret-key path · node address · <span class="mono">CHAIN_NAME=casper-test</span>.</li>
+          <li><span class="mono">cargo run --features livenet</span> → prints a <b>tx hash + testnet.cspr.live link</b>. <span class="green">That is the submission requirement.</span></li>
+          <li>Layer the agentic story with <b>x402</b> (agent signs a CEP-18 payment, settles on casper-test).</li>
+        </ul>
+        <div class="verdict green"><strong>Verdict:</strong> "one agentic Testnet tx" is reachable in a single session. Odra's <span class="mono">llms.txt</span> lets an AI self-serve the whole flow.</div>
+      </div>
+      <div>
+        <div class="kicker">SDK / language support</div>
+        <table>
+          <thead><tr><th>Lang</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td><b>Rust</b></td><td><span class="red">Primary on-chain</span> (Odra → WASM)</td></tr>
+            <tr><td><b>JS/TS</b></td><td>Most active client SDK</td></tr>
+            <tr><td>Python</td><td>Client</td></tr>
+            <tr><td>Go</td><td>Client</td></tr>
+            <tr><td>C# / .NET</td><td>Client</td></tr>
+          </tbody>
+        </table>
+        <div class="kicker" style="margin-top:22px">Friction for an EVM builder</div>
+        <ul class="clean">
+          <li class="warnli">WASM-native L1, <b>not EVM</b>; purse/URef + session model is new.</li>
+          <li class="warnli">On-chain code is <b>Rust-only</b> — and the "Odra for Solidity devs" tutorial currently <span class="red">404s</span>.</li>
+          <li class="okli">Easy on-ramp: <b>Secp256k1 keys are Ethereum-compatible</b>. Native multisig (associated keys + weights) ≈ account abstraction.</li>
+          <li class="dim">Casper 2.0 / "Condor" is live — target the <span class="mono">/next/</span> docs namespace.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 CHANNEL MAP -->
+  <section class="slide" data-label="Channel Map">
+    <div class="sectionhead"><span class="no" data-rv>08 / DISTRIBUTION FOOTPRINT</span></div>
+    <h2 data-rv>Where Casper's <em>audience lives.</em></h2>
+    <div data-rv="2" class="scroller">
+      <table>
+        <thead><tr><th>Channel</th><th>Size</th><th>Activity</th><th>Focus</th></tr></thead>
+        <tbody>
+          <tr><td><b>X / Twitter</b><br><span class="mono dim" style="font-size:11px">@Casper_Network</span></td><td class="num">215,522</td><td><span class="tag ok">High · daily</span></td><td>AI agents, x402, buildathon — 100% on-narrative</td></tr>
+          <tr><td><b>Telegram</b> (main)<br><span class="mono dim" style="font-size:11px">t.me/casperblockchain</span></td><td class="num">42,378</td><td><span class="tag ok">Active · 711 online</span></td><td>Community chat, ecosystem news</td></tr>
+          <tr><td><b>Telegram</b> (announce)<br><span class="mono dim" style="font-size:11px">casperofficialann</span></td><td class="num">40,099</td><td><span class="tag ok">Broadcast</span></td><td>Official one-way announcements</td></tr>
+          <tr><td><b>Discord</b></td><td class="num">~33,990</td><td><span class="tag ok">Active</span></td><td>Dev support, builder community <span class="dim">(count unconfirmed)</span></td></tr>
+          <tr><td><b>YouTube</b><br><span class="mono dim" style="font-size:11px">@CasperNetwork</span></td><td class="num">28,500</td><td><span class="tag" style="border-color:var(--red);color:var(--red)">DORMANT · 0 in 2026</span></td><td>113 videos, last Oct 2025, zero AI content</td></tr>
+          <tr><td><b>LinkedIn</b><br><span class="mono dim" style="font-size:11px">Casper Association</span></td><td class="num">3,702</td><td><span class="tag ok">Active</span></td><td>Enterprise, RWA, compliance, governance</td></tr>
+          <tr><td><b>Blog</b><br><span class="mono dim" style="font-size:11px">casper.network/news</span></td><td class="num">—</td><td><span class="tag ok">Very active</span></td><td>Editorial hub: AI agents, RWA, protocol</td></tr>
+          <tr><td><b>Medium</b> (R&amp;D)<br><span class="mono dim" style="font-size:11px">medium.com/casperblockchain</span></td><td class="num">70</td><td><span class="tag warn">Near-dormant</span></td><td>R&amp;D research notes</td></tr>
+          <tr><td><b>Forum</b><br><span class="mono dim" style="font-size:11px">forum.casper.network</span></td><td class="num">49 topics</td><td><span class="tag warn">Low</span></td><td>Governance, validators</td></tr>
+          <tr><td><b>Newsletter</b><br><span class="mono dim" style="font-size:11px">casper.network/newsletter</span></td><td class="num">—</td><td><span class="tag warn">Unknown</span></td><td>Custom form, segmented by user type</td></tr>
+          <tr><td><b>Reddit</b><br><span class="mono dim" style="font-size:11px">r/CasperNetwork</span></td><td class="num">—</td><td class="dim">Scrape blocked</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="verdict gold" data-rv="3"><strong>The asymmetry:</strong> Casper's reach is concentrated on <span class="red">X + Telegram</span>. <span class="gold">YouTube is a content vacuum</span> and the AI Toolkit has no video. Medium and the forum are dormant. The growth surface is wide open exactly where Sasha can move first.</div>
+  </section>
+
+  <!-- 09 X DEEP DIVE -->
+  <section class="slide" data-label="X / Engagement">
+    <div class="sectionhead"><span class="no" data-rv>09 / X — THE ENGAGEMENT REALITY</span></div>
+    <h2 data-rv>Loud account, <em>quiet room.</em></h2>
+    <div class="splitcols" style="margin-top:22px" data-rv="2">
+      <div>
+        <div class="kicker">@Casper_Network is all-in on agents</div>
+        <ul class="clean">
+          <li>Jun 4 — AI Toolkit launch: "most comprehensive AI offering of any L1." <span class="mono dim" style="font-size:11px">118♥ · 29↺</span></li>
+          <li>Jun 2 — IBW Istanbul buildathon kickoff. <span class="mono dim" style="font-size:11px">110♥ · 5.6K views (top post)</span></li>
+          <li>Jun 5 — cspr.fans Season 5 voting, 1.5M $CSPR. <span class="mono dim" style="font-size:11px">103♥</span></li>
+          <li>Jun 3 — amplified Phoenix Zero, the first BUIDL. <span class="mono dim" style="font-size:11px">92♥</span></li>
+        </ul>
+        <div class="verdict"><strong>215K followers, but posts top out at ~118 likes / 5.6K views.</strong> Only ~8–12 unique accounts are posting about the buildathon at all.</div>
+      </div>
+      <div>
+        <div class="kicker">Ecosystem handles</div>
+        <table>
+          <thead><tr><th>Account</th><th>Followers</th></tr></thead>
+          <tbody>
+            <tr><td><b>@Casper_Network</b></td><td class="num">215,522</td></tr>
+            <tr><td>@odradev</td><td class="num">16,503</td></tr>
+            <tr><td>@IstanbulBlockWk</td><td class="num">12,087</td></tr>
+            <tr><td><b>@CSPRfans</b> <span class="dim">(vote app)</span></td><td class="num red">2</td></tr>
+            <tr><td>CSPR.click / cloud / trade</td><td class="num dim">no X acct</td></tr>
+          </tbody>
+        </table>
+        <div class="verdict gold"><strong>The vote-path paradox:</strong> CSPR.fans is where votes happen, yet its X account has <span class="red">2 followers</span>. There is no organic voter groundswell. The bar is low, but the path is narrow — it runs through a <span class="gold">@Casper_Network quote-tweet</span>.</div>
+      </div>
+    </div>
+    <div class="verdict" data-rv="3" style="margin-top:18px"><strong>IBW × Casper:</strong> a side-event activation, not a partnership. @IstanbulBlockWk posted <span class="red">zero</span> dedicated Casper content and its wrap-up didn't mention Casper. IBW is over — future promotion won't reference it. <span class="dim">Secondary amplification levers: @kenn_ronin (15.5K-view dev audience), @TimeIsMoneyHQ.</span></div>
+  </section>
+
+  <!-- 10 STRATEGIC READ -->
+  <section class="slide" data-label="Sasha's Angle">
+    <div class="sectionhead"><span class="no" data-rv>10 / WHERE SASHA WINS</span></div>
+    <h2 data-rv>The unfair <em>advantage.</em></h2>
+    <div class="grid g3" style="margin-top:24px" data-rv="2">
+      <div class="card accent"><div class="lab">The criterion others fake</div><b style="font-size:18px">"Real project, socials in place"</b><div class="sub">Most teams build a slide. Sasha <span class="red">is</span> it: live token, on-chain treasury, dashboard, X, YouTube, a shipped Mantle hackathon. Structural, not marginal.</div></div>
+      <div class="card accent"><div class="lab">The narrative Casper needs</div><b style="font-size:18px">An agent enters the agent buildathon</b><div class="sub">Sasha is living proof Casper's AI thesis is real — the single most amplifiable story in this contest, and exactly what @Casper_Network wants to quote-tweet.</div></div>
+      <div class="card accent"><div class="lab">The first-mover lane</div><b style="font-size:18px">First AI-Toolkit video, agent POV</b><div class="sub">YouTube is empty for 2026 and the Toolkit has no demo. A walkthrough from an agent that actually uses x402 is first content + a live embodiment of the thesis.</div></div>
+    </div>
+    <div class="splitcols" style="margin-top:26px" data-rv="3">
+      <div>
+        <div class="kicker green">Play to</div>
+        <ul class="clean">
+          <li class="okli">x402 honesty: Sasha is exactly the agent that <b>pays per request</b> for the data it acts on.</li>
+          <li class="okli">Tie the on-chain tx to her <b>real delta-neutral book</b> — a decision/treasury attestation log on Casper Testnet.</li>
+          <li class="okli">Wrap everything in the socials + track record that already exist.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="kicker gold">Guard against</div>
+        <ul class="clean">
+          <li class="warnli">Don't build another x402 payment rail — that center is crowded. Win on <b>identity</b>, not infrastructure.</li>
+          <li class="warnli">Budget the Rust/WASM ramp honestly; sandbox cspr-click away from production keys.</li>
+          <li class="warnli">The content engine must post for the vote path to matter — fix or hand-drive from <span class="mono">marketing/</span>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 NEXT ACTIONS -->
+  <section class="slide" data-label="Next Actions">
+    <div class="sectionhead"><span class="no" data-rv>11 / THE PLAY</span></div>
+    <h2 data-rv>Minimal-but-real. <em>Win on narrative.</em></h2>
+    <p class="lede" data-rv="2" style="margin-bottom:18px">One genuinely agentic Testnet transaction, wrapped in the live business Sasha already is. Don't out-engineer Rust natives — out-narrate them.</p>
+    <div class="grid g2" data-rv="3" style="gap:14px">
+      <div class="card"><div class="lab red">Decision gate</div><b>1 · Gabriel confirms the minimal-real path</b><div class="sub">Then register the project on DoraHacks (solo / "Sasha" entry).</div></div>
+      <div class="card"><div class="lab red">Onboard · code</div><b>2 · Casper Testnet + Odra contract</b><div class="sub">Faucet + PEM key (sandboxed). Scaffold a "Sasha decision/treasury attestation log." Wire the hosted Casper MCP (24 tools).</div></div>
+      <div class="card"><div class="lab red">The requirement · code</div><b>3 · Recurring autonomous tx + x402 call</b><div class="sub">Sasha signs and calls the contract each cycle; optional x402-paid data call to drive the attestation.</div></div>
+      <div class="card"><div class="lab red">Surface · code</div><b>4 · Casper dashboard panel + public repo</b><div class="sub">Live Testnet activity on the existing dashboard; clean public repo with a secret-hygiene scan before going public.</div></div>
+      <div class="card goldc"><div class="lab gold">Content · → marketing/</div><b>5 · Demo video + vote campaign</b><div class="sub">Demo + CSPR.fans campaign authored in <span class="mono">marketing/</span> per the workspace boundary. First Casper-AI-Toolkit YouTube video, agent POV.</div></div>
+      <div class="card goldc"><div class="lab gold">Highest leverage</div><b>6 · Land a @Casper_Network quote-tweet</b><div class="sub">In a quiet room, official amplification (2K–6K views) is the difference for the community-vote path. Engineer it.</div></div>
+    </div>
+    <div class="verdict gold" data-rv="4"><strong>Open dependency, flagged honestly:</strong> Sasha's autonomous posting must work (or be hand-driven) for a vote campaign to mean anything. That problem predates this buildathon. <span class="dim">Decision owner: Gabriel. No build, no commitment made.</span></div>
+  </section>
+
+  <!-- 12 SOURCES -->
+  <section class="slide" data-label="Sources">
+    <div class="sectionhead"><span class="no" data-rv>12 / SOURCES &amp; METHOD</span></div>
+    <h2 data-rv>Receipts.</h2>
+    <div class="splitcols" style="margin-top:22px" data-rv="2">
+      <div>
+        <div class="kicker">Primary sources</div>
+        <div class="src">
+          <b>Hackathon</b> · dorahacks.io/hackathon/casper-agentic-buildathon/detail (id 2202)<br>
+          <b>AI Toolkit</b> · casper.network/ai · casper.network/news/manifest<br>
+          <b>Docs</b> · docs.casper.network · docs.cspr.click/documentation/ai-agent-skills · docs.cspr.cloud/x402-facilitator-api<br>
+          <b>Odra</b> · odra.dev/llms.txt<br>
+          <b>GitHub</b> · github.com/casper-network · /casper-ecosystem · /make-software · /odradev<br>
+          <b>Social</b> · x.com/Casper_Network · x.com/IstanbulBlockWk · youtube.com/@CasperNetwork · linkedin.com/company/casper-association
+        </div>
+      </div>
+      <div>
+        <div class="kicker">Method &amp; confidence</div>
+        <ul class="clean">
+          <li>5 parallel research agents, one per domain. All numbers live-verified <b>2026-06-06</b>.</li>
+          <li>Hard data via <b>GitHub API</b> (stars/dates), <b>DoraHacks JSON API</b> (id 2202), apify social scrapers, vidiq (YouTube), ScrapingBee (DoraHacks SPA).</li>
+          <li class="warnli">Firecrawl credits were exhausted; fell back to ScrapingBee / curl / WebFetch. Data integrity unaffected.</li>
+          <li class="warnli">Unconfirmed: co-sponsor &amp; judge names, Discord exact count, newsletter platform/size, Reddit (scrape blocked).</li>
+          <li class="dim">Full reports: <span class="mono">campaigns/casper-buildathon/research/01–05*.md</span></li>
+        </ul>
+        <div class="verdict"><strong>Do not conflate</strong> with the separate, earlier "Casper Hackathon 2026" ($25K, Nov 2025, Halborn co-sponsor). This is the Agentic Buildathon.</div>
+      </div>
+    </div>
+    <div class="foot">Casper Network Intelligence Dossier · Sasha Coin · 2026-06-06</div>
+  </section>
+
+</div>
+
+<script>
+  const deck=document.getElementById('deck');
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsWrap=document.getElementById('dots');
+  const prog=document.getElementById('prog');
+  const cnum=document.getElementById('cnum');
+  let cur=0;
+
+  slides.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.title=s.dataset.label||('Sheet '+(i+1));
+    b.addEventListener('click',()=>go(i));
+    dotsWrap.appendChild(b);
+  });
+  const dots=[...dotsWrap.children];
+
+  function setActive(i){
+    cur=i;
+    dots.forEach((d,j)=>d.classList.toggle('on',j===i));
+    slides.forEach((s,j)=>s.classList.toggle('active',j===i));
+    prog.style.width=((i)/(slides.length-1)*100)+'%';
+    cnum.textContent=String(i+1).padStart(2,'0');
+  }
+  function go(i){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    slides[i].scrollIntoView({behavior:'smooth'});
+  }
+
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){setActive(slides.indexOf(e.target));}});
+  },{root:deck,threshold:.55});
+  slides.forEach(s=>io.observe(s));
+
+  document.addEventListener('keydown',(e)=>{
+    if(['ArrowDown','ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1);}
+    else if(['ArrowUp','ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1);}
+    else if(e.key==='Home'){e.preventDefault();go(0);}
+    else if(e.key==='End'){e.preventDefault();go(slides.length-1);}
+  });
+  setActive(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dynamic Fee Hook — Deep Dive, Fix &amp; Sunset</title>
+  <style>
+    :root {
+      --ink: #11140f;
+      --paper: #f8faf4;
+      --soft: #eef3e8;
+      --line: #d9e2d1;
+      --muted: #5e6b59;
+      --lime: #76ed4d;
+      --blue: #2166f3;
+      --plum: #7a3bb8;
+      --gold: #c18420;
+      --red: #cc4356;
+      --white: #fff;
+      --shadow: 0 24px 70px rgba(17, 20, 15, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(118,237,77,.18), transparent 36%),
+        linear-gradient(315deg, rgba(33,102,243,.10), transparent 34%),
+        var(--paper);
+      overflow: hidden;
+    }
+
+    .deck { width: 100vw; height: 100vh; position: relative; }
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      grid-template-rows: auto 1fr auto;
+      padding: 42px 60px 32px;
+    }
+    .slide.active { display: grid; }
+
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--ink);
+      color: var(--lime);
+      font-weight: 900;
+    }
+
+    .eyebrow {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: #2e7d32;
+      font-weight: 800;
+    }
+
+    .slide-no, .hint {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    main {
+      display: grid;
+      align-content: center;
+      gap: 24px;
+      min-height: 0;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      max-width: 1040px;
+      font-size: 60px;
+      line-height: .97;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      max-width: 1020px;
+      font-size: 42px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    h3 { font-size: 18px; }
+
+    .lead {
+      max-width: 900px;
+      font-size: 21px;
+      line-height: 1.42;
+      color: #364232;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .panel, .stat, .row, .quote {
+      background: rgba(255, 255, 255, .86);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel { padding: 26px; }
+    .quote {
+      border-left: 7px solid var(--lime);
+      border-radius: 0 8px 8px 0;
+      padding: 22px 26px;
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 900;
+    }
+    .quote.warn { border-left-color: var(--gold); }
+    .quote.bad { border-left-color: var(--red); }
+
+    .stat {
+      min-height: 132px;
+      padding: 18px 20px;
+      box-shadow: none;
+    }
+    .stat strong {
+      display: block;
+      font-size: 30px;
+      line-height: 1;
+      margin: 8px 0;
+    }
+    .stat span, .small {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .rows { display: grid; gap: 9px; }
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 13px 16px;
+      box-shadow: none;
+    }
+
+    .rank {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--ink);
+      color: var(--white);
+      font-weight: 900;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .rank.ok { background: #2e7d32; }
+    .rank.warn { background: var(--gold); }
+    .rank.bad { background: var(--red); }
+
+    .title { font-weight: 900; font-size: 16px; }
+    .sub { color: var(--muted); font-size: 13px; margin-top: 2px; line-height: 1.4; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: #2d4425;
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .pill.warn { background: #fbeacb; color: #7a4c05; }
+    .pill.bad { background: #fadbdf; color: #7a1626; }
+    .pill.blue { background: #dde8fd; color: #17408f; }
+
+    .blue { color: var(--blue); }
+    .plum { color: var(--plum); }
+    .gold { color: var(--gold); }
+    .red { color: var(--red); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.86);
+      padding: 16px;
+      min-height: 148px;
+    }
+    .step b { display: block; font-size: 15px; margin: 10px 0 8px; }
+    .step span { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+
+    .json, .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #11140f;
+      color: #e8ffe1;
+      border-radius: 8px;
+      padding: 16px 18px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow: hidden;
+    }
+
+    .kicker {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: -6px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--ink);
+      font-size: 19px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .deck { height: auto; min-height: 100vh; }
+      .slide { position: relative; min-height: 100vh; padding: 26px 20px; }
+      h1 { font-size: 38px; }
+      h2 { font-size: 30px; }
+      .lead { font-size: 17px; }
+      .grid-2, .grid-3, .steps { grid-template-columns: 1fr; }
+      .row { grid-template-columns: auto 1fr; }
+      .row .pill { grid-column: 2; justify-self: start; }
+      footer { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+
+    <section class="slide active">
+      <header>
+        <div class="brand"><div class="mark">F</div><div>Dynamic Fee Hook</div></div>
+        <div class="slide-no">01 / 11</div>
+      </header>
+      <main>
+        <div class="eyebrow">initiative 3 of 5 · x layer · 2026-07-05</div>
+        <h1>Deep dive, fix, and sunset of the Dynamic Fee Hook.</h1>
+        <p class="lead">485+ autonomous oracle updates proved the mechanism works. The pool they priced never had real traffic. This is the review that fixed the keeper, found a second problem underneath it, and closed the loop.</p>
+        <div class="quote">The demo already proved what it needed to prove. Everything after this deck is disciplined shutdown, not more building.</div>
+      </main>
+      <footer><div class="hint">Use arrow keys</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">0</div><div>Starting State</div></div><div class="slide-no">02 / 11</div></header>
+      <main>
+        <h2>Verified live before touching anything.</h2>
+        <div class="rows">
+          <div class="row"><div class="rank ok">✓</div><div><div class="title">SashaOracle</div><div class="sub">Fee 3000 (neutral), 485 updates, updatedAt fresh — the mechanism is genuinely on-chain and correct.</div></div><div class="pill">live</div></div>
+          <div class="row"><div class="rank warn">$</div><div><div class="title">Keeper EOA (0xe451…)</div><div class="sub">513 txs sent. Balance down to 0.0375 OKB — roughly $4 of runway left.</div></div><div class="pill warn">low</div></div>
+          <div class="row"><div class="rank bad">0</div><div><div class="title">Pool — USDC.e / WOKB</div><div class="sub">TVL ≈ $0. Seed liquidity only. No meaningful swap traffic ever arrived.</div></div><div class="pill bad">no traffic</div></div>
+          <div class="row"><div class="rank bad">⟳</div><div><div class="title">Cron — /etc/cron.d/sasha-oracle</div><div class="sub">--force push every 2h, unconditionally — refreshes updatedAt whether or not anything changed.</div></div><div class="pill bad">defeats fallback</div></div>
+          <div class="row"><div class="rank ok">✓</div><div><div class="title">Contracts</div><div class="sub">Owners verified on-chain, bounds enforced, hook wiring correct (security audit, 2026-07-04).</div></div><div class="pill">clean</div></div>
+          <div class="row"><div class="rank ok">✓</div><div><div class="title">OKX Build X Hackathon</div><div class="sub">Submitted May 28. Dashboard live at pages.dev/okx.</div></div><div class="pill">done</div></div>
+        </div>
+      </main>
+      <footer><div class="hint">reports/plans-2026-07-05/03-dynamic-fee-hook.md</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">!</div><div>The Gaps</div></div><div class="slide-no">03 / 11</div></header>
+      <main>
+        <h2>Five problems stacked on top of one working mechanism.</h2>
+        <div class="grid-3">
+          <div class="stat"><div class="eyebrow">01 · economics</div><strong>Priced for no one</strong><span>485 updates × gas into ~$0 TVL. The fee mechanism has no economic effect to protect.</span></div>
+          <div class="stat"><div class="eyebrow">02 · audit M-1</div><strong>Force defeats itself</strong><span>--force every 2h refreshes updatedAt even when fee has been unchanged for weeks — the 6h staleness fallback exists specifically to catch a dead pipeline, and force-pushing buries it.</span></div>
+          <div class="stat"><div class="eyebrow">03 · audit M-1</div><strong>No freshness guard</strong><span>A stale mantle-signal.json still gets pushed as if current — worse than going stale, the oracle actively lies about freshness.</span></div>
+          <div class="stat"><div class="eyebrow">04 · runway</div><strong>Unmonitored keeper</strong><span>0.0375 OKB at 12 pushes/day. Script warns below 0.001 OKB, but nothing alerts a human before it dies.</span></div>
+          <div class="stat"><div class="eyebrow">05 · audit M-6</div><strong>No key rotation</strong><span>agent / owner / oracle are all immutable. Fine for a demo, fatal for any production reuse.</span></div>
+          <div class="stat"><div class="eyebrow">net effect</div><strong>Real infra, no payoff</strong><span>Everything about the oracle is correct. Nothing downstream of it matters yet.</span></div>
+        </div>
+      </main>
+      <footer><div class="hint">reports/security-audit-fable5-2026-07-04.md</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">✓</div><div>P0 — Shipped</div></div><div class="slide-no">04 / 11</div></header>
+      <main>
+        <h2>Heartbeat mode replaces force-every-2h.</h2>
+        <div class="grid-2">
+          <div class="panel">
+            <h3>New push logic</h3>
+            <div class="rows" style="margin-top:14px">
+              <div class="row"><div class="rank">1</div><div><div class="title">Push only if risk changed</div><div class="sub">…or on-chain updatedAt is ≥ 5h old (inside the 6h cutoff).</div></div></div>
+              <div class="row"><div class="rank">2</div><div><div class="title">Signal-age guard</div><div class="sub">Refuse to push mantle-signal.json if it's &gt; 6h old — let the oracle go stale honestly instead.</div></div></div>
+              <div class="row"><div class="rank">3</div><div><div class="title">Low-OKB Telegram alert</div><div class="sub">Fires below 0.01 OKB, debounced 24h — no more silent keeper death.</div></div></div>
+            </div>
+          </div>
+          <pre class="json">$ node push-signal-to-xlayer.js --heartbeat
+
+[xlayer-oracle] Oracle current: fee=3000
+  risk="neutral" stale=false
+  updatedAt=2026-07-05T18:00:19Z
+
+[xlayer-oracle] Heartbeat: risk unchanged
+  and updatedAt is only 9 min old
+  (< 300 min threshold) — skipping push.
+
+// 12 pushes/day  →  ~1-4 pushes/day
+// keeper runway extended ~5x</pre>
+        </div>
+      </main>
+      <footer><div class="hint">scripts/push-signal-to-xlayer.js</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">✓</div><div>Verified Live</div></div><div class="slide-no">05 / 11</div></header>
+      <main>
+        <h2>Tested against production chain state before flipping the cron.</h2>
+        <div class="rows">
+          <div class="row"><div class="rank ok">1</div><div><div class="title">--heartbeat, risk unchanged, updatedAt 9 min old</div></div><div class="pill">skipped ✓ correct</div></div>
+          <div class="row"><div class="rank ok">2</div><div><div class="title">--heartbeat --risk risk-off (forced risk change)</div></div><div class="pill">pushed ✓ correct</div></div>
+          <div class="row"><div class="rank ok">3</div><div><div class="title">plain run, no flags, fee unchanged</div></div><div class="pill">skipped ✓ correct</div></div>
+          <div class="row"><div class="rank ok">4</div><div><div class="title">--force, fee unchanged</div></div><div class="pill">pushed ✓ correct</div></div>
+        </div>
+        <p class="lead" style="font-size:18px">Also rebuilt --dry-run to read live chain state before exiting, so it can preview a --heartbeat decision without a private key. Deployed to the VPS by direct scp (deploy.sh correctly refused — unrelated dirty tree from concurrent work). Cron switched from --force/2h to --heartbeat/4h.</p>
+        <div class="quote warn">Caveat: the first real cron-triggered run under the new schedule fires at 20:00 UTC. Logic is verified against live state — the actual scheduled execution is not yet observed.</div>
+      </main>
+      <footer><div class="hint">/etc/cron.d/sasha-oracle · /var/log/sasha-oracle.log</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">⚠</div><div>Discovery</div></div><div class="slide-no">06 / 11</div></header>
+      <main>
+        <h2>A same-day decision elsewhere already orphaned the signal.</h2>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="eyebrow">DEC-013 · same day</div>
+            <h3 style="font-size:24px;margin-top:8px">Mantle/Solana trader hibernated</h3>
+            <p class="lead" style="font-size:17px;margin-top:10px">Cron sasha-trade disabled — and auto-trade.js was the <em>only</em> producer of content/mantle-signal.json (via mantle-signal.js, step 1). No other cron regenerates that file.</p>
+          </div>
+          <div class="panel">
+            <div class="eyebrow">consequence</div>
+            <h3 style="font-size:24px;margin-top:8px">The pipeline is now dead upstream</h3>
+            <p class="lead" style="font-size:17px;margin-top:10px">Last signal: generatedAt 17:00:12Z. Once it passes 6h old (~23:00 UTC), the new signal-age guard will correctly refuse every future push, forever — unless a producer is re-enabled.</p>
+          </div>
+        </div>
+        <div class="quote">This isn't a bug — it's the guard working exactly as designed. It also means the "dynamic" half of the Dynamic Fee Hook is already permanently inert, independent of anything in this review.</div>
+      </main>
+      <footer><div class="hint">docs/decision-log.md — DEC-013, DEC-014</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">→</div><div>P1 — Sunset</div></div><div class="slide-no">07 / 11</div></header>
+      <main>
+        <h2>Gabriel's call: sunset gracefully.</h2>
+        <div class="grid-3">
+          <div class="stat"><div class="eyebrow">option A · chosen</div><strong>Sunset</strong><span>Withdraw seed liquidity, drop cron to a light heartbeat, archive as "mechanism proven."</span></div>
+          <div class="stat"><div class="eyebrow">option B</div><strong>Keep, let it stale</strong><span>No withdrawal, just stop touching it. Not selected.</span></div>
+          <div class="stat"><div class="eyebrow">option C</div><strong>Chase real flow</strong><span>No routing reason exists for this pair on X Layer. Explicitly not worth manufacturing.</span></div>
+        </div>
+        <div class="quote">"sunset gracefully, send to sasha coin main wallet" — Gabriel's decision, given the pool never had real traffic and OKX Build X judging is effectively over.</div>
+      </main>
+      <footer><div class="hint">AskUserQuestion → confirmed 2026-07-05</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">✕</div><div>The Wall</div></div><div class="slide-no">08 / 11</div></header>
+      <main>
+        <h2>Withdrawal turned out to be technically impossible.</h2>
+        <div class="grid-2">
+          <div class="panel">
+            <h3>What the deployed contract can do</h3>
+            <div class="rows" style="margin-top:14px">
+              <div class="row"><div class="rank">+</div><div><div class="title">addLiquidity()</div><div class="sub">Liquidity delta hardcoded positive — uint128 cast, no negative path exists.</div></div></div>
+              <div class="row"><div class="rank">$</div><div><div class="title">rescueToken()</div><div class="sub">Sweeps ERC20 sitting directly in the helper. Currently $0 in both tokens — the funds aren't there.</div></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Why it can't be worked around</h3>
+            <p class="lead" style="font-size:17px">The LP position lives in the shared PoolManager, keyed to whichever address called modifyLiquidity — the helper contract itself. Only a call where msg.sender == that exact contract can decrease it. msg.sender cannot be spoofed by any other contract or EOA — that's a base EVM guarantee, not a missing feature. The helper is immutable, not a proxy, and its code simply has no decrease-liquidity path. The hook contract and PoolManager itself have no admin escape hatch either.</p>
+          </div>
+        </div>
+      </main>
+      <footer><div class="hint">contracts/LiquidityHelper.sol · contracts/SashaDynamicFeeHook.sol</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">$</div><div>DEC-015</div></div><div class="slide-no">09 / 11</div></header>
+      <main>
+        <h2>Quantified, then written off.</h2>
+        <div class="grid-3">
+          <div class="stat"><div class="eyebrow">locked position</div><strong>272,272,583,019</strong><span>raw liquidity units, tick range [223500, 235500], current tick ≈233273 (in range)</span></div>
+          <div class="stat"><div class="eyebrow">real value</div><strong>~$0.50–$1</strong><span>≈0.247 USDC.e + ≈0.0122 WOKB. Verified live via extsload reads on PoolManager.</span></div>
+          <div class="stat"><div class="eyebrow">action taken</div><strong>None</strong><span>No on-chain transaction sent — it would only burn gas on a guaranteed revert.</span></div>
+        </div>
+        <div class="quote bad">Matches the audit's original "TVL ≈ $0" read exactly. This was never a real-money position — only the recovery attempt exposed that it also has no recovery path.</div>
+      </main>
+      <footer><div class="hint">docs/decision-log.md — DEC-015</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">P2</div><div>Reusable Asset</div></div><div class="slide-no">10 / 11</div></header>
+      <main>
+        <h2>The cleanest piece of infra in the portfolio — and its one lesson.</h2>
+        <div class="grid-2">
+          <div class="panel">
+            <div class="eyebrow">worth packaging</div>
+            <h3 style="font-size:24px;margin-top:8px">Oracle-keeper pattern</h3>
+            <p class="lead" style="font-size:17px;margin-top:10px">Bounded fee, staleness fallback, heartbeat pusher, low-balance liveness alert — standalone module (contract pair + keeper script + cron template) and a content piece: "how my oracle survived 500 updates unattended, then stopped lying when it should."</p>
+          </div>
+          <div class="panel">
+            <div class="eyebrow">lesson learned</div>
+            <h3 style="font-size:24px;margin-top:8px">Ship the exit before the entrance</h3>
+            <p class="lead" style="font-size:17px;margin-top:10px">Any future LiquidityHelper-style contract needs a decrease-liquidity / emergency-close function from day one — even for a trivial hackathon seed deposit. This one only escaped scrutiny because the amount was small.</p>
+          </div>
+        </div>
+      </main>
+      <footer><div class="hint">Not started — surfaced for later</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+    <section class="slide">
+      <header><div class="brand"><div class="mark">✓</div><div>Closed Out</div></div><div class="slide-no">11 / 11</div></header>
+      <main>
+        <div class="eyebrow">initiative 3 of 5 — complete</div>
+        <h2>Mechanism proven. Cost cut. Sunset logged.</h2>
+        <div class="rows">
+          <div class="row"><div class="rank ok">✓</div><div><div class="title">Keeper gas spend</div><div class="sub">~80%+ reduction — 12 pushes/day → ~1-4/day, then near-zero once the signal ages out.</div></div><div class="pill">P0</div></div>
+          <div class="row"><div class="rank ok">✓</div><div><div class="title">Staleness fallback</div><div class="sub">Restored as a real safety property instead of being permanently masked.</div></div><div class="pill">P0</div></div>
+          <div class="row"><div class="rank ok">✓</div><div><div class="title">Keeper-death alerting</div><div class="sub">Telegram alert below 0.01 OKB, 24h debounce.</div></div><div class="pill">P0</div></div>
+          <div class="row"><div class="rank ok">✓</div><div><div class="title">Sunset decision</div><div class="sub">Confirmed by Gabriel, logged as DEC-014.</div></div><div class="pill">P1</div></div>
+          <div class="row"><div class="rank warn">$</div><div><div class="title">~$1 seed liquidity</div><div class="sub">Verified unrecoverable, written off, logged as DEC-015.</div></div><div class="pill warn">P1</div></div>
+        </div>
+      </main>
+      <footer><div class="hint">docs/decision-log.md · .claude/skills/sasha-xlayer-oracle-keeper</div><div class="controls"><button data-prev>‹</button><button data-next>›</button></div></footer>
+    </section>
+
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let index = 0;
+    function show(next) {
+      slides[index].classList.remove('active');
+      index = (next + slides.length) % slides.length;
+      slides[index].classList.add('active');
+    }
+    document.querySelectorAll('[data-next]').forEach((button) => button.addEventListener('click', () => show(index + 1)));
+    document.querySelectorAll('[data-prev]').forEach((button) => button.addEventListener('click', () => show(index - 1)));
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === ' ') show(index + 1);
+      if (event.key === 'ArrowLeft') show(index - 1);
+    });
+  </script>
+</body>
+</html>

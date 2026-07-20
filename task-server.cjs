@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, exec, execSync } = require('child_process');
 
 const ROOT = __dirname;
 let cfg = {};
@@ -9,6 +9,36 @@ try { cfg = require(path.join(ROOT, 'mangaos.config.json')); } catch (e) {}
 const PORT = Number(process.env.TASK_SERVER_PORT || process.env.PORT || cfg?.port || 3005);
 const PROJECT_NAME = cfg.projectName || 'Task Board';
 const TASKS_FILE = path.join(ROOT, 'social', 'tasks.json');
+// Slice 3 cutover (2026-07-06): the tasks.json writer is the VPS board
+// (sasha-board.service :3005, /root/sasha-board/social/tasks.json). This local
+// process no longer owns that file — reads proxy over SSH (the same key that
+// is already the trust root for every VPS deploy), and the local copy is a
+// stale read-only fallback for network blips. Campaigns/blog-registry/
+// sasha-state/reply-log/Typefully proxy all stay local, unchanged.
+// See marketing/_ops/one-writer-map.md.
+const BOARD_VPS_FILE = '/root/sasha-board/social/tasks.json';
+const BOARD_SSH = `ssh -i ${process.env.HOME}/.ssh/hostinger_vps -o ConnectTimeout=5 -o BatchMode=yes root@187.77.42.134`;
+const BOARD_URL = 'http://187.77.42.134:3005';
+function fetchBoardTasks(callback) {
+  exec(`${BOARD_SSH} "cat ${BOARD_VPS_FILE}"`, { timeout: 8000, maxBuffer: 10 * 1024 * 1024 }, (err, stdout) => {
+    if (err || !stdout) return callback(err || new Error('empty response'));
+    try { JSON.parse(stdout); } catch (e) { return callback(new Error('non-JSON response from VPS')); }
+    callback(null, stdout);
+  });
+}
+function readBoardDocSync() {
+  try {
+    return JSON.parse(execSync(`${BOARD_SSH} "cat ${BOARD_VPS_FILE}"`, { timeout: 8000, maxBuffer: 10 * 1024 * 1024 }).toString());
+  } catch (e) {
+    return JSON.parse(fs.readFileSync(TASKS_FILE, 'utf8')); // stale local fallback
+  }
+}
+function writeBoardDocSync(doc) {
+  const body = JSON.stringify(doc, null, 2);
+  // atomic on the VPS side: tmp + rename. Throws on SSH failure — callers handle.
+  execSync(`${BOARD_SSH} "cat > ${BOARD_VPS_FILE}.tmp && mv ${BOARD_VPS_FILE}.tmp ${BOARD_VPS_FILE}"`, { input: body, timeout: 10000 });
+  try { fs.writeFileSync(TASKS_FILE, body, 'utf8'); } catch (e) {} // refresh local read-only mirror
+}
 const CAMPAIGNS_FILE = path.join(ROOT, 'campaigns', 'campaigns.json');
 const DISPATCH_QUEUE_FILE = path.join(ROOT, 'social', 'dispatch-queue.json');
 const BLOG_REGISTRY_FILE = path.join(ROOT, 'seo', 'blog-registry.json');
@@ -28,41 +58,53 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // GET /api/tasks — read tasks.json from disk
+  // GET /api/tasks — Slice 3 cutover: proxy live to the VPS board (single
+  // writer as of 2026-07-06). Falls back to the stale local copy on blips.
   if (req.method === 'GET' && req.url === '/api/tasks') {
-    fs.readFile(TASKS_FILE, 'utf8', (err, data) => {
-      if (err) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Failed to read tasks.json' }));
+    fetchBoardTasks((err, data) => {
+      if (!err && data) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(data);
         return;
       }
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(data);
+      fs.readFile(TASKS_FILE, 'utf8', (lerr, ldata) => {
+        if (lerr) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'VPS board unreachable and no local fallback' }));
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(ldata);
+      });
     });
     return;
   }
 
-  // PUT /api/tasks — write to tasks.json on disk
+  // PUT /api/tasks — Slice 3 cutover: write-through proxy to the VPS board.
+  // The VPS file is the single canonical copy (one-writer); this process
+  // forwards the write over SSH and only refreshes its read-only mirror.
+  // On SSH failure it returns 502 — it NEVER falls back to a local-only
+  // write (that would recreate the dual-writer race this migration prevents).
   if (req.method === 'PUT' && req.url === '/api/tasks') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
+      let doc;
       try {
-        JSON.parse(body); // validate it's real JSON
+        doc = JSON.parse(body);
       } catch (e) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON' }));
         return;
       }
-      fs.writeFile(TASKS_FILE, body, 'utf8', err => {
-        if (err) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Failed to write tasks.json' }));
-          return;
-        }
+      try {
+        writeBoardDocSync(doc);
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ ok: true }));
-      });
+        res.end(JSON.stringify({ ok: true, writer: 'vps', boardFile: BOARD_VPS_FILE }));
+      } catch (e) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'VPS board write failed (no local fallback by design): ' + e.message }));
+      }
     });
     return;
   }
@@ -787,7 +829,7 @@ Return only valid JSON. No markdown, no explanation.`;
       }
 
       (async () => {
-        const tasksDoc = JSON.parse(fs.readFileSync(TASKS_FILE, 'utf8'));
+        const tasksDoc = readBoardDocSync();
         const tasks = tasksDoc.tasks || tasksDoc;
         const task = tasks.find(t => t.id === taskId);
         if (!task) throw new Error(`Task ${taskId} not found`);
@@ -889,7 +931,7 @@ Return only valid JSON. No markdown, no explanation.`;
           task.artifacts.published.push(draftUrl);
         }
         const saveDoc = Array.isArray(tasksDoc) ? tasks : { ...tasksDoc, tasks, lastUpdated: new Date().toISOString() };
-        fs.writeFileSync(TASKS_FILE, JSON.stringify(saveDoc, null, 2), 'utf8');
+        writeBoardDocSync(saveDoc); // throws into this block's .catch on SSH failure
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: true, slug, url: draftUrl }));
@@ -931,7 +973,7 @@ Return only valid JSON. No markdown, no explanation.`;
       }
 
       let tasksDoc = [];
-      try { tasksDoc = JSON.parse(fs.readFileSync(TASKS_FILE, 'utf8')); } catch {}
+      try { tasksDoc = readBoardDocSync(); } catch {}
       const taskList = tasksDoc.tasks || tasksDoc;
 
       // Duplicate guard — one active refresh per slug
@@ -993,7 +1035,13 @@ Return only valid JSON. No markdown, no explanation.`;
       const saveDoc = Array.isArray(tasksDoc)
         ? taskList
         : { ...tasksDoc, tasks: taskList, lastUpdated: new Date().toISOString() };
-      fs.writeFileSync(TASKS_FILE, JSON.stringify(saveDoc, null, 2), 'utf8');
+      try {
+        writeBoardDocSync(saveDoc);
+      } catch (e) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'VPS board write failed: ' + e.message }));
+        return;
+      }
 
       // Mark article in-refresh
       article.status = 'in-refresh';

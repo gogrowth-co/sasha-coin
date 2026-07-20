@@ -1,0 +1,43 @@
+- generic [ref=e2]:
+  - img "Error" [ref=e3]
+  - generic [ref=e4]: Melhore sua experiência
+  - generic [ref=e5]: Você está usando uma versão incompatível ou antiga do seu navegador. Isso pode fazer com que o YouTube Studio fique lento ou instável. Atualize seu navegador ou use a versão mais recente de um dos navegadores abaixo.
+  - generic [ref=e6]:
+    - link "Firefox Firefox Mozilla" [ref=e7] [cursor=pointer]:
+      - /url: https://www.mozilla.org/firefox
+      - generic [ref=e8]:
+        - img "Firefox" [ref=e9]
+        - generic [ref=e10]:
+          - generic [ref=e11]: Firefox
+          - generic [ref=e12]: Mozilla
+    - link "Chrome Chrome Google" [ref=e13] [cursor=pointer]:
+      - /url: https://www.google.com/chrome
+      - generic [ref=e14]:
+        - img "Chrome" [ref=e15]
+        - generic [ref=e16]:
+          - generic [ref=e17]: Chrome
+          - generic [ref=e18]: Google
+    - link "Opera Opera Opera Software" [ref=e19] [cursor=pointer]:
+      - /url: https://www.opera.com
+      - generic [ref=e20]:
+        - img "Opera" [ref=e21]
+        - generic [ref=e22]:
+          - generic [ref=e23]: Opera
+          - generic [ref=e24]: Opera Software
+  - generic [ref=e25]:
+    - link "Edge Edge Microsoft" [ref=e26] [cursor=pointer]:
+      - /url: https://www.microsoft.com/edge
+      - generic [ref=e27]:
+        - img "Edge" [ref=e28]
+        - generic [ref=e29]:
+          - generic [ref=e30]: Edge
+          - generic [ref=e31]: Microsoft
+    - link "Safari Safari Apple" [ref=e32] [cursor=pointer]:
+      - /url: https://apple.com/safari
+      - generic [ref=e33]:
+        - img "Safari" [ref=e34]
+        - generic [ref=e35]:
+          - generic [ref=e36]: Safari
+          - generic [ref=e37]: Apple
+  - link "Pular para o YouTube Studio" [ref=e39] [cursor=pointer]:
+    - /url: https://studio.youtube.com/channel/UCoEvXFVJHYwbMteS3qY8zug?approve_browser_access=true

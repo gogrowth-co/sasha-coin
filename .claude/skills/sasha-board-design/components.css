@@ -1,0 +1,293 @@
+/* ============================================================================
+   Sasha Coin Ops Board — Component Library
+   Requires colors_and_type.css. Class names match tasks.html's shipped
+   markup 1:1 wherever a component already exists in the live file (.task,
+   .ce-card, .tag, .col-header, .modal, .cal-pill, etc.) — see README
+   "Reconciliation" table for the drift-vs-decision log. This means wiring
+   tasks.html to this system later is a token repoint, not a markup rewrite,
+   same discipline as mangaos-design's Task Board pass.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   THE DOT — the only status indicator for task/CE/content states. Always
+   paired with a text label; color is reinforcement, never the sole signal.
+   --------------------------------------------------------------------------- */
+.dot { display: inline-flex; align-items: center; gap: var(--space-2); }
+.dot__visual {
+  width: 7px; height: 7px; border-radius: var(--radius-full);
+  background: var(--color-state-todo); flex: none;
+  transition: background var(--duration-base) ease;
+}
+.dot--compact .dot__visual { width: 6px; height: 6px; }
+.dot__label {
+  font: var(--text-mono-sm); color: var(--color-text-secondary);
+  text-transform: lowercase; letter-spacing: 0.02em;
+}
+
+.dot--state-todo        .dot__visual { background: var(--color-state-todo); }
+.dot--state-inprogress  .dot__visual { background: var(--color-state-inprogress); }
+.dot--state-review      .dot__visual { background: var(--color-state-review); }
+.dot--state-done        .dot__visual { background: var(--color-state-done); }
+.dot--state-scheduled   .dot__visual { background: var(--color-state-scheduled); animation: dot-pulse 1400ms ease-in-out infinite; }
+.dot--state-blocked     .dot__visual { background: var(--color-state-blocked); }
+
+/* Content-freshness family (Blog CMS) — reuses status hues, new semantic names only */
+.dot--content-fresh .dot__visual { background: var(--color-content-fresh); }
+.dot--content-aging .dot__visual { background: var(--color-content-aging); }
+.dot--content-stale .dot__visual { background: var(--color-content-stale); }
+
+@keyframes dot-pulse { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .dot__visual { animation: none !important; opacity: 0.65; }
+}
+
+/* State chip — dot + label in a pill, for inline status badges */
+.state-chip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-overlay);
+  border: var(--border-thin);
+}
+.state-chip .dot__label { color: var(--color-text-primary); }
+
+/* ---------------------------------------------------------------------------
+   COLUMN — kanban column shell (Task Board + Content Engine share the shape)
+   --------------------------------------------------------------------------- */
+.column {
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3) var(--space-2);
+  min-height: 200px;
+  transition: background var(--duration-base) ease;
+}
+.column.drag-over {
+  background: var(--color-action-primary-wash);
+  outline: 2px dashed var(--color-action-primary-wash-strong);
+  outline-offset: -2px;
+}
+.col-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); padding: 0 4px; }
+.col-title { font: var(--text-heading-md); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-secondary); }
+.col-title.inprogress { color: var(--color-state-inprogress); }
+.col-title.review     { color: var(--color-state-review); }
+.col-title.done        { color: var(--color-state-done); }
+.col-title.scheduled   { color: var(--color-state-scheduled); }
+.col-count {
+  font: var(--text-mono-sm); font-weight: 700;
+  width: 20px; height: 20px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--color-surface-overlay); color: var(--color-text-secondary);
+}
+.col-count.inprogress { background: var(--color-state-inprogress-wash); color: var(--color-state-inprogress); }
+.col-count.review     { background: var(--color-state-review-wash); color: var(--color-state-review); }
+.col-count.done        { background: var(--color-state-done-wash); color: var(--color-state-done); }
+.col-count.scheduled   { background: var(--color-state-scheduled-wash); color: var(--color-state-scheduled); }
+
+/* ---------------------------------------------------------------------------
+   TASK CARD — priority is a left-border accent; this IS the exception-state
+   contract for this board: priority/health is never color alone, it always
+   pairs with the badge/label components below on the same card.
+   --------------------------------------------------------------------------- */
+.task, .ce-card {
+  background: var(--color-surface-raised);
+  border: var(--border-thin);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
+  cursor: grab;
+  position: relative;
+  transition: border-color var(--duration-snap) var(--ease-out-quart), background var(--duration-snap);
+}
+.task:hover, .ce-card:hover { border-color: var(--color-border-emphasis); background: var(--color-surface-overlay); }
+.task:active { cursor: grabbing; }
+.task.dragging, .ce-card.dragging { opacity: 0.4; transform: rotate(1.5deg); }
+
+.task.high   { border-left: 3px solid var(--color-state-scheduled); }
+.task.medium { border-left: 3px solid var(--color-action-primary); }
+.task.low    { border-left: 3px solid var(--color-border-default); }
+.task.status-blocked { border-left-color: var(--color-state-blocked); opacity: 0.75; }
+.task.ce-highlight { outline: 2px solid var(--color-action-primary); outline-offset: 2px; }
+
+.ce-card { border-left: 3px solid var(--color-border-default); }
+.ce-card.parent { border-left-color: var(--color-action-primary); border-left-width: 4px; }
+.ce-card.child  { border-left-color: var(--color-action-primary-wash-strong); margin-left: var(--space-2); }
+.ce-card.pending-approval { box-shadow: 0 0 0 1px var(--color-state-scheduled-wash-strong); }
+
+.task-title, .ce-card-title { font: var(--text-heading-sm); color: var(--color-text-emphasis); line-height: 1.35; margin-bottom: var(--space-2); }
+.task-meta, .ce-card-meta { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+
+/* ---------------------------------------------------------------------------
+   TAG / BADGE FAMILY — category, channel, blocked, approval, due-date
+   --------------------------------------------------------------------------- */
+.tag {
+  font: var(--text-mono-sm); text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 2px 6px; border-radius: var(--radius-sm);
+}
+.tag.content        { background: var(--color-brand-primary-wash); color: var(--color-brand-primary); }
+.tag.x-growth        { background: var(--color-action-primary-wash); color: var(--color-action-primary); }
+.tag.infrastructure  { background: var(--color-state-scheduled-wash); color: var(--color-state-scheduled); }
+.tag.research         { background: var(--color-state-done-wash); color: var(--color-state-done); }
+.tag.sop, .tag.channel { background: var(--color-surface-overlay); color: var(--color-text-secondary); }
+
+.blocked-badge, .approval-badge {
+  font: var(--text-mono-sm); font-weight: 700; padding: 1px 5px; border-radius: var(--radius-sm);
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.blocked-badge { background: var(--color-state-blocked-wash); color: var(--color-state-blocked); }
+.approval-badge.pending  { background: var(--color-state-scheduled-wash-strong); color: var(--color-state-scheduled); }
+.approval-badge.approved { background: var(--color-state-done-wash); color: var(--color-state-done); }
+.approval-badge.rejected { background: var(--color-state-blocked-wash); color: var(--color-state-blocked); }
+
+.due-date-badge { font: var(--text-mono-sm); font-weight: 600; padding: 1px 5px; border-radius: var(--radius-sm); background: var(--color-action-primary-wash); color: var(--color-action-primary); }
+.due-date-badge.overdue { background: var(--color-state-error-loud-wash); color: var(--color-state-error-loud); }
+.due-date-badge.soon    { background: var(--color-state-scheduled-wash-strong); color: var(--color-state-scheduled); }
+
+/* Channel identity chips */
+.ce-ch-icon.blog     { background: var(--color-channel-blog-wash); color: var(--color-channel-blog); }
+.ce-ch-icon.linkedin { background: var(--color-channel-linkedin-wash); color: var(--color-channel-linkedin); }
+.ce-ch-icon.x        { background: var(--color-channel-x-wash); color: var(--color-channel-x); }
+
+/* ---------------------------------------------------------------------------
+   BUTTONS — action-labeled, never icon-only
+   --------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font: var(--text-body-md); font-weight: 600;
+  border-radius: var(--radius-md); border: var(--border-thin);
+  background: var(--color-surface-raised); color: var(--color-text-primary);
+  cursor: pointer; transition: border-color var(--duration-snap), background var(--duration-snap);
+}
+.btn:hover { border-color: var(--color-border-emphasis); }
+.btn:focus-visible { outline: 2px solid var(--color-action-primary); outline-offset: 2px; }
+.btn--primary { background: var(--color-action-primary); border-color: var(--color-action-primary); color: var(--color-text-inverse); }
+.btn--primary:hover { background: var(--color-action-primary-hover); border-color: var(--color-action-primary-hover); }
+.btn--primary:active { background: var(--color-action-primary-active); }
+.btn--ghost { background: transparent; }
+.btn--danger { background: transparent; border-color: var(--color-action-destructive); color: var(--color-action-destructive); }
+.btn--danger:hover { background: color-mix(in srgb, var(--color-action-destructive) 12%, transparent); }
+.btn--sm { padding: var(--space-1) var(--space-3); font: var(--text-body-sm); font-weight: 600; }
+
+/* .ce-btn variants — same primitive, board's compact action-row shape */
+.ce-btn {
+  font: var(--text-mono-sm); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: var(--radius-sm); border: 1px solid transparent;
+  cursor: pointer; transition: transform var(--duration-snap);
+}
+.ce-btn:hover { transform: translateY(-1px); }
+.ce-btn.primary   { background: var(--color-action-primary); color: var(--color-text-inverse); }
+.ce-btn.gold      { background: var(--color-state-scheduled); color: var(--color-text-inverse-warm); }
+.ce-btn.green     { background: var(--color-state-done); color: var(--color-text-inverse); }
+.ce-btn.secondary { background: transparent; color: var(--color-text-secondary); border-color: var(--color-border-default); }
+.ce-btn.secondary:hover { color: var(--color-text-emphasis); border-color: var(--color-border-emphasis); }
+.ce-btn.danger    { background: transparent; color: var(--color-state-blocked); border-color: var(--color-state-blocked-wash-strong, var(--color-state-blocked-wash)); }
+.ce-btn.danger:hover { background: var(--color-state-blocked-wash); }
+
+/* ---------------------------------------------------------------------------
+   FORM FIELDS
+   --------------------------------------------------------------------------- */
+.field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-3); }
+.field-label {
+  font: var(--text-label); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary);
+}
+.field-input, .field-textarea, .field-select {
+  width: 100%; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
+  border: var(--border-thin); background: var(--color-surface-overlay);
+  color: var(--color-text-primary); font: var(--text-body-lg); outline: none;
+  transition: border-color var(--duration-snap);
+}
+.field-input::placeholder, .field-textarea::placeholder { color: var(--color-text-tertiary); }
+.field-input:focus, .field-textarea:focus, .field-select:focus { border-color: var(--color-action-primary); }
+.field-textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+.field-select { cursor: pointer; appearance: none; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+
+/* ---------------------------------------------------------------------------
+   MODAL / REVIEW PANEL — depth via tone, never box-shadow-as-elevation
+   (the review panel's edge shadow is the one accepted exception, a real
+   slide-in drawer over page content, not a stacked card).
+   --------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(8,8,15,0.85);
+  z-index: var(--z-modal); display: none; justify-content: center; align-items: center; padding: var(--space-5);
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--color-surface-raised); border: var(--border-thin);
+  border-radius: var(--radius-2xl); width: 100%; max-width: 560px; max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-header { padding: var(--space-4) var(--space-5); border-bottom: var(--border-hairline); display: flex; justify-content: space-between; align-items: center; }
+.modal-title { font: var(--text-heading-lg); color: var(--color-text-emphasis); }
+.modal-body { padding: var(--space-4) var(--space-5); }
+.modal-actions { padding: var(--space-3) var(--space-5); border-top: var(--border-hairline); display: flex; justify-content: space-between; align-items: center; }
+.modal-btn { font: var(--text-body-md); font-weight: 600; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); cursor: pointer; border: none; }
+.btn-save { background: var(--color-action-primary); color: var(--color-text-inverse); }
+.btn-delete { background: transparent; color: var(--color-state-blocked); border: 1px solid var(--color-state-blocked-wash-strong, rgba(239,68,68,.2)); }
+.btn-cancel { background: transparent; color: var(--color-text-secondary); }
+
+/* ---------------------------------------------------------------------------
+   EMPTY STATE — useful, not cute. No "Welcome 👋".
+   --------------------------------------------------------------------------- */
+.empty-state { padding: var(--space-8) var(--space-4); text-align: center; color: var(--color-text-tertiary); }
+.empty-state__title { font: var(--text-heading-sm); color: var(--color-text-secondary); margin: 0 0 var(--space-1); }
+.empty-state__body { font: var(--text-body-sm); color: var(--color-text-tertiary); margin: 0; }
+
+/* ---------------------------------------------------------------------------
+   SKELETON — PRESCRIBED ADDITION. tasks.html has no skeleton-loader pattern
+   today (loading states are undocumented in the shipped CSS). This follows
+   dashboard-design's anti-slop floor rule #5 ("No 'Loading…' spinner where a
+   skeleton would work") — provided here so the next loading-state build has
+   a system to reach for instead of inventing a spinner or a bare "Loading…"
+   string.
+   --------------------------------------------------------------------------- */
+.skeleton {
+  background: var(--color-surface-overlay); border-radius: var(--radius-sm);
+  position: relative; overflow: hidden;
+}
+.skeleton::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-text-tertiary) 10%, transparent), transparent);
+  transform: translateX(-100%);
+  animation: skeleton-sheen 1400ms ease-in-out infinite;
+}
+.skeleton--card { height: 64px; }
+.skeleton--row  { height: 32px; margin-bottom: var(--space-2); }
+.skeleton--line { height: 10px; }
+.skeleton--wide { width: 100%; }
+.skeleton--half { width: 50%; }
+@keyframes skeleton-sheen { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .skeleton::after { animation: none; } }
+
+/* ---------------------------------------------------------------------------
+   CALENDAR PILL — one pill per channel, matches the channel identity tokens
+   --------------------------------------------------------------------------- */
+.cal-pill {
+  display: block; font: var(--text-mono-sm); font-weight: 600; padding: 3px 7px; border-radius: var(--radius-sm);
+  margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: pointer; width: 100%; border: none; transition: filter var(--duration-snap);
+}
+.cal-pill:hover { filter: brightness(1.15); }
+.cal-pill.linkedin   { background: var(--color-channel-linkedin-wash); color: var(--color-channel-linkedin); }
+.cal-pill.x           { background: var(--color-channel-x-wash); color: var(--color-channel-x); }
+.cal-pill.blog        { background: var(--color-channel-blog-wash); color: var(--color-channel-blog); }
+.cal-pill.newsletter  { background: var(--color-channel-newsletter-wash); color: var(--color-channel-newsletter); }
+.cal-pill.done         { opacity: 0.35; text-decoration: line-through; }
+.cal-pill.refresh-due { background: var(--color-state-scheduled-wash-strong); color: var(--color-state-scheduled); border: 1px dashed var(--color-state-scheduled-wash-strong); font-style: italic; }
+
+/* ---------------------------------------------------------------------------
+   BLOG STATUS PILL — publish-status family, distinct from the freshness dots
+   --------------------------------------------------------------------------- */
+.blog-status-pill { display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm); font: var(--text-mono-sm); font-weight: 700; letter-spacing: 0.03em; }
+.blog-status-published     { background: var(--color-state-done-wash); color: var(--color-state-done); }
+.blog-status-needs-refresh { background: var(--color-state-review-wash); color: var(--color-state-review); }
+.blog-status-in-refresh    { background: var(--color-action-primary-wash-strong); color: var(--color-action-primary); cursor: pointer; }
+
+/* ---------------------------------------------------------------------------
+   STAGE PILL (Content Engine table) — reuses the state-scheduled/done tiers
+   --------------------------------------------------------------------------- */
+.stage-pill { display: inline-block; font: var(--text-mono-sm); font-weight: 700; padding: 2px 7px; border-radius: var(--radius-sm); background: var(--color-surface-overlay); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.stage-pill.gate      { background: var(--color-state-scheduled-wash-strong); color: var(--color-state-scheduled); }
+.stage-pill.milestone,
+.stage-pill.done       { background: var(--color-state-done-wash); color: var(--color-state-done); }

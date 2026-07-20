@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha Coin — Security Audit Summary · 2026-07-04</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e;
+    --high: #f85149; --high-bg: rgba(248,81,73,.12);
+    --med: #d29922; --med-bg: rgba(210,153,34,.12);
+    --low: #58a6ff; --low-bg: rgba(88,166,255,.10);
+    --ok: #3fb950; --ok-bg: rgba(63,185,80,.10);
+    --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font: 15px/1.6 -apple-system, "Segoe UI", sans-serif; padding: 48px 24px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  header { margin-bottom: 36px; }
+  .kicker { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
+  h1 { font-size: 28px; line-height: 1.25; margin-bottom: 10px; }
+  .meta { color: var(--muted); font-size: 13.5px; }
+  .meta code { font-family: var(--mono); font-size: 12.5px; color: var(--text); }
+
+  .verdict { background: var(--panel); border: 1px solid var(--border); border-left: 4px solid var(--med); border-radius: 8px; padding: 18px 22px; margin: 28px 0 36px; font-size: 15.5px; }
+  .verdict strong { color: var(--med); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; text-align: center; }
+  .stat .n { font-size: 30px; font-weight: 700; font-family: var(--mono); }
+  .stat .l { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+  .stat.high .n { color: var(--high); } .stat.med .n { color: var(--med); }
+  .stat.low .n { color: var(--low); } .stat.ok .n { color: var(--ok); }
+
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin: 40px 0 18px; }
+
+  .finding { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 14px; }
+  .finding .head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .badge { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .badge.high { color: var(--high); background: var(--high-bg); border: 1px solid var(--high); }
+  .badge.med  { color: var(--med);  background: var(--med-bg);  border: 1px solid var(--med); }
+  .badge.low  { color: var(--low);  background: var(--low-bg);  border: 1px solid var(--low); }
+  .finding .title { font-weight: 600; font-size: 15.5px; }
+  .finding p { color: var(--muted); font-size: 14px; }
+  .finding p strong { color: var(--text); }
+  code { font-family: var(--mono); font-size: 12.5px; background: rgba(110,118,129,.2); padding: 1px 5px; border-radius: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 8px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  td:last-child { color: var(--ok); }
+
+  ol.fixes { padding-left: 22px; }
+  ol.fixes li { margin-bottom: 8px; }
+  ol.fixes .why { color: var(--muted); font-size: 13.5px; }
+
+  footer { margin-top: 44px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 16px; }
+  @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Fable 5 Security Audit · Read-only · No state changed</div>
+  <h1>Sasha Coin — Audit Summary</h1>
+  <div class="meta">2026-07-04 · against <code>docs/pre-audit-handover-fable5-2026-07-04.md</code> · full report: <code>reports/security-audit-fable5-2026-07-04.md</code></div>
+</header>
+
+<div class="verdict">
+  <strong>Verdict:</strong> No path to fund theft found in the contracts, and the confirm-gates for position kills work as designed. But the handover document has <strong>two materially wrong claims</strong> — one shipped in CROO production code — and <strong>two automated paths close positions with no human gate</strong> despite the doc's "universal confirmation gate" claim.
+</div>
+
+<div class="stats">
+  <div class="stat high"><div class="n">3</div><div class="l">High</div></div>
+  <div class="stat med"><div class="n">8</div><div class="l">Medium</div></div>
+  <div class="stat low"><div class="n">5</div><div class="l">Low</div></div>
+  <div class="stat ok"><div class="n">12</div><div class="l">Verified good</div></div>
+</div>
+
+<h2>High severity</h2>
+
+<div class="finding">
+  <div class="head"><span class="badge high">H-1</span><span class="title">Documented Base agent EOA is a phantom — and ships in CROO code</span></div>
+  <p>Doc §3's <code>0xba3BB320d35773ae…8601</code> has <strong>0 transactions</strong> on Base and fails checksum. Real Clawlett EOA: <code>0xba3BB32Fa5cfA…6662</code> (15 txs) — same prefix, different tail. Actual LP-miner wallet: <code>0x21AF…A9A9</code> (22 txs, key = <code>MANTLE_AGENT_PK</code>; <code>AGENT_PRIVATE_KEY</code> exists nowhere). The phantom is hardcoded in <code>croo/src/reputation-proof.ts:7</code> — Sasha's reputation proof publishes an empty wallet. <strong>Fix before CROO judging Jul 12.</strong></p>
+</div>
+
+<div class="finding">
+  <div class="head"><span class="badge high">H-2</span><span class="title">The "Gnosis Safe" at 0x7833…13b9 is not a Safe</span></div>
+  <p>On-chain it's an <strong>EIP-1167 minimal proxy</strong> → impl <code>0x819cd026…d54a</code>; every Safe ABI call reverts (likely an AgentKeyFactoryV3 clone). All §5 claims — "Safe holds all funds", Zodiac Roles, no-transfer — are unverifiable as stated. Current exposure small (~0.0054 ETH).</p>
+</div>
+
+<div class="finding">
+  <div class="head"><span class="badge high">H-3</span><span class="title">Stop-loss / HF-emergency / funding-kill closes auto-execute from cron</span></div>
+  <p>The gate only holds actions flagged <code>killSwitch && confirmGated</code>. The monitor emits stop-loss <code>CLOSE_POSITION</code>, emergency <code>DELEVERAGE</code>, and <code>CLOSE_HEDGE</code> with <code>killSwitch:true</code> only — the 30-min cron (<code>--execute</code>) runs them with no human gate. Also <code>/etc/cron.d/sasha-hedge</code> hardcodes <code>HEDGE_LIVE_OK=1</code>, so that gate is permanently open on the automated path. May be intended for stop-loss speed — but doc and code must agree.</p>
+</div>
+
+<h2>Medium severity</h2>
+
+<div class="finding">
+  <div class="head"><span class="badge med">M-1</span><span class="title">Oracle pusher never enforces signal freshness</span></div>
+  <p><code>push-signal-to-xlayer.js</code> logs signal age but never rejects stale signals — a dead pipeline keeps re-pushing old data, refreshing <code>updatedAt</code> and defeating the oracle's 6h staleness fallback.</p>
+</div>
+<div class="finding">
+  <div class="head"><span class="badge med">M-2</span><span class="title">Hedge orphan-short sweep only runs on an empty LP book</span></div>
+  <p>With a mixed book (one open LP + a leftover short from a closed LP in another coin) the stale short is never closed — naked directional exposure persists indefinitely.</p>
+</div>
+<div class="finding">
+  <div class="head"><span class="badge med">M-3</span><span class="title">Hedge state written without checking order fill status</span></div>
+  <p><code>pos.hedgeSize = target</code> is set even if the IoC order didn't fill — dashboard reports delta-neutral when it isn't. Self-corrects next 30-min cycle (mitigating).</p>
+</div>
+<div class="finding">
+  <div class="head"><span class="badge med">M-4</span><span class="title">CROO provider has no delivery idempotency</span></div>
+  <p>A replayed <code>OrderPaid</code> event on WebSocket reconnect triggers a second <code>deliverOrder()</code>; relies entirely on server-side rejection. Risk area #10 confirmed open.</p>
+</div>
+<div class="finding">
+  <div class="head"><span class="badge med">M-5</span><span class="title">LiquidityHelper ignores ERC-20 return values</span></div>
+  <p>No SafeERC20 — fine for USDC.e/WOKB, unsafe if reused with non-standard or fee-on-transfer tokens. Can't handle native-currency pools.</p>
+</div>
+<div class="finding">
+  <div class="head"><span class="badge med">M-6</span><span class="title">No key rotation on any contract</span></div>
+  <p>Oracle agent, helper owner, hook oracle all <code>immutable</code>; hook is baked into the PoolKey forever. Compromised X Layer key = fee griefing (bounded 50–10000, max 1%) until full redeploy + new pool.</p>
+</div>
+<div class="finding">
+  <div class="head"><span class="badge med">M-7</span><span class="title">SashaAgentLog has never been used</span></div>
+  <p>On-chain: <code>tradeCount()==0</code>, <code>agentId()==0</code> (doc claims agent #100 + per-trade attestation). Attestations actually go to the ERC-8004 registry. Doc claim falsifiable in one RPC call.</p>
+</div>
+<div class="finding">
+  <div class="head"><span class="badge med">M-8</span><span class="title">Pre-announce tweet still stranded on trade failure</span></div>
+  <p>Pre-flight funds check works, but a trade that fails <em>after</em> the tweet posts leaves the public announcement up with no position behind it (Telegram alert only).</p>
+</div>
+
+<h2>Low severity</h2>
+
+<div class="finding">
+  <div class="head"><span class="badge low">L-1..L-5</span><span class="title">Minor items</span></div>
+  <p>Casper <code>attest()</code> is permissionless (noise-append possible, author-stamped, no admin backdoor found); rebalancer deletes the signal file when <em>any</em> action succeeded (failed siblings wait a cycle); cron secrets loading via <code>export $(grep … | xargs)</code> breaks on spaces; testnet <code>--open</code> crashes without <code>HL_PRIVATE_KEY</code>; risk area #13 (dust approvals) is a non-issue on Solana.</p>
+</div>
+
+<h2>Verified good</h2>
+<table>
+  <tr><th>Check</th><th>Result</th></tr>
+  <tr><td>SashaOracle.agent() / LiquidityHelper.owner() on X Layer</td><td>0xe451…1d1f — matches doc + local key ✓</td></tr>
+  <tr><td>Hook → oracle wiring; oracle liveness</td><td>correct; fee 3000, fresh, not stale ✓</td></tr>
+  <tr><td>SashaAgentLog.owner() on Mantle</td><td>0x21AF…A9A9 ✓ (but see M-7)</td></tr>
+  <tr><td>HL key → 0xFAef67…Ed04</td><td>matches doc ✓</td></tr>
+  <tr><td>LP_KILL_OK in VPS env / cron</td><td>absent — risk area #8 passes ✓</td></tr>
+  <tr><td>OOR / hedge-liq KILLs</td><td>confirmGated + Telegram, held from cron ✓</td></tr>
+  <tr><td>treasury-monitor carry-forward; auto-trade 23h limit; byreal pre-flight</td><td>all present ✓</td></tr>
+  <tr><td>Hardcoded secrets in reviewed files</td><td>none — all keys from env ✓</td></tr>
+</table>
+
+<h2>Recommended fix order</h2>
+<ol class="fixes">
+  <li><strong>H-1</strong> — one-line fix in <code>reputation-proof.ts</code> + doc correction. <span class="why">CROO judging live, deadline Jul 12.</span></li>
+  <li><strong>H-3 / M-1</strong> — decide the autonomy boundary; add signal-age guard to the oracle pusher. <span class="why">Both small diffs.</span></li>
+  <li><strong>M-2 / M-3</strong> — hedge executor correctness. <span class="why">Real money exposure.</span></li>
+  <li><strong>M-4</strong> — provider idempotency before scaling CROO order volume.</li>
+  <li><strong>H-2 / M-7</strong> — documentation truthing before any external audit or judge reads the doc.</li>
+</ol>
+
+<footer>
+  All on-chain reads 2026-07-04 via public RPCs (Base, X Layer, Mantle). No transactions sent, no state modified, no secret values displayed. Full detail: <code>reports/security-audit-fable5-2026-07-04.md</code>
+</footer>
+
+</div>
+</body>
+</html>

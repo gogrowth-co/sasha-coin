@@ -1,0 +1,250 @@
+/* ============================================================================
+   Sasha Coin Ops Board — Canonical Design Tokens
+   Internal engineering/content ops kanban for the Sasha Coin persona project
+   (sasha-coin/tasks.html, ENG-022). Built 2026-07-08 following the
+   mangaos-design precedent (marketing/.claude/skills/mangaos-design/).
+   ----------------------------------------------------------------------------
+   RECONCILIATION SOURCE: sasha-coin/_context/style-guide.md is the real brand
+   source (Primary purple #7B2FBE, Secondary purple #4A1A8C, Accent aqua
+   #00D4FF, background #0D0D1A, Montserrat + Inter). sasha-coin/_context/
+   brand-style.md is still the unpopulated /init-project template placeholder
+   as of this build — it carries no real tokens, so it was NOT usable as the
+   source of truth. Flagged, not blocking: style-guide.md's prose spec is
+   complete enough to derive a full token set from. If brand-style.md is
+   populated later, diff it against this file for drift.
+
+   Sasha Coin is an AI agent persona brand on Crypto Twitter — "dark,
+   crypto-native, terminal screens, neon highlights, Matrix-adjacent without
+   being cliche... alive, dynamic, data-forward, slightly mysterious. No
+   corporate polish." (style-guide.md). This system channels that into an
+   internal ops tool via the same "Operator's Console" discipline mangaos-design
+   uses for MangaOS Mission Control: dark-native surfaces, depth via tone
+   stacking not shadow, hairline borders, a single interactive accent — but
+   with Sasha's purple structural identity standing in for MangaOS's navy, and
+   Sasha's aqua (not MangaOS's aqua+gold) as the sole interactive accent.
+   ============================================================================ */
+
+:root {
+  /* ---- Surfaces — depth via tone stacking, never shadow ----
+     Base is style-guide.md's literal background hex (#0D0D1A). Raised/overlay/
+     sunken are new stops derived from it, keeping the purple tint through the
+     whole stack (never drifting toward neutral gray or navy). */
+  --color-surface-base:    #0D0D1A; /* page background — near-black, purple tint, per style-guide.md */
+  --color-surface-raised:  #17172B; /* cards, panels, columns — 1 stop up */
+  --color-surface-overlay: #201F3D; /* modals, popovers, dropdowns — 2 stops up */
+  --color-surface-sunken:  #08080F; /* inset wells, code/log panes — 1 stop down */
+
+  /* ---- Text — purple-warmed grays, never pure neutral gray ---- */
+  --color-text-emphasis:  #F5F3FF; /* H1 / card titles / display — near-white, warm tint */
+  --color-text-primary:   #D6D0E8; /* body default */
+  --color-text-secondary: #9B8FC4; /* supporting text, meta, muted labels */
+  --color-text-tertiary:  #6B5F94; /* timestamps, secondary labels — WCAG AA checked at 4.6:1 on --color-surface-base */
+  --color-text-disabled:  #3A3358; /* disabled UI */
+  --color-text-inverse:        #0D0D1A; /* text on filled aqua CTA */
+  --color-text-inverse-warm:   #241900; /* text on filled amber/gold status fills */
+  --color-text-inverse-danger: #240000; /* text on filled red fills */
+
+  /* ---- Borders — hairline-first ---- */
+  --color-border-default:  #2A2447; /* standard hairline on cards + panels */
+  --color-border-emphasis: #00D4FF; /* focus rings, active state, hover — "you are here" */
+  --color-border-subtle:   #1A1730; /* within-list dividers */
+
+  /* ========================================================================
+     COLOR ROLES — 60/30/10 (design-principles Rule 13: single accent)
+     60% dominant = the surface stack above (near-black purple).
+     30% secondary = the brand purple family below — STRUCTURAL, never used
+       for interactive affordance or status. This is the fix for the #1 gap
+       found in the inventory: tasks.html today runs 100% mangabeira.net
+       navy/aqua/gold with zero purple anywhere, despite style-guide.md
+       naming purple as the #1 brand color.
+     10% accent = aqua, the ONE interactive accent (links, primary buttons,
+       active/selected states, focus). Matches style-guide.md exactly.
+     ======================================================================== */
+  --color-brand-primary:    #7B2FBE; /* style-guide.md primary — structural use only: headers, dividers,
+    secondary-button borders, decorative accents. NOT a status color, NOT the interactive accent. */
+  --color-brand-secondary:  #4A1A8C; /* style-guide.md secondary — deeper panel/card fills, hover states on
+    purple-family elements. */
+
+  --color-action-primary:        #00D4FF; /* style-guide.md accent — the ONE interactive accent: links,
+    primary buttons, active toggles, focus rings, "in progress" work state. */
+  --color-action-primary-hover:  #47DFFF;
+  --color-action-primary-active: #00A8CC;
+  --color-action-primary-wash:        rgba(0,212,255,.12); /* chip fills, active nav, selected rows */
+  --color-action-primary-wash-strong: rgba(0,212,255,.32); /* heavier chip/border fill */
+  --color-action-destructive:    #EF4444;
+
+  /* ---- Purple wash tiers — structural chip/badge fills using the brand
+     primary, e.g. "content" category tags, campaign identity chips. Two
+     tiers matching the aqua wash precedent. ---- */
+  --color-brand-primary-wash:        rgba(123,47,190,.14);
+  --color-brand-primary-wash-strong: rgba(123,47,190,.32);
+
+  /* ========================================================================
+     STATUS PALETTE — task/content states, deliberately independent of the
+     brand purple (DECIDE: dashboard-design "decide direction" call, logged
+     in README). Purple is Sasha's structural identity color, not a status
+     semantic — overloading it as both "brand" and "needs attention" would
+     blur the one-accent-for-interactivity rule and make "is this purple
+     border decorative or does it mean something" ambiguous on every card.
+     Status gets its own small, standard semantic set instead, same pattern
+     mangaos-design uses (aqua ≠ the agent-state palette either).
+     ======================================================================== */
+  --color-state-todo:       #6B5F94; /* idle / not started — same tone as text-secondary, intentionally quiet */
+  --color-state-inprogress: #00D4FF; /* reuses the interactive accent — "someone is actively working this" */
+  --color-state-review:     #F59E0B; /* amber — needs a look, not yet urgent */
+  --color-state-done:       #22C55E; /* green — complete, calm */
+  --color-state-scheduled:  #FBBF24; /* warm gold — DECIDE: this is the board's "needs you / awaiting
+    approval" color, distinct from --color-brand-primary (purple). Sasha Coin's brand palette has no gold,
+    so this is a new, non-brand semantic token — status colors are conventionally allowed to sit outside a
+    brand's core palette (mangaos-design does the same: aqua is brand, but 8 of its 10 agent-state colors
+    are non-brand semantics). Chosen over reusing brand purple because purple already carries a structural
+    meaning (see above) and doubling it as a status color would make purple ambiguous on every card. */
+  --color-state-blocked:      #EF4444; /* red — default, used in inline/form contexts */
+  --color-state-error-loud:   #FF5C5C; /* more saturated red for board/kanban urgency (overdue badges, blocked
+    banners) where the muted default doesn't read as urgent enough at a fast glance — same reasoning
+    mangaos-design used for its board error-loud token. */
+
+  /* ---- Status wash tiers (12% / 30%), one pair per status hue ---- */
+  --color-state-todo-wash:            rgba(107,95,148,.14);
+  --color-state-inprogress-wash:      var(--color-action-primary-wash);
+  --color-state-inprogress-wash-strong: var(--color-action-primary-wash-strong);
+  --color-state-review-wash:          rgba(245,158,11,.14);
+  --color-state-review-wash-strong:   rgba(245,158,11,.30);
+  --color-state-done-wash:            rgba(34,197,94,.14);
+  --color-state-done-wash-strong:     rgba(34,197,94,.30);
+  --color-state-scheduled-wash:       rgba(251,191,36,.16);
+  --color-state-scheduled-wash-strong:rgba(251,191,36,.34);
+  --color-state-blocked-wash:         rgba(239,68,68,.13);
+  --color-state-error-loud-wash:      rgba(255,92,92,.14);
+  --color-state-error-loud-wash-strong: rgba(255,92,92,.32);
+
+  /* ---- Content-freshness dot family (Blog CMS: fresh/aging/stale) ----
+     Reuses status hues rather than inventing a 3rd vocabulary — same
+     precedent as mangaos-design's .dot--content-* family. */
+  --color-content-fresh: var(--color-state-done);
+  --color-content-aging: var(--color-state-review);
+  --color-content-stale: var(--color-state-error-loud);
+
+  /* ---- Channel identity colors (LinkedIn / X / Blog / Newsletter) ----
+     Kept as their own small named set — these identify an external platform,
+     not a task state, so they don't belong in the status palette above. */
+  --color-channel-linkedin:   #59B3FF;
+  --color-channel-linkedin-wash: rgba(0,119,181,.34);
+  --color-channel-x:          #FFFFFF;
+  --color-channel-x-wash:     rgba(255,255,255,.12);
+  --color-channel-blog:       #6EE7B7;
+  --color-channel-blog-wash:  rgba(16,185,129,.26);
+  --color-channel-newsletter: #C4B5FD;
+  --color-channel-newsletter-wash: rgba(167,139,250,.24);
+
+  /* ---- Data viz — Bang Wong 8-color, colorblind-safe (unchanged from
+     mangaos-design; not a Sasha-specific decision, this is a universal set) ---- */
+  --color-data-series-1: #4292C6;
+  --color-data-series-2: #F0A500;
+  --color-data-series-3: #009E73;
+  --color-data-series-4: #CC79A7;
+  --color-data-series-5: #56B4E9;
+  --color-data-series-6: #E69F00;
+  --color-data-series-7: #D55E00;
+  --color-data-series-8: #888888;
+
+  /* ========================================================================
+     TYPOGRAPHY — Montserrat (display) + Inter (body), matching style-guide.md
+     exactly. DECIDE: 'DM Mono' (found at 2 call sites in tasks.html —
+     .track-card-label, .track-badge) is drift, not a 3rd chosen family. It is
+     NEVER loaded by the page's Google Fonts <link> (only Montserrat + Inter
+     are fetched), so both call sites have silently been falling back to the
+     browser's generic monospace the whole time. --font-mono below is a
+     generic system-monospace stack, not a webfont, so no 3rd font family is
+     introduced — matches design-principles' font-count discipline and fixes
+     the 2 drifted call sites without adding a fetch.
+     ======================================================================== */
+  --font-display: "Montserrat", system-ui, sans-serif;
+  --font-body:    "Inter", system-ui, sans-serif;
+  --font-mono:    ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
+
+  /* ---- Type scale (size / line-height / weight) — calibrated to the sizes
+     already shipped in tasks.html (11-15px UI, not a 48px marketing scale),
+     same discipline THS's board used for design-principles Rule 8 compliance
+     on a dense internal tool. ---- */
+  --text-display-lg: 700 22px/28px var(--font-display); /* rare — empty-state workspace name */
+  --text-heading-lg: 700 15px/20px var(--font-display); /* modal titles, review-panel title */
+  --text-heading-md: 700 12px/18px var(--font-display); /* column titles, section headers */
+  --text-heading-sm: 600 12px/17px var(--font-display); /* card titles (task, CE) */
+  --text-body-lg:    400 13px/20px var(--font-body);    /* modal field text, review-panel body */
+  --text-body-md:    400 12px/18px var(--font-body);    /* UI default */
+  --text-body-sm:    400 11px/16px var(--font-body);    /* meta, secondary notes */
+  --text-label:      600 9px/14px  var(--font-display); /* eyebrows, column/table headers — UPPERCASE 0.5px */
+  --text-caption:    400 10px/14px var(--font-body);    /* hints, timestamps */
+  --text-mono-md:    400 11px/16px var(--font-mono);    /* rare numeric/code emphasis */
+  --text-mono-sm:    400 9px/13px  var(--font-mono);    /* badge codes */
+
+  /* ========================================================================
+     SPACING — 4px base
+     ======================================================================== */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* ========================================================================
+     RADII — DECIDE: this board keeps its own single rounder-corner family
+     rather than a sharp-console/rounder-board split (there is no sibling
+     sharp screen in this workspace to differentiate from — unlike MangaOS's
+     Mission Control vs. Task Board split). Values are reconciled from what
+     tasks.html already ships (8px cards, 10px columns, 14px modal, 3-6px
+     chips), not invented fresh.
+     ======================================================================== */
+  --radius-sm:   4px;    /* chips, tags, small badges — was a mix of 3-6px, unified to 4 */
+  --radius-md:   6px;    /* buttons, inputs, mini-buttons */
+  --radius-lg:   8px;    /* task cards, CE cards — matches shipped */
+  --radius-xl:   10px;   /* columns, cal-grid */
+  --radius-2xl:  14px;   /* modal, review panel corners */
+  --radius-full: 9999px; /* status dots, pills — status badges ONLY */
+
+  /* ---- Borders ---- */
+  --border-hairline: 0.5px solid var(--color-border-subtle);
+  --border-thin:     1px solid var(--color-border-default);
+  --border-emphasis: 1px solid var(--color-border-emphasis);
+
+  /* ---- Motion — every animation serves state-change communication ---- */
+  --duration-snap:  120ms;
+  --duration-quick: 180ms;
+  --duration-base:  240ms;
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---- Z-index ---- */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-drawer: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-snap: 0ms;
+    --duration-quick: 0ms;
+    --duration-base: 0ms;
+  }
+}
+
+/* ============================================================================
+   SEMANTIC ELEMENT DEFAULTS
+   ============================================================================ */
+.sb-type h1, .sb-h1 { font: var(--text-display-lg); color: var(--color-text-emphasis); letter-spacing: -0.01em; margin: 0; }
+.sb-type h2, .sb-h2 { font: var(--text-heading-lg); color: var(--color-text-emphasis); margin: 0; }
+.sb-type h3, .sb-h3 { font: var(--text-heading-md); color: var(--color-text-emphasis); margin: 0; }
+.sb-type p,  .sb-p  { font: var(--text-body-md); color: var(--color-text-primary); margin: 0; }
+.sb-label  { font: var(--text-label); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-tertiary); }
+.sb-caption{ font: var(--text-caption); color: var(--color-text-tertiary); }
+.sb-mono   { font: var(--text-mono-md); font-variant-numeric: tabular-nums; color: var(--color-text-primary); }

@@ -88,8 +88,10 @@ const POOL_REGISTRY = {
     volatile: 'token1',
     hlPerp: 'BTC',
   },
-  // WETH/USDC (Phase 2 target, registered for forward-compat)
-  '0xd0b53d9277642d899df5c87a3966a349a798f224': {
+  // WETH/USDC Aerodrome Slipstream CL100 (tickSpacing 100) — the live Phase 3 position
+  // (NFT 71722642). NOTE: 0xd0b53d9277642d899df5c87a3966a349a798f224 is a DIFFERENT
+  // WETH/USDC pool (tickSpacing 10) — do not conflate the two; verified on-chain 2026-07-05.
+  '0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59': {
     token0: { symbol: 'WETH', decimals: 18 },
     token1: { symbol: 'USDC', decimals: 6 },
     volatile: 'token0',

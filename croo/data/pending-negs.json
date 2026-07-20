@@ -1,0 +1,30 @@
+[
+  {
+    "agent": "LogicReceipt",
+    "serviceName": "manifest",
+    "serviceId": "5b23bb46-1ea6-4d6f-8635-d4b2bc2d7969",
+    "req": "{\"manifest\":\"package.json\"}",
+    "negId": "fbc47cc6-4b8f-42e7-8434-51ae0dd90efe"
+  },
+  {
+    "agent": "LogicReceipt",
+    "serviceName": "contract-audit",
+    "serviceId": "5905643b-8b76-4316-9a65-840547cfbf76",
+    "req": "{\"contract_path\":\"contracts/SashaLP.sol\"}",
+    "negId": "477d1c81-dcc8-41ad-b253-7df8a8ae4c2e"
+  },
+  {
+    "agent": "Verdict",
+    "serviceName": "verdict",
+    "serviceId": "9c2c89fa-cd41-41bb-962e-aaaf5a6bd225",
+    "req": "{}",
+    "negId": "47e8e569-9cc1-4d8c-9828-66d1ce211827"
+  },
+  {
+    "agent": "CAPGuard",
+    "serviceName": "guard",
+    "serviceId": "e49ff2e0-1435-45f3-85d4-3887a096d33f",
+    "req": "{}",
+    "negId": "21b79b7c-80b7-4889-b11d-52d3f6213d5d"
+  }
+]

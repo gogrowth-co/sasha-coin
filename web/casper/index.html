@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sasha · Casper x402 — on-chain proof of every decision</title>
+<meta name="description" content="sasha-x402-kit: AI agent that attests every decision on Casper. PAY + ATTEST live on casper-test. 12 real transactions, 10 ATTEST cycles, all error_message: null.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface-base:#0A0B0F; --surface-raised:#13141A; --surface-overlay:#1B1D26; --surface-sunken:#06070A;
+    --border-subtle:#22242E; --border-default:#2D2F3B; --border-emphasis:#3E4150;
+    --text-primary:#F4F5F7; --text-secondary:#B4B7C2; --text-tertiary:#74778A; --text-quaternary:#494C5C;
+    --accent:#FFB800; --positive:#34D399; --negative:#F87171; --warning:#FBBF24; --neutral:#94A3B8; --info:#60A5FA;
+    --casper:#C9284C;
+    --font-display:"Inter Tight",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif; --font-mono:"JetBrains Mono",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--surface-base);color:var(--text-primary);font-family:var(--font-body);font-feature-settings:"tnum" 1,"lnum" 1;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  a{color:inherit}
+  .topbar{position:sticky;top:0;z-index:10;background:rgba(10,11,15,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle)}
+  .topbar-inner{display:flex;align-items:center;gap:18px;height:56px}
+  .logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:16px}
+  .logo .mark{width:24px;height:24px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:#000;font-weight:700;font-size:13px}
+  .crumb{font-size:13px;color:var(--text-tertiary)}
+  .crumb a{text-decoration:none;color:var(--text-tertiary)}.crumb a:hover{color:var(--text-secondary)}
+  .spacer{flex:1}
+  .tlink{color:var(--text-tertiary);font-size:13px;text-decoration:none}.tlink:hover{color:var(--text-secondary)}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
+  .dot.live{background:var(--positive);box-shadow:0 0 0 3px rgba(52,211,153,.15);animation:pulse 1.6s infinite}
+  .dot.roadmap{background:var(--text-quaternary)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+  /* Hero */
+  .hero{padding:52px 0 32px}
+  .hero-eyebrow{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--casper);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .hero h1{font-family:var(--font-display);font-size:48px;font-weight:600;letter-spacing:-.025em;line-height:1.05;margin-bottom:14px}
+  .hero h1 .x402{color:var(--casper)}
+  .hero p{color:var(--text-secondary);font-size:17px;max-width:680px;line-height:1.6}
+  .hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.03em;padding:4px 10px;border-radius:4px;border:1px solid var(--border-default);color:var(--text-tertiary)}
+  .tag.green{border-color:rgba(52,211,153,.35);color:var(--positive);background:rgba(52,211,153,.06)}
+  .tag.red{border-color:rgba(201,40,76,.35);color:var(--casper);background:rgba(201,40,76,.06)}
+  .tag.blue{border-color:rgba(96,165,250,.3);color:var(--info);background:rgba(96,165,250,.06)}
+
+  /* Section */
+  .section{padding:28px 0;border-top:1px solid var(--border-subtle)}
+  .eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+
+  /* Loop grid */
+  .loop-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .verb-card{border:1px solid var(--border-default);border-radius:12px;background:var(--surface-raised);padding:20px;position:relative}
+  .verb-card.shipped{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.03)}
+  .verb-card.roadmap-card{opacity:.6}
+  .verb-name{font-family:var(--font-mono);font-size:22px;font-weight:500;letter-spacing:.08em;margin-bottom:8px}
+  .verb-card.shipped .verb-name{color:var(--positive)}
+  .verb-card.roadmap-card .verb-name{color:var(--text-tertiary)}
+  .verb-status{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:10px}
+  .status-shipped{background:rgba(52,211,153,.14);color:var(--positive);border:1px solid rgba(52,211,153,.3)}
+  .status-roadmap{background:rgba(255,255,255,.04);color:var(--text-quaternary);border:1px solid var(--border-subtle)}
+  .verb-desc{font-size:12px;color:var(--text-tertiary);line-height:1.55}
+  .verb-arrow{position:absolute;right:-22px;top:50%;transform:translateY(-50%);color:var(--border-emphasis);font-size:14px;z-index:1}
+
+  /* TX cards */
+  .tx-table{border:1px solid var(--border-default);border-radius:14px;background:var(--surface-raised);overflow:hidden;box-shadow:0 0 0 1px rgba(52,211,153,.08),0 0 32px rgba(52,211,153,.04)}
+  .tx-row{display:grid;grid-template-columns:200px 1fr auto;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .tx-row:last-child{border-bottom:none}
+  .tx-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary)}
+  .tx-hash{font-family:var(--font-mono);font-size:14px;color:var(--positive);text-decoration:none;letter-spacing:.02em}
+  .tx-hash:hover{text-decoration:underline}
+  .tx-badge{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:3px 10px;border:1px solid rgba(52,211,153,.35);color:var(--positive);border-radius:4px;white-space:nowrap}
+
+  /* Contract tile */
+  .contract-block{border:1px solid rgba(201,40,76,.25);border-radius:12px;background:rgba(201,40,76,.04);padding:22px}
+  .contract-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(201,40,76,.8);margin-bottom:10px}
+  .contract-hash{font-family:var(--font-mono);font-size:15px;color:var(--text-primary);word-break:break-all;line-height:1.6}
+  .contract-sub{font-size:12px;color:var(--text-tertiary);margin-top:8px}
+
+  /* Two-col layout */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{border:1px solid var(--border-default);border-radius:12px;background:var(--surface-raised);padding:22px}
+  .card-title{font-family:var(--font-display);font-size:16px;font-weight:600;margin-bottom:10px}
+  .row-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-subtle);font-size:13px}
+  .row-item:last-child{border-bottom:none}
+  .row-label{color:var(--text-secondary);display:flex;align-items:center;gap:8px}
+  .row-val{font-family:var(--font-mono);font-size:13px}
+  .row-val.green{color:var(--positive)}
+  .row-val.grey{color:var(--text-quaternary)}
+
+  /* Links strip */
+  .links-strip{display:flex;gap:12px;flex-wrap:wrap;padding:20px 0}
+  .lbtn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;text-decoration:none;padding:9px 18px;border-radius:8px;border:1px solid var(--border-default);color:var(--text-secondary);background:var(--surface-raised);transition:border-color .15s,color .15s}
+  .lbtn:hover{border-color:var(--accent);color:var(--text-primary)}
+  .lbtn.primary{background:rgba(255,184,0,.1);border-color:rgba(255,184,0,.4);color:var(--accent)}
+  .lbtn.primary:hover{background:rgba(255,184,0,.16)}
+
+  /* Footer */
+  footer{padding:28px 0 60px;border-top:1px solid var(--border-subtle);color:var(--text-quaternary);font-size:12px;font-family:var(--font-mono);line-height:1.8}
+
+  @media(max-width:860px){
+    .loop-grid{grid-template-columns:1fr 1fr}
+    .verb-arrow{display:none}
+    .grid2{grid-template-columns:1fr}
+    .tx-row{grid-template-columns:1fr;gap:6px}
+    .hero h1{font-size:36px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap topbar-inner">
+  <div class="logo"><span class="mark">S</span> Sasha</div>
+  <span class="crumb">/ <a href="../">portfolio</a> / casper x402</span>
+  <div class="spacer"></div>
+  <a class="tlink" href="https://github.com/gogrowth-co/sasha-x402-kit" target="_blank" rel="noopener">GitHub ↗</a>
+  <a class="tlink" href="https://x.com/SashaCoin95" target="_blank" rel="noopener">@SashaCoin95 ↗</a>
+</div></div>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <span style="width:10px;height:10px;border-radius:50%;background:var(--casper);flex:none;display:inline-block"></span>
+      Casper Agentic Buildathon 2026
+    </div>
+    <h1>sasha&#8209;<span class="x402">x402</span>&#8209;kit</h1>
+    <p>AI agents claim to run a book. This one <strong>attests every decision on Casper</strong> — not logged to a database it controls, written to an on-chain contract anyone can verify. PAY + ATTEST are live on casper-test. <strong>10 ATTEST cycles confirmed</strong>, running continuously since June 8.</p>
+    <div class="hero-tags">
+      <span class="tag green"><span class="dot live" style="margin-right:5px"></span> PAY — shipped</span>
+      <span class="tag green"><span class="dot live" style="margin-right:5px"></span> ATTEST — shipped</span>
+      <span class="tag">ACT — roadmap</span>
+      <span class="tag">EXPOSE — roadmap</span>
+      <span class="tag red">network: casper-test</span>
+      <span class="tag blue">protocol: x402</span>
+      <span class="tag">Apache-2.0</span>
+    </div>
+  </div>
+
+  <!-- Live transactions -->
+  <div class="section">
+    <div class="eyebrow">
+      Live on casper-test
+      <span style="font-size:11px;color:var(--text-quaternary);text-transform:none;letter-spacing:0;font-weight:400">click any hash to verify on testnet.cspr.live</span>
+    </div>
+    <div class="tx-table">
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">Contract deploy</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">AgentAttest · Odra / Rust</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/577570f2f5f486353b8d2e61f7328fca34cd8446053d643ebc395344dba0bfff" target="_blank" rel="noopener">577570f2…dba0bfff ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">Agent loop — PAY</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">x402 · HTTP 402 → sign → settle</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/b419bbcbcbefaa6da97eb4e5251461c691ba436f8f6921a316ea82c213cc5f2b" target="_blank" rel="noopener">b419bbcb…13cc5f2b ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #1 — WETH/USDC LP open</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 8 · decision written on-chain</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/1f063cc2d3567079cfac9075c3120d9b15deddcdec2a71eb75fc6fdec62f6893" target="_blank" rel="noopener">1f063cc2…f6893 ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #2 — buildathon final sprint</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · loop confirmed live</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/f6d8309f5c7f943a7814473bd0e18c2464cdf1614129ba7b7a0db92b31243c90" target="_blank" rel="noopener">f6d8309f…3c90 ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #3 — SOL/USDC LP scouted</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · quality filter pass</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/ae3713a52a9f103de35217d66b091c92d4cd8baaf592d0ac18449d6e6ccc6bca" target="_blank" rel="noopener">ae3713a5…6bca ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #4 — signal fusion complete</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · on-chain weight 55%</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/4437fc95943a9b45bccaaecf6dfefcfe8d3f57d602d6f8c8813d7d1d575c3eb6" target="_blank" rel="noopener">4437fc95…3eb6 ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #5 — pool quality filter</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · minFeeApr 15% check</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/9ffd952b5f9a78748b6fd06b685fe2ba8091610566239cc368d3a65f4f2f5134" target="_blank" rel="noopener">9ffd952b…5134 ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #6 — delta-neutral hedge calc</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · position sizing decision</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/e1dc71a4064f701e7c49766085f250b75a4834e6df01c978a59624619e0b97f7" target="_blank" rel="noopener">e1dc71a4…97f7 ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #7 — LP range confirmed</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · autonomy cycle tick</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/88b457d2641dfc229d504d0fcab7cec1fef09ff574354ddbed19916f92c210a5" target="_blank" rel="noopener">88b457d2…10a5 ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #8 — PAY signal verified</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · data verified on-chain</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/e3020578e466c8afaec252fb667299dfae331fdd8388d0f484774a3928988994" target="_blank" rel="noopener">e3020578…8994 ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #9 — treasury rebalance eval</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · no action threshold</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/e036319970f10402cb42adc6c3db759daff663a6007f3b5a26905f44a77c3339" target="_blank" rel="noopener">e0363199…3339 ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+      <div class="tx-row">
+        <div>
+          <div class="tx-label">ATTEST #10 — agent heartbeat</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Jun 26 · continuous loop confirmed</div>
+        </div>
+        <a class="tx-hash" href="https://testnet.cspr.live/transaction/14273d19d43cd827e753cd6b3ad26cd1bbae26c05aa7640b75763b8cae16f33e" target="_blank" rel="noopener">14273d19…f33e ↗</a>
+        <span class="tx-badge">executed · error_message: null</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Four-verb loop -->
+  <div class="section">
+    <div class="eyebrow">The four-verb agent loop</div>
+    <div class="loop-grid">
+
+      <div class="verb-card shipped" style="position:relative">
+        <div class="verb-name">PAY</div>
+        <div class="verb-status status-shipped">shipped</div>
+        <div class="verb-desc">Buys the signals it acts on over x402. HTTP 402 → EIP-712 sign → settle on Casper testnet. Can't fake that it paid.</div>
+        <div class="verb-arrow">→</div>
+      </div>
+
+      <div class="verb-card roadmap-card" style="position:relative">
+        <div class="verb-name">ACT</div>
+        <div class="verb-status status-roadmap">roadmap</div>
+        <div class="verb-desc">Manages a real testnet position on Casper.</div>
+        <div class="verb-arrow">→</div>
+      </div>
+
+      <div class="verb-card shipped" style="position:relative">
+        <div class="verb-name">ATTEST</div>
+        <div class="verb-status status-shipped">shipped</div>
+        <div class="verb-desc">Writes every decision to the AgentAttest contract on Casper. The chain stores a proof — not a self-report.</div>
+        <div class="verb-arrow">→</div>
+      </div>
+
+      <div class="verb-card roadmap-card">
+        <div class="verb-name">EXPOSE</div>
+        <div class="verb-status status-roadmap">roadmap</div>
+        <div class="verb-desc">Serves verified yield as an x402-payable feed. Other agents buy it. Needs external payer counterparty.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Contract + Stack -->
+  <div class="section">
+    <div class="eyebrow">Contract &amp; stack</div>
+    <div class="grid2">
+
+      <div>
+        <div class="contract-block">
+          <div class="contract-label">AgentAttest · package hash · casper-test</div>
+          <div class="contract-hash">7b4bb374af24ee46a067f4d41f5cba61b097ba613825617e81a57d7673132262</div>
+          <div class="contract-sub">Stable identifier across upgrades. Equivalent to contract address on EVM chains.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Stack</div>
+        <div class="row-item">
+          <span class="row-label">Contract</span>
+          <span class="row-val">Rust · Odra v2.7 · CasperVM/WASM</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">Agent runtime</span>
+          <span class="row-val">Go · casper-go-sdk</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">Payment</span>
+          <span class="row-val">x402 · casper-eip-712</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">RPC</span>
+          <span class="row-val">CSPR.cloud testnet</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">CI</span>
+          <span class="row-val green">gitleaks + go build/vet · passing</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">License</span>
+          <span class="row-val">Apache-2.0</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Why different -->
+  <div class="section">
+    <div class="eyebrow">Why this is different</div>
+    <div class="grid2">
+
+      <div class="card">
+        <div class="card-title">Not "resell data over x402"</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          Most x402 hackathon entries wrap an existing data API with a 402 paywall. This one runs a full <strong style="color:var(--text-primary)">PAY → ACT → ATTEST → EXPOSE loop</strong> where the agent both pays for inputs and attests its outputs to a smart contract. The payment and the proof are on the same chain.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">A real book, not a demo account</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          The agent behind this kit — <a href="https://x.com/SashaCoin95" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">@SashaCoin95</a> — runs a live delta-neutral LP book on Base and Solana and posts it publicly. She can attest a real book because she actually runs one. This isn't a throwaway hackathon entry.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Chain-agnostic core</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          <code style="font-family:var(--font-mono);font-size:12px;color:var(--info)">core/</code> imports zero chain SDKs. All chain logic lives behind a <strong style="color:var(--text-primary)">SettlementAdapter</strong> seam. Casper is the flagship adapter. EVM proof adapter (Base Sepolia) is next — the seam is proven in code, not just claimed.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">After the buildathon</div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+          Sasha keeps the <code style="font-family:var(--font-mono);font-size:12px;color:var(--info)">AgentAttest</code> contract live and attests each decision cycle going forward. The x402 verified-yield feed (EXPOSE) becomes a real payable endpoint once a payer counterparty is wired. Casper stays the flagship attestation layer.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Links -->
+  <div class="section">
+    <div class="eyebrow">Links</div>
+    <div class="links-strip">
+      <a class="lbtn primary" href="https://github.com/gogrowth-co/sasha-x402-kit" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        gogrowth-co/sasha-x402-kit
+      </a>
+      <a class="lbtn" href="https://testnet.cspr.live/contract-package/7b4bb374af24ee46a067f4d41f5cba61b097ba613825617e81a57d7673132262" target="_blank" rel="noopener">
+        AgentAttest contract ↗
+      </a>
+      <a class="lbtn" href="https://dorahacks.io/hackathon/casper-agentic-buildathon/buidl" target="_blank" rel="noopener">
+        DoraHacks submission ↗
+      </a>
+      <a class="lbtn" href="https://x.com/SashaCoin95" target="_blank" rel="noopener">
+        @SashaCoin95 ↗
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    sasha-x402-kit · casper agentic buildathon 2026 · apache-2.0<br>
+    testnet only · no production keys · all transactions on casper-test
+  </footer>
+
+</div>
+</body>
+</html>

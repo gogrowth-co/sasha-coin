@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mantle/Solana Trader — Deep Review &amp; Hibernation · 2026-07-05</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e;
+    --high: #f85149; --high-bg: rgba(248,81,73,.12);
+    --med: #d29922; --med-bg: rgba(210,153,34,.12);
+    --low: #58a6ff; --low-bg: rgba(88,166,255,.10);
+    --ok: #3fb950; --ok-bg: rgba(63,185,80,.10);
+    --purple: #bc8cff; --purple-bg: rgba(188,140,255,.10);
+    --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font: 15px/1.6 -apple-system, "Segoe UI", sans-serif; padding: 48px 24px; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  header { margin-bottom: 36px; }
+  .kicker { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
+  h1 { font-size: 28px; line-height: 1.25; margin-bottom: 10px; }
+  .meta { color: var(--muted); font-size: 13.5px; }
+  .meta code { font-family: var(--mono); font-size: 12.5px; color: var(--text); }
+
+  .verdict { background: var(--panel); border: 1px solid var(--border); border-left: 4px solid var(--ok); border-radius: 8px; padding: 18px 22px; margin: 28px 0 36px; font-size: 15.5px; }
+  .verdict strong { color: var(--ok); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; text-align: center; }
+  .stat .n { font-size: 26px; font-weight: 700; font-family: var(--mono); }
+  .stat .l { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+  .stat.ok .n { color: var(--ok); } .stat.med .n { color: var(--med); }
+  .stat.low .n { color: var(--low); } .stat.high .n { color: var(--high); }
+
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin: 40px 0 18px; }
+
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 14px; }
+  .card .head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .badge { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .badge.ok   { color: var(--ok);   background: var(--ok-bg);   border: 1px solid var(--ok); }
+  .badge.med  { color: var(--med);  background: var(--med-bg);  border: 1px solid var(--med); }
+  .badge.low  { color: var(--low);  background: var(--low-bg);  border: 1px solid var(--low); }
+  .badge.skip { color: var(--muted); background: rgba(139,148,158,.12); border: 1px solid var(--muted); }
+  .badge.purp { color: var(--purple); background: var(--purple-bg); border: 1px solid var(--purple); }
+  .card .title { font-weight: 600; font-size: 15.5px; }
+  .card p { color: var(--muted); font-size: 14px; }
+  .card p strong { color: var(--text); }
+  code { font-family: var(--mono); font-size: 12.5px; background: rgba(110,118,129,.2); padding: 1px 5px; border-radius: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 8px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+
+  .fork { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .fork .opt { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
+  .fork .opt.chosen { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok) inset; }
+  .fork .opt .tag { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+  .fork .opt.chosen .tag { color: var(--ok); }
+  .fork .opt .tag::before { content: "○ "; }
+  .fork .opt.chosen .tag::before { content: "● "; }
+  .fork .opt h3 { font-size: 15px; margin-bottom: 6px; }
+  .fork .opt p { color: var(--muted); font-size: 13.5px; }
+
+  ol.list { padding-left: 22px; }
+  ol.list li { margin-bottom: 10px; }
+  ol.list .why { color: var(--muted); font-size: 13.5px; }
+
+  .timeline { border-left: 2px solid var(--border); margin-left: 6px; padding-left: 20px; }
+  .timeline .ev { position: relative; margin-bottom: 18px; }
+  .timeline .ev::before { content: ""; position: absolute; left: -25.5px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+  .timeline .ev .t { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .timeline .ev .d { font-size: 14.5px; margin-top: 2px; }
+
+  footer { margin-top: 44px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 16px; }
+  @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } .fork { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Fable 5 · Initiative 2 of 5 · Live-verified, one state change executed</div>
+  <h1>Mantle/Solana Trader — Deep Review &amp; Hibernation</h1>
+  <div class="meta">2026-07-05 · against <code>reports/plans-2026-07-05/02-mantle-trader.md</code> · decision logged: <code>docs/decision-log.md</code> DEC-013</div>
+</header>
+
+<div class="verdict">
+  <strong>Verdict:</strong> Treasury verified at $7.05 — below the $2 Byreal position floor. The trader was spending API budget 3×/day to compute recommendations that always aborted. Gabriel chose to <strong>hibernate</strong> over a $25–30 top-up. <code>/etc/cron.d/sasha-trade</code> is now disabled; zero further trade-cycle spend.
+</div>
+
+<div class="stats">
+  <div class="stat low"><div class="n">$7.05</div><div class="l">Total treasury</div></div>
+  <div class="stat med"><div class="n">$1.51</div><div class="l">Max position (floor $2)</div></div>
+  <div class="stat ok"><div class="n">62</div><div class="l">Decisions logged</div></div>
+  <div class="stat high"><div class="n">1</div><div class="l">Real trade round-trip</div></div>
+</div>
+
+<h2>Verified live state (before any action)</h2>
+
+<div class="card">
+  <div class="head"><span class="badge low">STATE</span><span class="title">Capital pool — read from <code>state/capital-pool.json</code> via SSH</span></div>
+  <p>Solana wallet <code>647TT6…RksJw</code>: $5.72 (0.0204 SOL + 4.065 USDC + dust USD1). Mantle wallet <code>0x21AF…A9A9</code>: $1.33 (MNT + mETH dust). <strong>poolUsd $5.05 → 30% sizing → max position $1.51</strong>, under the $2 floor.</p>
+</div>
+
+<div class="card">
+  <div class="head"><span class="badge low">STATE</span><span class="title">Trade log tail — both 12:00 and 17:00 UTC cycles today aborted identically</span></div>
+  <p>Signal fusion ran clean (social, Byreal SOL/USDC pool @ 24.5% APR, Allora long 0.45 conf, Elfa risk-off bearish, Polymarket bearish) → recommendation <code>MOVE_TO_STABLE</code> → <code>auto-trade.js</code> called <code>byreal-trade.js</code> → <strong>PRE-FLIGHT ABORT: max position $1.51 &lt; floor $2</strong>. Confirms the plan's stated dormancy exactly.</p>
+</div>
+
+<div class="card">
+  <div class="head"><span class="badge purp">DISCOVERY</span><span class="title">Signal pipeline and trade cron are the same process</span></div>
+  <p><code>mantle-signal.js</code> has no standalone cron — it only runs inside <code>auto-trade.js</code>'s flow, triggered by <code>/etc/cron.d/sasha-trade</code>. Disabling that one cron file stops trade attempts <em>and</em> signal computation in a single action, exactly as Option B in the plan asked for.</p>
+</div>
+
+<div class="card">
+  <div class="head"><span class="badge med">DISCOVERY</span><span class="title">The X Layer oracle cron is a separate, unaffected consumer</span></div>
+  <p><code>/etc/cron.d/sasha-oracle</code> (every 2h) runs <code>push-signal-to-xlayer.js --force</code>, which reads the last-written <code>content/mantle-signal.json</code> and re-pushes it to the Dynamic Fee Hook <strong>regardless of staleness</strong>. Hibernating the trader means that file stops being regenerated — the oracle will keep force-pushing an increasingly stale signal. This is Initiative 3's own problem (already flagged in the audit: 482 pushes into a $0-TVL pool), tracked in <code>03-dynamic-fee-hook.md</code> — intentionally left untouched here.</p>
+</div>
+
+<h2>The fork — Gabriel's call</h2>
+
+<div class="fork">
+  <div class="opt">
+    <div class="tag">Not chosen</div>
+    <h3>A · Top up $25–30</h3>
+    <p>Restores $2-floor headroom, resumes the attested-decision track record. Valuable if CROO Risk Desk traction makes the trader's reputation collateral load-bearing.</p>
+  </div>
+  <div class="opt chosen">
+    <div class="tag">Chosen</div>
+    <h3>B · Hibernate cleanly</h3>
+    <p>Disable the trade cron, stop the signal pipeline, zero further spend. Matches the plan's default recommendation absent confirmed CROO traction.</p>
+  </div>
+</div>
+
+<h2>Actions executed this session</h2>
+
+<div class="timeline">
+  <div class="ev">
+    <div class="t">17:5x UTC</div>
+    <div class="d">SSH'd into <code>root@187.77.42.134</code>, read <code>state/capital-pool.json</code> and tailed <code>/var/log/sasha-trade.log</code> to confirm live dormancy before touching anything.</div>
+  </div>
+  <div class="ev">
+    <div class="t">—</div>
+    <div class="d">Surfaced the top-up-vs-hibernate fork explicitly via a direct question. Gabriel chose <strong>hibernate</strong>.</div>
+  </div>
+  <div class="ev">
+    <div class="t">—</div>
+    <div class="d">Pulled full trade history (<code>state/mantle-trade-log.json</code>, 62 entries) and ERC-8004 identity state to build the track record below.</div>
+  </div>
+  <div class="ev">
+    <div class="t">—</div>
+    <div class="d"><code>mv /etc/cron.d/sasha-trade /etc/cron.d/sasha-trade.bak.20260705-150454</code> — matches the VPS's existing rename-to-disable convention (a <code>.bak.20260526…</code> already existed from a prior pause).</div>
+  </div>
+  <div class="ev">
+    <div class="t">—</div>
+    <div class="d">Logged <strong>DEC-013</strong> in <code>docs/decision-log.md</code>: decision, rationale, full track record, what was deferred, what was left untouched.</div>
+  </div>
+</div>
+
+<h2>Track record — 62 logged decisions, 2026-05-23 → 2026-07-05</h2>
+
+<table>
+  <tr><th>Status</th><th>Count</th><th>What it means</th></tr>
+  <tr><td><span class="badge ok">success</span></td><td>3</td><td>Open + close of the one real position (below)</td></tr>
+  <tr><td><span class="badge med">error</span></td><td>22</td><td>byreal-cli API/simulation failures during May build-out</td></tr>
+  <tr><td><span class="badge low">dry-run</span></td><td>9</td><td>Early signal-only test cycles</td></tr>
+  <tr><td><span class="badge low">executed (MOVE_TO_STABLE)</span></td><td>5</td><td>Rebalance-to-stable calls</td></tr>
+  <tr><td><span class="badge skip">skipped</span></td><td>23</td><td>Pre-flight aborts once capital fell under the $2 floor</td></tr>
+</table>
+
+<div class="card">
+  <div class="head"><span class="badge ok">SUCCESS</span><span class="title">Goblin/USDC LP — the one completed round-trip</span></div>
+  <p><strong>Opened</strong> 2026-05-26 00:52 UTC — $5, price range 0.006543–0.011603, position NFT <code>HXcCVv…573F</code>, swap tx <code>4y4jVi…y38</code>, LP tx <code>3bv6jD…5k6</code>, on-chain attestation <code>0x28d057…60cef</code>, pre-announce tweet <a href="https://x.com/SashaCoin95/status/2059070214021718310" style="color:var(--low)">live on X</a>.<br>
+  <strong>Closed</strong> 2026-05-26 16:17 UTC, same session, success.</p>
+</div>
+
+<div class="card">
+  <div class="head"><span class="badge purp">IDENTITY</span><span class="title">ERC-8004 agent #100 — verified live on Mantle</span></div>
+  <p>Owned by <code>0x21AF273dA03e695ead9d72B221Bd394f04D8A9A9</code>. Registered 2026-05-25. Last attestation tx <code>0xdd2e3f…f73ed7</code> on 2026-05-29 (<code>OPEN_LP_POSITION</code>). <code>SashaAgentLog.sol</code> (<code>0x71e27D…B9EF8</code>) was never called — attestations go to the ERC-8004 registry instead (audit M-7, left as-is; not urgent while dormant).</p>
+</div>
+
+<h2>Deferred — gated on "if resumed," not done</h2>
+
+<ol class="list">
+  <li>Tweet-stranding-on-execution-failure fix (audit M-8).<div class="why">Pre-flight capital check already closes the common case; the remaining gap (slippage/route/byreal-cli errors after a tweet posts) only matters once trades can execute again.</div></li>
+  <li>Wiring <code>CLOSE_LP</code> through byreal-cli in <code>auto-trade.js</code> (currently Telegram-alert-only).<div class="why">No open positions exist to close while dormant.</div></li>
+  <li>Attesting PRE-FLIGHT ABORT cycles to the ERC-8004 registry.<div class="why">Would demonstrate "declining to trade is still a decision" — meaningful once cycles resume; no new cycles are running now.</div></li>
+  <li>Retiring or wiring <code>SashaAgentLog.sol</code> so the docs match reality.<div class="why">Independent of resume/hibernate, but scoped to the plan's P1 bucket — left for a future pass rather than scope-creeping this session.</div></li>
+</ol>
+
+<h2>Handoff</h2>
+
+<div class="card">
+  <div class="head"><span class="badge purp">HANDOFF</span><span class="title">Closing X thread — not drafted here</span></div>
+  <p>Per this workspace's hard boundary rule, content production happens in <code>marketing/</code>, not <code>sasha-coin/</code>. The track record facts above (one real round-trip, 62 attested decisions, ERC-8004 identity, clean hibernation) are staged in DEC-013 for that session to write the actual closing post — nothing further to derive.</p>
+</div>
+
+<footer>
+  Generated locally from live SSH reads + <code>docs/decision-log.md</code> DEC-013 · no wallet funds moved · one file renamed on the VPS (<code>/etc/cron.d/sasha-trade</code>) · full narrative: <code>docs/decision-log.md</code>
+</footer>
+
+</div>
+</body>
+</html>

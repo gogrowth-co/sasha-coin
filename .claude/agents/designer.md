@@ -50,6 +50,8 @@ Before producing anything, execute this sequence every time:
 
 5. **Check templates.** Look in `_templates/` for existing visual references. Use them as structural guides.
 
+5.5. **Check `21st-components` for solved UI patterns.** Before hand-rolling a landing page section, dashboard block, or component that's been built a thousand times before (pricing table, hero, nav, form, comparison grid, testimonial wall), search the 21st.dev registry via the `21st-components` skill for a real reference implementation. Adapt to brand tokens, never ship unmodified. Applies to landing page and frontend-design work only, not social graphics/carousels/decks.
+
 6. **Capture reference screenshots.** Before generating any visual for a task that references an external URL (token page, protocol dashboard, competitor site, tool UI, article subject), take an above-the-fold screenshot via the `screenshot-taker` skill. This gives you eyes on the page. Use the screenshot to (a) understand the visual language of what you're depicting, and (b) include the screenshot as a content asset (blog hero, article above-fold, landing page section). **Do this by default — do not ask permission.**
 
 7. **Select the right skill(s).** Based on the output format, route to the appropriate skill:
@@ -59,8 +61,8 @@ Before producing anything, execute this sequence every time:
 | Social graphic (single) | `social-graphics` | `screenshot-taker` (for reference) | `social/linkedin/` or `social/x/` |
 | Social carousel | `social-graphics` | `screenshot-taker` (for reference) | `social/linkedin/` or `social/x/` |
 | Presentation deck (.pptx) | `branded-deck` | `pptx` | `presentations/` |
-| Landing page (simple) | `frontend-design` | `playwright-visual-qa` (pre-publish QA) | `pages/` |
-| Landing page (complex/interactive) | `frontend-design` | `playwright-visual-qa` + `web-artifacts-builder` | `pages/` |
+| Landing page (simple) | `frontend-design` | `21st-components` (pattern reference) → `playwright-visual-qa` (pre-publish QA) | `pages/` |
+| Landing page (complex/interactive) | `frontend-design` | `21st-components` (pattern reference) → `playwright-visual-qa` + `web-artifacts-builder` | `pages/` |
 | Visual art / PDF | `canvas-design` | -- | varies |
 | Ad creative | `ad-creative` (strategy + copy) → `social-graphics` or `canvas-design` (visual) | `screenshot-taker` (for product UI shots) | `ads/` or `campaigns/[slug]/assets/` |
 | OG image | `social-graphics` | -- | `seo/` |

@@ -1,0 +1,211 @@
+[
+  {
+    "ts": "2026-06-29T16:51:37.775Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Bitcoin Fear & Greed Index",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.802Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.802Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.802Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.802Z",
+    "type": "requester",
+    "agent": "BtcForecast",
+    "serviceName": "BTC Recent Trades",
+    "serviceId": "e0872690-527b-4c3c-9787-317441ac65da",
+    "ok": false,
+    "error": "negotiation rejected"
+  },
+  {
+    "ts": "2026-06-29T16:51:37.803Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.741Z",
+    "type": "requester",
+    "agent": "SwapCat",
+    "serviceName": "Gas Tracker",
+    "serviceId": "32e1b01f-22f2-453d-af70-45f4e557c440",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.769Z",
+    "type": "requester",
+    "agent": "AlphaTrack",
+    "serviceName": "top_traders",
+    "serviceId": "f57a40f6-be70-4074-8f09-db46cdf51fed",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.770Z",
+    "type": "requester",
+    "agent": "WhaleScope",
+    "serviceName": "wallet_positions",
+    "serviceId": "32557def-3a62-4b25-88e1-08f580ae0834",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.770Z",
+    "type": "requester",
+    "agent": "DCA Signal AI Agent",
+    "serviceName": "Fear & Greed",
+    "serviceId": "b45712e9-d3fa-4758-bcf9-ee42fbcb4dbf",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T16:58:32.771Z",
+    "type": "requester",
+    "agent": "HL Vault Strategy Agent",
+    "serviceName": "Hyperliquid Vault Overview",
+    "serviceId": "bfea4681-6f0b-468a-bbf4-83e8f11ad5f2",
+    "ok": false,
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.853Z",
+    "type": "requester",
+    "agent": "proofMesh",
+    "serviceName": "verification",
+    "serviceId": "48b6271b-ab80-408d-b9d7-34dabf45029b",
+    "ok": false,
+    "negId": "d5b8f8ce-91f2-46d8-b27d-b491bbcab030",
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.872Z",
+    "type": "requester",
+    "agent": "CROO Contractor",
+    "serviceName": "contractor",
+    "serviceId": "3d9cfe67-819b-47a8-b51f-ca47c21f1cb6",
+    "ok": false,
+    "negId": "7b860e18-c17e-4f7c-98ac-637adf86853f",
+    "error": "timeout waiting for acceptance"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.872Z",
+    "type": "requester",
+    "agent": "LogicReceipt",
+    "serviceName": "service1",
+    "serviceId": "5905643b-8b76-4316-9a65-840547cfbf76",
+    "ok": false,
+    "negId": "f5a42720-4a09-484e-bc87-fd3210b5ede8",
+    "error": "rejected: requirements.contract_path required (file under ingest/)"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.872Z",
+    "type": "requester",
+    "agent": "LogicReceipt",
+    "serviceName": "service2",
+    "serviceId": "5b23bb46-1ea6-4d6f-8635-d4b2bc2d7969",
+    "ok": false,
+    "negId": "42d76af7-ba99-4518-b05d-79e48627fa79",
+    "error": "rejected: requirements.manifest or manifest_path required"
+  },
+  {
+    "ts": "2026-06-29T17:06:58.872Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "quote",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "ok": false,
+    "negId": "2396accb-a457-4a14-934a-a55e953c58b2",
+    "error": "rejected: [\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"asset\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  },\n  {\n    \"expected\": \"string\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"quote\"\n    ],\n    \"message\": \"Invalid input: expected string, received undefined\"\n  }\n]"
+  },
+  {
+    "ts": "2026-06-29T17:08:03.018Z",
+    "type": "requester",
+    "agent": "fortune",
+    "serviceName": "fortune",
+    "serviceId": "0bd9e9e4-3c77-4b0d-88d3-2639cd993287",
+    "ok": false,
+    "negId": "3b791682-79fd-4664-98eb-15bd33e4b889",
+    "error": "rejected: missing gender / mode / birthData / location"
+  },
+  {
+    "ts": "2026-06-29T17:08:03.041Z",
+    "type": "requester",
+    "agent": "LaunchRadar",
+    "serviceName": "radar",
+    "serviceId": "025c2a69-978f-4b57-a2c8-95d971d83d43",
+    "ok": false,
+    "negId": "14382aab-51db-4dde-ac50-257e9a9cec01",
+    "error": "rejected: Unsupported service. Only \"daily_launches\" is supported."
+  },
+  {
+    "ts": "2026-06-29T17:08:03.041Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "quote",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "ok": false,
+    "negId": "1959df69-c632-4483-8975-69117d326223",
+    "error": "rejected: Quote optimal route USDC to ETH on Base is not supported."
+  },
+  {
+    "ts": "2026-06-29T17:09:07.536Z",
+    "type": "requester",
+    "agent": "LaunchRadar",
+    "serviceName": "daily_launches",
+    "serviceId": "025c2a69-978f-4b57-a2c8-95d971d83d43",
+    "ok": false,
+    "negId": "4120a208-0608-4647-982f-2be759806bc3",
+    "error": "rejected: Unsupported service. Only \"daily_launches\" is supported."
+  },
+  {
+    "ts": "2026-06-29T17:09:07.659Z",
+    "type": "requester",
+    "agent": "Omni Quote",
+    "serviceName": "quote",
+    "serviceId": "8598fa35-656f-44c3-9776-641f761917e3",
+    "ok": false,
+    "negId": "e299890d-f3dc-4726-8981-d2aa64fc7b54",
+    "error": "rejected: Quote ETH price in USD is not supported."
+  },
+  {
+    "ts": "2026-06-29T17:09:07.661Z",
+    "type": "requester",
+    "agent": "fortune",
+    "serviceName": "fortune",
+    "serviceId": "0bd9e9e4-3c77-4b0d-88d3-2639cd993287",
+    "ok": false,
+    "negId": "f498a6b0-89b2-40ca-96d3-b932bfce2ed9",
+    "error": "rejected: mode must be one of western, lunar, pillars"
+  }
+]

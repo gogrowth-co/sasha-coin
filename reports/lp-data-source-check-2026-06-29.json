@@ -1,0 +1,157 @@
+{
+  "generatedAt": "2026-06-29T12:05:07.468Z",
+  "date": "2026-06-29",
+  "firstRun": false,
+  "verdict": "OK — all sources match the doc",
+  "sources": {
+    "defillama": {
+      "signature": {
+        "poolFieldsPresent": [
+          "apy",
+          "apyBase",
+          "apyBase7d",
+          "apyReward",
+          "chain",
+          "il7d",
+          "pool",
+          "poolMeta",
+          "project",
+          "symbol",
+          "tvlUsd",
+          "underlyingTokens",
+          "volumeUsd1d",
+          "volumeUsd7d"
+        ],
+        "priceFieldsPresent": [
+          "confidence",
+          "decimals",
+          "price",
+          "symbol",
+          "timestamp"
+        ]
+      },
+      "status": "live",
+      "missingFields": [],
+      "notes": [
+        "yields/pools: 15780 pools, 28 distinct fields",
+        "coins/current: ok (WETH $1572.2781718405874, conf 0.99)"
+      ],
+      "driftFromBaseline": []
+    },
+    "geckoterminal": {
+      "signature": {
+        "specVersion": "v2-beta",
+        "pathCount": 20,
+        "paths": [
+          "/networks",
+          "/networks/new_pools",
+          "/networks/trending_pools",
+          "/networks/{network}/dexes",
+          "/networks/{network}/dexes/{dex}/pools",
+          "/networks/{network}/new_pools",
+          "/networks/{network}/pools",
+          "/networks/{network}/pools/multi/{addresses}",
+          "/networks/{network}/pools/{address}",
+          "/networks/{network}/pools/{pool_address}/info",
+          "/networks/{network}/pools/{pool_address}/ohlcv/{timeframe}",
+          "/networks/{network}/pools/{pool_address}/trades",
+          "/networks/{network}/tokens/multi/{addresses}",
+          "/networks/{network}/tokens/{address}",
+          "/networks/{network}/tokens/{address}/info",
+          "/networks/{network}/tokens/{token_address}/pools",
+          "/networks/{network}/trending_pools",
+          "/search/pools",
+          "/simple/networks/{network}/token_price/{addresses}",
+          "/tokens/info_recently_updated"
+        ]
+      },
+      "status": "live",
+      "missingFields": [],
+      "notes": [
+        "swagger: vv2-beta, 20 paths",
+        "base/pools: ok (20 on page 1)"
+      ],
+      "driftFromBaseline": []
+    },
+    "dexscreener": {
+      "signature": {
+        "pairFieldsPresent": [
+          "baseToken",
+          "chainId",
+          "dexId",
+          "liquidity",
+          "pairAddress",
+          "priceUsd",
+          "quoteToken",
+          "txns",
+          "volume"
+        ]
+      },
+      "status": "live",
+      "missingFields": [],
+      "notes": [
+        "token-pairs/v1/base/WETH: 30 pairs"
+      ],
+      "driftFromBaseline": []
+    },
+    "revert": {
+      "signature": {
+        "hasSuccess": true,
+        "positionFieldsPresent": [
+          "exchange",
+          "fee_tier",
+          "in_range",
+          "network",
+          "performance",
+          "pool"
+        ],
+        "perfHodlFieldsPresent": [
+          "apr",
+          "fee_apr",
+          "il",
+          "pnl",
+          "roi"
+        ]
+      },
+      "status": "live",
+      "missingFields": [],
+      "notes": [
+        "/v1/positions: ok (total_count 487011)"
+      ],
+      "driftFromBaseline": []
+    },
+    "thegraph": {
+      "signature": {
+        "gatewayHost": "gateway.thegraph.com",
+        "auth": "bearer",
+        "subgraphs": {
+          "uniV3Mainnet": {
+            "poolFieldsPresent": [
+              "feeTier",
+              "feesUSD",
+              "id",
+              "totalValueLockedUSD",
+              "volumeUSD"
+            ]
+          },
+          "aerodromeBase": {
+            "poolFieldsPresent": [
+              "feeTier",
+              "feesUSD",
+              "id",
+              "totalValueLockedUSD",
+              "volumeUSD"
+            ]
+          }
+        }
+      },
+      "status": "live",
+      "missingFields": [],
+      "notes": [
+        "uniV3Mainnet: ok (block 25423200)",
+        "aerodromeBase: ok (block 47972677)"
+      ],
+      "driftFromBaseline": []
+    }
+  }
+}

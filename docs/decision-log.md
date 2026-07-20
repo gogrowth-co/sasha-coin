@@ -323,3 +323,63 @@ Supersedes/Superseded-by: none (extends DEC-013's cross-reference).
 **Lesson for any future `LiquidityHelper`-style contract (feeds P2):** ship a decrease-liquidity / owner-only emergency-close function from day one, even for a hackathon seed deposit. A single-purpose immutable contract with an add-only liquidity path has no recovery story once *any* value lands in it — this one only escaped scrutiny because the amount was trivial.
 
 Supersedes/Superseded-by: none (resolves the withdrawal action item opened in DEC-014).
+
+---
+
+**DEC-016 | 2026-07-05 | LP Miner — P0 hedge correctness fixes + kill-switch gate pulled back pending backtest**
+
+**Decision:** Shipped three fixes from `reports/plans-2026-07-05/01-lp-miner.md` P0 (audit M-2, M-3) in `scripts/hedge-executor.js`, and changed the H-3 kill-gate policy in `scripts/position-monitor.js` — all five KILL action types now carry `confirmGated: true` (previously only OOR-distance and hedge-liq-proximity did; stop-loss, HF-emergency, and funding-kill auto-executed from the 30-min cron).
+
+1. **M-2 (orphan-short sweep):** the sweep for a leftover Hyperliquid short with no backing LP used to run only when the entire book was empty. Now it runs every invocation, computing a per-run `backedCoins` set from `POOL_REGISTRY` lookups on all open positions (including `staticHedge` ones, which are legitimate, just unmanaged) and closing any short in a coin outside that set.
+2. **Discovery while testing M-2:** `POOL_REGISTRY`'s WETH/USDC entry pointed at `0xd0b53d9277642d899df5c87a3966a349a798f224` (tickSpacing 10), a different pool from the actually-open position's `0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59` (tickSpacing 100, CL100 — verified on-chain). The mismatch was dormant because the live position is `staticHedge: true` and skips the per-position reconcile path — but it meant the corrected M-2 orphan sweep would have seen the live 0.0106 ETH hedge as "no backing LP" and closed it as an orphan on the very first `--execute` run. Caught via a `--check` dry-run before any live execution; fixed the registry address before shipping.
+3. **M-3 (fill-status checking):** all four order-placing call sites (orphan sweep close, funding-kill close, `--close` flag, main reconcile) used to write `hedgeSize` unconditionally after `placeOrder()`, even if the Hyperliquid IoC order didn't fill. Added `parseOrderResult()`, which reads `res.response.data.statuses[0]` and only updates state on a confirmed `filled` status (using the actual `totalSz` filled, not the requested size); unfilled/errored orders now leave state untouched and alert via Telegram instead of silently claiming a hedge that isn't there. Also wrapped the two previously-unguarded close paths (funding-kill, `--close`) in try/catch so an order exception can't crash the whole run before other positions get processed.
+4. **H-3 (kill-gate policy, revised from initial approach):** first pass was to document the auto-execute split (stop-loss/HF-emergency/funding-kill auto, OOR/liq-proximity gated) as the intended design, matching what the code already did — Gabriel rejected this: the thresholds had never been validated against real price/funding history, so declaring auto-execute "intended" would have been asserting confidence that didn't exist. Correct sequence per Gabriel: gate everything, backtest, then decide what to un-gate. Added `confirmGated: true` to `CLOSE_POSITION` (stop-loss + emergency), `DELEVERAGE` (HF emergency), and `CLOSE_HEDGE` (funding-kill) in `position-monitor.js`. All five KILL triggers now require `--confirm-kill` / `LP_KILL_OK=1` via `lp-rebalancer.js`; none auto-execute from cron.
+
+**Backtest (replay against real history since the position opened 2026-06-04T19:15:59Z, before deciding whether to un-gate):**
+- **Funding-kill** (threshold: −54.75% ann for 3 consecutive periods): replayed full Hyperliquid ETH funding history (500 records). Worst 3-period rolling average was **−2.93% ann**; worst single period **−3.81% ann**. Never remotely close to the kill threshold — wide margin.
+- **Hedge-liq-proximity** (threshold: within 3% of liq ~$2082–2088): replayed hourly ETH price (CoinGecko) since open. Max price reached was $1843.46, **11.5% away from liq** at closest approach. Wide margin.
+- **OOR-distance** (threshold: ≥5% beyond the [$1590.87, $1943.07] band): min ETH price over the window was **$1522.58**, i.e. **4.29% beyond the lower band** — a genuine near-miss, 0.71 points short of firing. Upper band was never threatened (max $1843.46 vs $1943.07 upper bound).
+- **Stop-loss / HF-emergency:** could not backtest against real PnL because they are **structurally dead code for this position** — `getBasePositionState()` never computes `state.valueUsd` (only the Solana path does), so the `if (state.valueUsd !== undefined ...)` guard in `evaluatePosition()` never evaluates for a Base-chain position; and `position.morpho` is `null` for this position, so the `if (position.morpho)` guard skips HF-emergency too. Gating these was still correct (defense in depth, and they'd apply to a future Solana or Morpho-leveraged position), but there is no backtest evidence either way — they've simply never run.
+
+**Recommendation (not yet actioned, pending Gabriel):** funding-kill and hedge-liq-proximity have wide margins and no near-misses in 31 days of real data — reasonable candidates to un-gate for speed once Gabriel is comfortable. OOR-distance's near-miss (4.29% vs 5%) argues for keeping it manual, or at least revisiting whether 5% is the right distance-kill threshold before ever auto-executing it. Stop-loss/HF-emergency should probably stay gated indefinitely for this specific position given they don't actually run — un-gating them would be symbolic, not protective, until `getBasePositionState()` is extended to compute `valueUsd` for Base LPs.
+
+**Docs corrected to match:** `CLAUDE.md` (LP rebalance routing row), `docs/pre-audit-handover-fable5-2026-07-04.md` §10 (removed the false "universal Gabriel confirmation gate" claim, added the actual per-trigger gate table), `.claude/skills/sasha-defi-execution/references/safety-gates.md` Gate 4 (was claiming kill switches were "auto-protective," which is no longer true and hadn't been fully true even before today for the two already-gated triggers), and misleading top-of-file comments in `scripts/lp-rebalancer.js` and `scripts/position-monitor.js`.
+
+**Verification:** `node --check` on all three edited scripts; `node scripts/hedge-executor.js --check` and `node scripts/position-monitor.js --dry-run` run against live VPS-mirrored state post-fix, both read-only, both confirmed no regressions (position correctly recognized as `staticHedge`, no false orphan flag after the registry fix, no spurious actions). No `--execute` run performed — live hedge/rebalance execution stays pending Gabriel's explicit go-ahead per session instructions.
+
+Supersedes/Superseded-by: extends DEC-004/DEC-005 (LP Miner Phase 3 hedge) with corrected safety behavior; the H-3 gate section supersedes the "Gabriel confirmation gate... universal" claim in the pre-audit handover doc's original §10.
+
+---
+
+**DEC-017 | 2026-07-05 | LP Miner Phase 4 (Morpho leverage) — carry gate clears comfortably; NO-GO on operational readiness**
+
+**Decision:** Evaluated the Phase 4 leverage go/no-go gate from `docs/strategy/phase4-morpho-prep-2026-05-27.md` §2 ("Phase 4 is only accretive if the net hedged LP carry APR > the Morpho borrow APR") against the now-satisfied 14-21 day fee-history window (31 days live). **Recommend NO-GO for now** — not because the carry economics fail, but because the operational-readiness half of the gate does.
+
+**Carry-vs-borrow-cost math (passes comfortably):**
+- Live Morpho Blue WETH/USDC market (`0x8793cf30…ba1bda`, Base, queried directly via `blue-api.morpho.org` GraphQL, not the 6-week-old prep-doc figure): **borrowApy 4.78%** — essentially unchanged from the 4.83% recorded 2026-05-27, a stable rate.
+- Realized carry (fees + funding, deliberately excluding LP-MTM-change and hedge-uPnL — those two are the offsetting variance-hedge legs, not carry): $1.17 fees + $0.06 funding = **$1.23 over 30.9 days on $45.55 working capital** → 2.70% period return → **31.9% annualized (simple) / 37.0% (compounded)**.
+- Margin over the borrow rate: **6.7x–7.7x**. The plan doc's back-of-envelope "~14% fee APR" was a rough understatement (unclear which basis it used); the bottom-up calc from the dashboard's own reported USD components is more reliable and clears the gate even more decisively.
+
+**Why NO-GO despite that:**
+1. **No execution path exists.** `scripts/lp-leverage.js` (supply collateral, borrow, deleverage on HF breach) was never built — the May 27 prep doc flagged this as an open item and it's still open. A "GO" today means building and shipping new fund-moving code from scratch, not flipping a flag.
+2. **Absolute dollar impact is tiny at current size.** At 1.5x leverage the LP grows from $40.28 to $60.42, borrowing $20.14 USDC. The extra carry from leverage is the net-carry-differential (31.9% − 4.78% ≈ 27%) applied to that borrowed slice: **≈$5.46/year, ≈$0.46/month.** The May 27 doc's own "reality check at $45" note — that leverage here is "mostly a demonstration" — is unchanged two months later; working capital is still $45.55, same order of magnitude.
+3. **Leverage changes the risk profile qualitatively, not just quantitatively.** The position today has zero liquidation risk (unlevered, `morpho: null` in state). Adding a Morpho borrow introduces a new liquidation surface, a new HF-monitoring dependency, and new unaudited execution code — for ~$0.46/month. The prep doc's own pre-execution checklist (confirm the oracle is Chainlink-based, cross-check HF math against the Morpho UI on a live position) was never completed either.
+4. **Consistent with the position's existing operating posture.** This position is deliberately run `staticHedge: true` — simple, low-touch, manual-KILL-policy by design (see its own `_comment` in `state/lp-positions.json`). Layering leverage onto it cuts against that posture for a sub-$1/month gain.
+
+**Recommendation:** Hold Phase 4. Revisit only if working capital scales to a size where the leveraged slice's carry differential is materially more than gas/complexity overhead (rough rule of thumb: 5-10x current capital), or if `scripts/lp-leverage.js` gets built for a different, larger position where it can be validated on real stakes first. Not a capital-moving decision — no code changed, nothing executed.
+
+Supersedes/Superseded-by: resolves the open Phase 4 gate item in `reports/plans-2026-07-05/01-lp-miner.md` P2; extends `docs/strategy/phase4-morpho-prep-2026-05-27.md` with fresh live-rate verification.
+
+---
+
+**DEC-018 | 2026-07-17 | Trader hibernation — OOR watchdog + capital tracker extracted**
+
+**Decision:** While the main trade cron (`sasha-trade`) remains hibernated (DEC-013), two infrastructure gaps were discovered and fixed: (1) 5 Byreal Solana LP positions ($9.75 deployed across SOL/USDC, 2x WLFI/USDC, 2x SOL/USD1) were open with zero OOR monitoring; (2) `treasury-monitor.js` was bundled inside `sasha-trade.bak`, so `state/capital-pool.json` was frozen at Jul 5, producing a stale NAV on the Mantle dashboard ($16.80 = Jul-5 wallet + fresh byreal positions). Fixes shipped: (a) new `scripts/byreal-oor-watch.js` — polls byreal-cli every 30 min, fires Telegram alert on OOR + 60-min re-alert on sustained OOR; deployed via new `/etc/cron.d/sasha-byreal-watch`. (b) `treasury-monitor.js` re-activated via new `/etc/cron.d/sasha-treasury` (independent of the trade cron). Neither change re-enables trading.
+
+**Rationale:** Unmanaged positions going OOR silently would erode capital without any notification. `treasury-monitor.js` is infrastructure, not a trade script — it should never have been bundled with `sasha-trade`. Both gaps were caused by the coarse hibernation approach (disable one big cron file vs. surgical disablement by script function).
+
+**State at fix time (2026-07-17):** All 5 Byreal positions in-range. Open PnL +$0.28 (+2.9% on deployed). Fees earned to date: ~$0.55.
+
+**Lesson:** Future hibernations should disable only `auto-trade.js` (the signal/trade loop), leaving `treasury-monitor.js` and monitoring scripts active. Consider splitting `sasha-trade` into `sasha-trade-core` (auto-trade only) and keeping infra scripts in their own cron files.
+
+Supersedes/Superseded-by: extends DEC-013 (hibernation).

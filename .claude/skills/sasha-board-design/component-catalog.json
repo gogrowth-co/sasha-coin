@@ -1,0 +1,137 @@
+{
+  "label": "Sasha Coin Ops Board — Component Catalog",
+  "families": [
+    {
+      "id": "dot",
+      "label": "Dot / Status Indicator",
+      "note": "The only status indicator allowed for task/CE states. Always paired with a text label.",
+      "examples": [
+        { "label": "todo", "html": "<span class=\"dot dot--state-todo\"><span class=\"dot__visual\"></span><span class=\"dot__label\">todo</span></span>" },
+        { "label": "in progress", "html": "<span class=\"dot dot--state-inprogress\"><span class=\"dot__visual\"></span><span class=\"dot__label\">in progress</span></span>" },
+        { "label": "review", "html": "<span class=\"dot dot--state-review\"><span class=\"dot__visual\"></span><span class=\"dot__label\">review</span></span>" },
+        { "label": "done", "html": "<span class=\"dot dot--state-done\"><span class=\"dot__visual\"></span><span class=\"dot__label\">done</span></span>" },
+        { "label": "scheduled", "html": "<span class=\"dot dot--state-scheduled\"><span class=\"dot__visual\"></span><span class=\"dot__label\">scheduled</span></span>" },
+        { "label": "blocked", "html": "<span class=\"dot dot--state-blocked\"><span class=\"dot__visual\"></span><span class=\"dot__label\">blocked</span></span>" },
+        { "label": "content: fresh", "html": "<span class=\"dot dot--content-fresh\"><span class=\"dot__visual\"></span><span class=\"dot__label\">fresh</span></span>" },
+        { "label": "content: aging", "html": "<span class=\"dot dot--content-aging\"><span class=\"dot__visual\"></span><span class=\"dot__label\">aging</span></span>" },
+        { "label": "content: stale", "html": "<span class=\"dot dot--content-stale\"><span class=\"dot__visual\"></span><span class=\"dot__label\">stale</span></span>" }
+      ]
+    },
+    {
+      "id": "state-chip",
+      "label": "State Chip",
+      "note": "Dot + label in a pill, for inline status badges.",
+      "examples": [
+        { "label": "In progress", "html": "<span class=\"state-chip\"><span class=\"dot dot--state-inprogress\"><span class=\"dot__visual\"></span><span class=\"dot__label\">in progress</span></span></span>" },
+        { "label": "Blocked", "html": "<span class=\"state-chip\"><span class=\"dot dot--state-blocked\"><span class=\"dot__visual\"></span><span class=\"dot__label\">blocked</span></span></span>" }
+      ]
+    },
+    {
+      "id": "column",
+      "label": "Kanban Column",
+      "note": "Shared shell for Task Board + Content Engine columns.",
+      "examples": [
+        { "label": "In Progress column header", "html": "<div class=\"col-header\"><span class=\"col-title inprogress\">In Progress</span><span class=\"col-count inprogress\">4</span></div>" },
+        { "label": "Done column header", "html": "<div class=\"col-header\"><span class=\"col-title done\">Done</span><span class=\"col-count done\">12</span></div>" }
+      ]
+    },
+    {
+      "id": "task-card",
+      "label": "Task Card",
+      "note": "Priority is a left-border accent (documented exception to the side-tab anti-pattern — see README). Always ships with a text badge alongside the border, never color alone.",
+      "examples": [
+        { "label": "High priority", "html": "<div class=\"task high\"><div class=\"task-title\">Wire Typefully queue for daily cadence</div><div class=\"task-meta\"><span class=\"tag infrastructure\">infrastructure</span></div></div>" },
+        { "label": "Blocked", "html": "<div class=\"task medium status-blocked\"><div class=\"task-title\">Publish X thread — awaiting research</div><div class=\"task-meta\"><span class=\"blocked-badge\">blocked</span></div></div>" }
+      ]
+    },
+    {
+      "id": "ce-card",
+      "label": "Content Engine Card",
+      "note": "Parent/child/pending-approval variants on the same primitive as .task.",
+      "examples": [
+        { "label": "Parent, pending approval", "html": "<div class=\"ce-card parent pending-approval\"><div class=\"ce-card-title\">CE-118 — Sasha weekly recap thread</div><div class=\"ce-card-meta\"><span class=\"ce-ch-icon x\">X</span><span class=\"approval-badge pending\">pending</span></div></div>" },
+        { "label": "Child", "html": "<div class=\"ce-card child\"><div class=\"ce-card-title\">Companion LinkedIn post</div><div class=\"ce-card-meta\"><span class=\"ce-ch-icon linkedin\">linkedin</span></div></div>" }
+      ]
+    },
+    {
+      "id": "tag",
+      "label": "Category Tags",
+      "examples": [
+        { "label": "content", "html": "<span class=\"tag content\">content</span>" },
+        { "label": "x-growth", "html": "<span class=\"tag x-growth\">x-growth</span>" },
+        { "label": "infrastructure", "html": "<span class=\"tag infrastructure\">infrastructure</span>" },
+        { "label": "research", "html": "<span class=\"tag research\">research</span>" },
+        { "label": "sop", "html": "<span class=\"tag sop\">sop</span>" }
+      ]
+    },
+    {
+      "id": "due-date-badge",
+      "label": "Due Date Badge",
+      "examples": [
+        { "label": "On track", "html": "<span class=\"due-date-badge\">Jul 12</span>" },
+        { "label": "Soon", "html": "<span class=\"due-date-badge soon\">Jul 09</span>" },
+        { "label": "Overdue", "html": "<span class=\"due-date-badge overdue\">Jul 05</span>" }
+      ]
+    },
+    {
+      "id": "buttons",
+      "label": "Buttons",
+      "examples": [
+        { "label": "Primary", "html": "<button class=\"btn btn--primary\">Save task</button>" },
+        { "label": "Ghost", "html": "<button class=\"btn btn--ghost\">Cancel</button>" },
+        { "label": "Danger", "html": "<button class=\"btn btn--danger\">Delete task</button>" },
+        { "label": "CE primary (compact)", "html": "<button class=\"ce-btn primary\">Dispatch</button>" },
+        { "label": "CE gold (compact)", "html": "<button class=\"ce-btn gold\">Approve</button>" }
+      ]
+    },
+    {
+      "id": "fields",
+      "label": "Form Fields",
+      "examples": [
+        { "label": "Text input", "html": "<div class=\"field\"><label class=\"field-label\">Title</label><input class=\"field-input\" placeholder=\"Task title\"></div>" },
+        { "label": "Textarea", "html": "<div class=\"field\"><label class=\"field-label\">Notes</label><textarea class=\"field-textarea\"></textarea></div>" }
+      ]
+    },
+    {
+      "id": "empty-state",
+      "label": "Empty State",
+      "examples": [
+        { "label": "No tasks", "html": "<div class=\"empty-state\"><div class=\"empty-state__title\">No tasks in this column</div><div class=\"empty-state__body\">Drag a card here or add a new task.</div></div>" }
+      ]
+    },
+    {
+      "id": "skeleton",
+      "label": "Skeleton Loader",
+      "note": "Prescribed addition — tasks.html has no loading-state pattern today. Never a spinner.",
+      "examples": [
+        { "label": "Card skeleton", "html": "<div class=\"skeleton skeleton--card skeleton--wide\"></div>" },
+        { "label": "Row skeleton", "html": "<div class=\"skeleton skeleton--row skeleton--wide\"></div>" }
+      ]
+    },
+    {
+      "id": "cal-pill",
+      "label": "Calendar Pill",
+      "examples": [
+        { "label": "X post", "html": "<span class=\"cal-pill x\">CE-118 X thread</span>" },
+        { "label": "LinkedIn post", "html": "<span class=\"cal-pill linkedin\">Companion post</span>" },
+        { "label": "Refresh due", "html": "<span class=\"cal-pill refresh-due\">Refresh due</span>" }
+      ]
+    },
+    {
+      "id": "blog-status-pill",
+      "label": "Blog Status Pill",
+      "examples": [
+        { "label": "Published", "html": "<span class=\"blog-status-pill blog-status-published\">published</span>" },
+        { "label": "Needs refresh", "html": "<span class=\"blog-status-pill blog-status-needs-refresh\">needs refresh</span>" }
+      ]
+    },
+    {
+      "id": "stage-pill",
+      "label": "Stage Pill (Content Engine table)",
+      "examples": [
+        { "label": "Gate", "html": "<span class=\"stage-pill gate\">approval gate</span>" },
+        { "label": "Milestone", "html": "<span class=\"stage-pill milestone\">published</span>" }
+      ]
+    }
+  ]
+}

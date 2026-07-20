@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sasha · Casper Buildathon · Build Plan v2</title>
+<style>
+/* ─────────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────────── */
+:root {
+  --bg:       #080A0D;
+  --bg2:      #0E1116;
+  --panel:    #121519;
+  --panel2:   #181C22;
+  --panel3:   #1D222A;
+  --line:     #242930;
+  --line-s:   #1C2028;
+
+  --ink:      #EDF0F4;
+  --ink-dim:  #8B95A3;
+  --ink-faint:#525D6B;
+
+  --red:      #FF4338;
+  --red-d:    #C83028;
+  --red-hi:   #FF7068;
+  --gold:     #E8B23A;
+  --gold-dim: #A07820;
+  --grn:      #3ECF8E;
+  --blu:      #5AA9FF;
+  --amb:      #F5B54A;
+
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+}
+
+/* ─────────────────────────────────────────────
+   RESET + BASE
+───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--blu); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* noise grain */
+body::after {
+  content: "";
+  position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  opacity: .025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ─────────────────────────────────────────────
+   LAYOUT SHELL
+───────────────────────────────────────────── */
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+@media (max-width: 700px) { .wrap { padding: 0 20px; } }
+
+/* ─────────────────────────────────────────────
+   STICKY NAV
+───────────────────────────────────────────── */
+nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(8,10,13,.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  display: flex; align-items: center; gap: 0; flex-wrap: nowrap;
+  padding: 0; overflow-x: auto; scrollbar-width: none;
+}
+.nav-inner::-webkit-scrollbar { display: none; }
+.nav-brand {
+  font: 600 11px/1 var(--mono);
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--red); white-space: nowrap;
+  padding: 14px 20px 14px 0;
+  border-right: 1px solid var(--line);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+nav a {
+  color: var(--ink-dim);
+  font: 500 12px/1 var(--mono);
+  letter-spacing: .07em;
+  padding: 14px 12px;
+  white-space: nowrap;
+  transition: color .15s;
+  flex-shrink: 0;
+}
+nav a:hover { color: var(--ink); text-decoration: none; }
+
+/* ─────────────────────────────────────────────
+   HEADER
+───────────────────────────────────────────── */
+header {
+  padding: 64px 0 48px;
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(1200px 400px at 0% -20%, rgba(255,67,56,.09) 0%, transparent 60%),
+    radial-gradient(600px 300px at 100% 120%, rgba(232,178,58,.04) 0%, transparent 55%);
+  position: relative; overflow: hidden;
+}
+/* ghost watermark */
+header::before {
+  content: "◯";
+  position: absolute;
+  right: -2vw; top: -30px;
+  font-size: 38vw; line-height: 1;
+  color: rgba(255,67,56,.025);
+  font-weight: 900;
+  pointer-events: none; user-select: none;
+  z-index: 0;
+}
+header .wrap { position: relative; z-index: 1; }
+.kicker {
+  font: 600 11px/1 var(--mono);
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--red);
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+}
+.kicker::before {
+  content: "";
+  width: 32px; height: 1px;
+  background: var(--red);
+}
+h1 {
+  font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+  line-height: 1.05; letter-spacing: -.025em;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+h1 .accent { color: var(--red); }
+h1 .sub { color: var(--ink-dim); font-weight: 500; }
+.lede {
+  color: var(--ink-dim);
+  max-width: 70ch;
+  font-size: 16px; line-height: 1.6;
+  margin-bottom: 32px;
+}
+.lede b { color: var(--ink); }
+
+/* stat strip */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  gap: 0;
+  width: fit-content;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+@media (max-width: 640px) { .stats { grid-template-columns: repeat(2,1fr); width: 100%; } }
+.stat {
+  padding: 18px 24px;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+}
+.stat:last-child { border-right: none; }
+.stat .n {
+  font: 700 22px/1 var(--mono);
+  letter-spacing: -.01em;
+  margin-bottom: 6px;
+}
+.stat .l {
+  font-size: 11px; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: .09em;
+  font-family: var(--mono);
+}
+.stat.hot .n { color: var(--red); }
+.stat.go .n  { color: var(--grn); }
+.stat.gld .n { color: var(--gold); }
+
+/* ─────────────────────────────────────────────
+   SECTION CHROME
+───────────────────────────────────────────── */
+section {
+  padding: 56px 0;
+  border-bottom: 1px solid var(--line);
+}
+.sec-head {
+  display: flex; align-items: baseline; gap: 16px;
+  margin-bottom: 32px;
+}
+.sec-no {
+  font: 700 11px/1 var(--mono);
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+h2 {
+  font-size: clamp(1.5rem, 3.2vw, 2.2rem);
+  line-height: 1.1; letter-spacing: -.02em;
+  font-weight: 700;
+}
+h2 em { font-style: italic; color: var(--red); }
+.sec-sub {
+  color: var(--ink-dim); font-size: 14.5px;
+  max-width: 72ch; margin-top: 10px; line-height: 1.6;
+}
+h3 { font-size: 15px; font-weight: 650; margin-bottom: 5px; }
+p { margin-bottom: 12px; }
+
+/* ─────────────────────────────────────────────
+   GRID + CARDS
+───────────────────────────────────────────── */
+.grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: repeat(2,1fr); }
+.g3 { grid-template-columns: repeat(3,1fr); }
+.g4 { grid-template-columns: repeat(4,1fr); }
+@media (max-width: 900px) { .g3, .g4 { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 560px) { .g2, .g3, .g4 { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+}
+.card-tag {
+  font: 600 10.5px/1 var(--mono);
+  letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.card-tag.red  { color: var(--red); }
+.card-tag.grn  { color: var(--grn); }
+.card-tag.blu  { color: var(--blu); }
+.card-tag.gold { color: var(--gold); }
+.card-tag.dim  { color: var(--ink-faint); }
+.card p { color: var(--ink-dim); font-size: 13.5px; margin: 0; line-height: 1.55; }
+
+.callout {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--red);
+  border-radius: var(--r-md);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  font-size: 14.5px; line-height: 1.6;
+  color: var(--ink-dim);
+}
+.callout b { color: var(--ink); }
+.callout.grn { border-left-color: var(--grn); }
+.callout.gold { border-left-color: var(--gold); }
+.callout.blu  { border-left-color: var(--blu); }
+
+/* ─────────────────────────────────────────────
+   MONO + PILLS
+───────────────────────────────────────────── */
+.mono { font-family: var(--mono); font-size: .9em; }
+.pill {
+  display: inline-block;
+  font: 600 10px/1 var(--mono);
+  letter-spacing: .06em; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px;
+}
+.p-spine { background: rgba(90,169,255,.14); color: var(--blu); }
+.p-s1    { background: rgba(232,178,58,.14); color: var(--gold); }
+.p-s2    { background: rgba(245,181,74,.10); color: var(--amb); }
+.p-s3    { background: rgba(232,178,58,.08); color: #c8963a; }
+.p-drop  { background: rgba(62,207,142,.10); color: var(--grn); }
+.p-hi    { background: rgba(255,67,56,.16); color: var(--red-hi); }
+.p-md    { background: rgba(245,181,74,.14); color: var(--amb); }
+.p-lo    { background: rgba(62,207,142,.12); color: var(--grn); }
+.p-acc   { background: rgba(130,130,140,.12); color: var(--ink-faint); }
+
+/* ─────────────────────────────────────────────
+   TABLES
+───────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin: 0; }
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13.5px;
+}
+th {
+  text-align: left;
+  font: 700 10.5px/1 var(--mono);
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 14px 12px;
+  border-bottom: 1px solid var(--line);
+}
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line-s);
+  vertical-align: top;
+  color: var(--ink-dim);
+}
+td b, td strong { color: var(--ink); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.012); }
+
+/* ─────────────────────────────────────────────
+   §1 DECISION
+───────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────
+   §2 PRODUCT LOOP DIAGRAM
+───────────────────────────────────────────── */
+.loop-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  align-items: center;
+  max-width: 820px;
+  margin: 32px auto 0;
+}
+@media (max-width: 680px) {
+  .loop-wrap { grid-template-columns: 1fr; gap: 8px; }
+}
+.loop-col { display: flex; flex-direction: column; gap: 16px; }
+.loop-col.right { align-items: flex-end; }
+@media (max-width: 680px) {
+  .loop-col.right { align-items: flex-start; }
+}
+
+.verb-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  width: 100%;
+  max-width: 320px;
+  position: relative;
+}
+.verb-label {
+  font: 800 12px/1 var(--mono);
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 7px;
+  display: flex; align-items: center; gap: 8px;
+}
+.verb-label svg { flex-shrink: 0; }
+.verb-card h3 { font-size: 14px; margin-bottom: 5px; }
+.verb-card p { font-size: 12.5px; color: var(--ink-dim); margin: 0; line-height: 1.5; }
+.verb-card .badge {
+  position: absolute; top: -1px; right: 14px;
+  font: 600 9px/1 var(--mono);
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--gold); padding: 4px 8px;
+  background: rgba(232,178,58,.1); border-radius: 0 0 6px 6px;
+  border: 1px solid rgba(232,178,58,.2); border-top: none;
+}
+
+/* center SVG loop diagram */
+.loop-center { width: 120px; display: flex; justify-content: center; align-items: center; }
+@media (max-width: 680px) {
+  .loop-center { width: 100%; height: 64px; }
+}
+
+/* ─────────────────────────────────────────────
+   §3 ARCHITECTURE DIAGRAM
+───────────────────────────────────────────── */
+.arch-diagram {
+  margin: 32px 0 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 28px 32px;
+  overflow-x: auto;
+}
+
+/* ─────────────────────────────────────────────
+   §4 SCOPE LADDER
+───────────────────────────────────────────── */
+.scope-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 32px 0 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.scope-rung {
+  display: grid;
+  grid-template-columns: 120px 1fr 200px;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  transition: background .15s;
+}
+.scope-rung:last-child { border-bottom: none; }
+.scope-rung:hover { background: rgba(255,255,255,.014); }
+.scope-rung.spine { background: rgba(90,169,255,.04); }
+.scope-rung.drop  { background: rgba(62,207,142,.025); }
+@media (max-width: 720px) {
+  .scope-rung { grid-template-columns: 90px 1fr; }
+  .scope-rung .sc-why { display: none; }
+}
+.sc-tier {
+  padding: 18px 18px 18px 22px;
+  display: flex; align-items: flex-start;
+  border-right: 1px solid var(--line);
+}
+.sc-body {
+  padding: 16px 20px;
+  border-right: 1px solid var(--line);
+}
+.sc-why {
+  padding: 16px 20px;
+  font-size: 12.5px; color: var(--ink-faint); line-height: 1.5;
+}
+.sc-body h3 { font-size: 13.5px; margin-bottom: 5px; }
+.sc-body p  { font-size: 12.5px; color: var(--ink-dim); margin: 0; }
+
+/* ─────────────────────────────────────────────
+   §5 TIMELINE
+───────────────────────────────────────────── */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 32px 0 0;
+  position: relative;
+}
+.tl-track {
+  position: absolute;
+  left: 63px; top: 16px; bottom: 16px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--red) 0%, var(--line) 100%);
+}
+.tl-item {
+  display: grid;
+  grid-template-columns: 80px 28px 1fr;
+  gap: 0 12px;
+  align-items: flex-start;
+  padding-bottom: 32px;
+  position: relative;
+}
+.tl-item:last-child { padding-bottom: 0; }
+.tl-date {
+  font: 600 11px/1 var(--mono);
+  letter-spacing: .07em;
+  color: var(--ink-faint);
+  text-align: right;
+  padding-top: 2px;
+}
+.tl-item.gate .tl-date { color: var(--red); }
+.tl-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--ink-faint);
+  margin-top: 0; flex-shrink: 0;
+  position: relative; z-index: 2;
+}
+.tl-item.gate .tl-dot {
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 0 0 5px rgba(255,67,56,.15);
+}
+.tl-item.spike .tl-dot {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 5px rgba(232,178,58,.15);
+}
+.tl-content {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 14px 18px;
+}
+.tl-item.gate .tl-content { border-left: 3px solid var(--red); }
+.tl-item.spike .tl-content { border-left: 3px solid var(--gold); }
+.tl-what { font-weight: 650; font-size: 14px; margin-bottom: 5px; }
+.tl-crit { font-size: 13px; color: var(--ink-dim); line-height: 1.55; }
+
+/* ─────────────────────────────────────────────
+   §6 ADVANCEMENT
+───────────────────────────────────────────── */
+.advance-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr 1fr;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-top: 32px;
+}
+@media (max-width: 720px) {
+  .advance-grid { grid-template-columns: 1fr; }
+}
+.advance-col {
+  padding: 24px 26px;
+  border-right: 1px solid var(--line);
+  position: relative;
+}
+.advance-col:last-child { border-right: none; }
+.advance-col.primary { background: rgba(90,169,255,.03); }
+.advance-label {
+  font: 700 10px/1 var(--mono);
+  letter-spacing: .16em; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.advance-label.blu  { color: var(--blu); }
+.advance-label.grn  { color: var(--grn); }
+.advance-label.gold { color: var(--gold); }
+.weight-bar-wrap { margin-top: 12px; }
+.weight-bar {
+  height: 4px; border-radius: 2px;
+  background: var(--line); overflow: hidden; margin-top: 8px;
+}
+.weight-fill { height: 100%; border-radius: 2px; }
+.weight-text { font: 600 11px/1 var(--mono); margin-top: 6px; }
+
+/* ─────────────────────────────────────────────
+   §7 COMPETITIVE FIELD — radar style table
+───────────────────────────────────────────── */
+.field-us {
+  background: rgba(62,207,142,.04);
+  border-top: none;
+}
+.field-us td { color: var(--ink); }
+
+/* ─────────────────────────────────────────────
+   §8 RISK MATRIX
+───────────────────────────────────────────── */
+.risk-matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 32px;
+}
+@media (max-width: 640px) { .risk-matrix { grid-template-columns: 1fr; } }
+
+.risk-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px 16px;
+  align-items: start;
+}
+.risk-title { font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+.risk-mit   { font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; grid-column: 1; }
+.risk-badge { grid-row: 1; grid-column: 2; }
+.risk-badge-val {
+  font: 700 10px/1 var(--mono);
+  letter-spacing: .07em; text-transform: uppercase;
+  padding: 5px 9px; border-radius: 6px;
+  white-space: nowrap;
+}
+.rb-hh { background: rgba(255,67,56,.16); color: var(--red-hi); }
+.rb-mh { background: rgba(245,181,74,.14); color: var(--amb); }
+.rb-acc{ background: rgba(130,140,150,.12); color: var(--ink-faint); }
+
+.risk-matrix-svg-wrap {
+  margin-top: 32px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 28px;
+  overflow-x: auto;
+}
+.risk-matrix-svg-wrap h3 {
+  font: 600 11px/1 var(--mono);
+  letter-spacing: .15em; text-transform: uppercase;
+  color: var(--ink-faint); margin-bottom: 20px;
+}
+
+/* ─────────────────────────────────────────────
+   §9 TOOLING
+───────────────────────────────────────────── */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 32px;
+}
+@media (max-width: 640px) { .tool-grid { grid-template-columns: 1fr; } }
+.tool-row {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  font-size: 13px; color: var(--ink-dim); line-height: 1.55;
+}
+.tool-row b { color: var(--ink); }
+.tool-row .warn { color: var(--gold); font-weight: 600; }
+.tool-row .good { color: var(--grn); font-weight: 600; }
+
+/* ─────────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────────── */
+footer {
+  padding: 48px 0;
+  color: var(--ink-faint);
+  font: 12.5px/1.8 var(--mono);
+  border-top: 1px solid var(--line);
+}
+footer b { color: var(--ink-dim); }
+
+/* ─────────────────────────────────────────────
+   ARCH SVG COMPONENTS
+───────────────────────────────────────────── */
+.arch-svg-wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     STICKY NAV
+════════════════════════════════════════════ -->
+<nav>
+  <div class="wrap">
+    <div class="nav-inner">
+      <span class="nav-brand">Sasha · Casper Build</span>
+      <a href="#decision">Decision</a>
+      <a href="#product">Product</a>
+      <a href="#arch">Architecture</a>
+      <a href="#scope">Scope</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#advance">Advancement</a>
+      <a href="#field">Field</a>
+      <a href="#risk">Risk</a>
+      <a href="#tooling">Tooling</a>
+      <a href="#next">Next</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════ -->
+<header>
+  <div class="wrap">
+    <p class="kicker">Build Plan · Casper Agentic Buildathon · 2026-06-06</p>
+    <h1>
+      <span class="accent">Go for the win.</span><br>
+      <span class="sub">Sasha's x402 Agent Commerce Kit</span>
+    </h1>
+    <p class="lede">
+      An autonomous agent that makes its <b>real DeFi book verifiable and payable</b> on Casper over x402.
+      Chain-agnostic core. Casper as flagship adapter. Differentiated from a field of generic x402 clones
+      by real positions, verifiable agent identity, and the only AI-agent persona in the room.
+    </p>
+    <div class="stats">
+      <div class="stat hot">
+        <div class="n">22 days</div>
+        <div class="l">submit Jun 28</div>
+      </div>
+      <div class="stat gld">
+        <div class="n">$150K</div>
+        <div class="l">$30K cash · $100K x402 · $20K kind</div>
+      </div>
+      <div class="stat">
+        <div class="n">6 / 1</div>
+        <div class="l">BUIDLs · formal teams</div>
+      </div>
+      <div class="stat go">
+        <div class="n">Path B</div>
+        <div class="l">jury merit = the spine</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════
+     §1 DECISION
+════════════════════════════════════════════ -->
+<section id="decision">
+  <div class="sec-head">
+    <span class="sec-no">01</span>
+    <h2>The <em>decision.</em></h2>
+  </div>
+  <div class="callout">
+    <b>Enter. Build to win. Full chain-agnostic.</b> A settlement-adapter core with Casper as the flagship adapter that ships first, plus an EVM/Base proof adapter so multi-chain is real in code, not claimed. Run through a council (5 advisors) and a Gary-Klein pre-mortem before any build.
+  </div>
+  <div class="grid g3">
+    <div class="card">
+      <div class="card-tag grn">Why now</div>
+      <p>Field is thin (6 BUIDLs, 1 formal team) and flat for days. 22-day runway. Casper is actively paying $100K of the prize in x402 credits to manufacture exactly this kind of agent.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag blu">Why us</div>
+      <p>Sasha is the only AI-agent persona entered and the only entrant running real DeFi. "Real project with socials + deployment plans" is a judging criterion most teams fabricate. Sasha already is one.</p>
+    </div>
+    <div class="card">
+      <div class="card-tag gold">The honest risk</div>
+      <p>Casper is non-EVM WASM/Rust/Odra. Sasha's stack is 100% Solidity/JS. This is net-new Rust. Gated by a Day-0 spike on the hardest leg, then Day-7/14 binary go/no-go gates.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §2 PRODUCT LOOP
+════════════════════════════════════════════ -->
+<section id="product">
+  <div class="sec-head">
+    <span class="sec-no">02</span>
+    <h2>The product <em>loop.</em></h2>
+  </div>
+  <p class="sec-sub">
+    <b>Sasha's Alpha Desk.</b> Not "an agent that resells data over x402" (the field has 5+ of those).
+    The agent's real DeFi book, made verifiable and payable. Four verbs in a continuous cycle.
+  </p>
+
+  <!-- LOOP DIAGRAM — inline SVG centered + four verb cards -->
+  <div class="loop-wrap">
+
+    <!-- LEFT COLUMN: PAY + ATTEST -->
+    <div class="loop-col">
+      <div class="verb-card">
+        <div class="verb-label">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" stroke="#FF4338" stroke-width="1.5"/>
+            <path d="M5 7h4M7 5l2 2-2 2" stroke="#FF4338" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          PAY
+        </div>
+        <h3>Buys its own signals over x402</h3>
+        <p>HTTP 402 &rarr; sign &rarr; settle. "I pay for the data I act on." Ref: <span class="mono">make-software/casper-x402</span> client.</p>
+      </div>
+      <div class="verb-card">
+        <div class="verb-label">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="2" y="3" width="10" height="8" rx="1.5" stroke="#FF4338" stroke-width="1.5"/>
+            <path d="M4.5 6.5h5M4.5 8.5h3" stroke="#FF4338" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          ATTEST
+        </div>
+        <h3>Writes every decision on-chain</h3>
+        <p>Casper agent-identity + attestation contract (ERC-8004 pattern &rarr; Odra, rewritten fresh). Starting point: <span class="mono">odradev/casper-x402-poc</span>.</p>
+      </div>
+    </div>
+
+    <!-- CENTER: cycle arrow SVG -->
+    <div class="loop-center">
+      <svg width="96" height="240" viewBox="0 0 96 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- vertical track -->
+        <line x1="48" y1="0" x2="48" y2="240" stroke="#242930" stroke-width="2" stroke-dasharray="4 4"/>
+        <!-- top arc label -->
+        <text x="48" y="64" text-anchor="middle" fill="#525D6B" font-size="9" font-family="monospace" letter-spacing="1.5">CYCLE</text>
+        <!-- clockwise arrow top (right side) -->
+        <path d="M48 20 Q78 50 78 90" stroke="#FF4338" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <polygon points="82,85 74,94 68,86" fill="#FF4338"/>
+        <!-- clockwise arrow bottom (left side) -->
+        <path d="M48 220 Q18 190 18 150" stroke="#FF4338" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <polygon points="14,155 22,146 28,154" fill="#FF4338"/>
+        <!-- center ghost glyph -->
+        <text x="48" y="134" text-anchor="middle" fill="rgba(255,67,56,.12)" font-size="56" font-weight="900" font-family="Georgia,serif">&#9651;</text>
+        <!-- loop label -->
+        <text x="48" y="176" text-anchor="middle" fill="#525D6B" font-size="9" font-family="monospace" letter-spacing="1.5">LOOP</text>
+      </svg>
+    </div>
+
+    <!-- RIGHT COLUMN: ACT + EXPOSE -->
+    <div class="loop-col right">
+      <div class="verb-card">
+        <div class="badge">STRETCH</div>
+        <div class="verb-label">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v4l2.5 1.5" stroke="#FF4338" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="7" cy="8" r="5" stroke="#FF4338" stroke-width="1.5"/>
+          </svg>
+          ACT
+        </div>
+        <h3>Runs a real testnet position</h3>
+        <p>Manages yield/LP via hosted <span class="mono">cspr-trade-mcp</span> (24 tools). The moat: real DeFi nobody else in the field is doing.</p>
+      </div>
+      <div class="verb-card">
+        <div class="verb-label">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 7h8M8 4.5l2.5 2.5-2.5 2.5" stroke="#FF4338" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          EXPOSE
+        </div>
+        <h3>Sells its verified yield over x402</h3>
+        <p>RWA referent = a real position, not a synthetic label. A genuine external agent pays this endpoint. Never a self-call.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §3 ARCHITECTURE
+════════════════════════════════════════════ -->
+<section id="arch">
+  <div class="sec-head">
+    <span class="sec-no">03</span>
+    <h2>Architecture, <em>full chain-agnostic.</em></h2>
+  </div>
+  <p class="sec-sub">
+    De-risked by making the second adapter EVM/Base (cheapest: x402 is EVM-native, Sasha's stack is strongest there).
+    Casper is the flagship and lands first. If a gate slips we ship Casper-only and EVM becomes README "future work."
+  </p>
+
+  <div class="arch-diagram">
+    <div class="arch-svg-wrap">
+      <svg width="100%" viewBox="0 0 860 380" fill="none" xmlns="http://www.w3.org/2000/svg"
+           style="min-width:680px; display:block;">
+
+        <!-- ── CORE BOX ────────────────────────────── -->
+        <rect x="60" y="20" width="740" height="140" rx="10"
+              fill="#0E1116" stroke="#2A3040" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <!-- core label -->
+        <rect x="60" y="8" width="280" height="22" rx="4" fill="#0E1116"/>
+        <text x="72" y="22" fill="#525D6B" font-size="10" font-family="monospace"
+              letter-spacing="1.8" font-weight="700">x402 AGENT COMMERCE KIT · CHAIN-AGNOSTIC CORE</text>
+
+        <!-- core chips -->
+        <!-- chip 1: pay-client -->
+        <rect x="88" y="50" width="144" height="38" rx="6"
+              fill="#121519" stroke="#242930" stroke-width="1"/>
+        <text x="160" y="69" text-anchor="middle" fill="#8B95A3"
+              font-size="11" font-family="monospace">x402 pay-client</text>
+        <text x="160" y="81" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace">HTTP 402 → sign → settle</text>
+
+        <!-- chip 2: paywalled MCP server -->
+        <rect x="248" y="50" width="172" height="38" rx="6"
+              fill="#121519" stroke="#242930" stroke-width="1"/>
+        <text x="334" y="69" text-anchor="middle" fill="#8B95A3"
+              font-size="11" font-family="monospace">x402 MCP server</text>
+        <text x="334" y="81" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace">paywalled data endpoint</text>
+
+        <!-- chip 3: synthesis engine -->
+        <rect x="436" y="50" width="152" height="38" rx="6"
+              fill="#121519" stroke="#242930" stroke-width="1"/>
+        <text x="512" y="69" text-anchor="middle" fill="#8B95A3"
+              font-size="11" font-family="monospace">synthesis engine</text>
+        <text x="512" y="81" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace">the product being sold</text>
+
+        <!-- chip 4: SettlementAdapter (accent) -->
+        <rect x="604" y="44" width="178" height="50" rx="7"
+              fill="#0D1520" stroke="#C83028" stroke-width="1.5"/>
+        <text x="693" y="64" text-anchor="middle" fill="#FF7068"
+              font-size="10.5" font-family="monospace" font-weight="700">SettlementAdapter</text>
+        <text x="693" y="78" text-anchor="middle" fill="#8B95A3" font-size="9.5" font-family="monospace">quote / sign / settle</text>
+        <text x="693" y="89" text-anchor="middle" fill="#8B95A3" font-size="9.5" font-family="monospace">attest / readReceipt</text>
+
+        <!-- interface label -->
+        <text x="694" y="109" text-anchor="middle" fill="#C83028" font-size="9" font-family="monospace"
+              letter-spacing="1">chain-neutral types only</text>
+
+        <!-- ── CONNECTOR LINES ──────────────────────── -->
+        <!-- left branch down -->
+        <line x1="260" y1="160" x2="260" y2="220" stroke="#242930" stroke-width="1.5"/>
+        <!-- right branch down -->
+        <line x1="600" y1="160" x2="600" y2="220" stroke="#242930" stroke-width="1.5"/>
+        <!-- h-line connecting them at 220 -->
+        <line x1="260" y1="220" x2="600" y2="220" stroke="#242930" stroke-width="1.5"/>
+
+        <!-- left arrow down to casper -->
+        <line x1="260" y1="220" x2="260" y2="248" stroke="#FF4338" stroke-width="1.8"/>
+        <polygon points="255,244 265,244 260,252" fill="#FF4338"/>
+
+        <!-- right arrow down to evm -->
+        <line x1="600" y1="220" x2="600" y2="248" stroke="#525D6B" stroke-width="1.8"/>
+        <polygon points="595,244 605,244 600,252" fill="#525D6B"/>
+
+        <!-- label: LANDS FIRST / ADDED AFTER -->
+        <text x="260" y="237" text-anchor="middle" fill="#FF4338" font-size="9" font-family="monospace" letter-spacing="1">LANDS FIRST</text>
+        <text x="600" y="237" text-anchor="middle" fill="#525D6B" font-size="9" font-family="monospace" letter-spacing="1">ADDED AFTER</text>
+
+        <!-- ── CASPER ADAPTER BOX ──────────────────── -->
+        <rect x="60" y="252" width="380" height="112" rx="10"
+              fill="#0D1520" stroke="#C83028" stroke-width="1.8"/>
+        <!-- badge -->
+        <rect x="90" y="240" width="140" height="18" rx="4" fill="#C83028"/>
+        <text x="160" y="252" text-anchor="middle" fill="#FFD0CC" font-size="9.5"
+              font-family="monospace" font-weight="700" letter-spacing="1">FLAGSHIP · CASPERADAPTER</text>
+
+        <text x="250" y="284" text-anchor="middle" fill="#EDF0F4" font-size="13"
+              font-family="monospace" font-weight="700">CasperAdapter</text>
+
+        <!-- bullets -->
+        <circle cx="90" cy="307" r="2" fill="#FF4338"/>
+        <text x="100" y="311" fill="#8B95A3" font-size="11" font-family="monospace">Odra attestation contract → casper:casper-test</text>
+        <circle cx="90" cy="323" r="2" fill="#FF4338"/>
+        <text x="100" y="327" fill="#8B95A3" font-size="11" font-family="monospace">casper-x402 facilitator + EIP-712 signing</text>
+        <circle cx="90" cy="339" r="2" fill="#FF4338"/>
+        <text x="100" y="343" fill="#8B95A3" font-size="11" font-family="monospace">cspr-trade-mcp (24 tools) for live position</text>
+
+        <!-- ── EVM ADAPTER BOX ─────────────────────── -->
+        <rect x="460" y="252" width="340" height="112" rx="10"
+              fill="#111419" stroke="#2A3040" stroke-width="1.5"/>
+        <!-- badge -->
+        <rect x="490" y="240" width="110" height="18" rx="4" fill="#1C2028"/>
+        <text x="545" y="252" text-anchor="middle" fill="#8B95A3" font-size="9.5"
+              font-family="monospace" font-weight="700" letter-spacing="1">PROOF · EVMADAPTER</text>
+
+        <text x="630" y="284" text-anchor="middle" fill="#EDF0F4" font-size="13"
+              font-family="monospace" font-weight="700">EvmAdapter</text>
+
+        <circle cx="480" cy="307" r="2" fill="#525D6B"/>
+        <text x="490" y="311" fill="#8B95A3" font-size="11" font-family="monospace">fresh EVM x402 + EAS-style attestation</text>
+        <circle cx="480" cy="323" r="2" fill="#525D6B"/>
+        <text x="490" y="327" fill="#8B95A3" font-size="11" font-family="monospace">Base Sepolia testnet</text>
+        <circle cx="480" cy="339" r="2" fill="#525D6B"/>
+        <text x="490" y="343" fill="#8B95A3" font-size="11" font-family="monospace">proves the seam is real, not claimed · cut-first</text>
+
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §4 SCOPE LADDER
+════════════════════════════════════════════ -->
+<section id="scope">
+  <div class="sec-head">
+    <span class="sec-no">04</span>
+    <h2>Scope <em>ladder.</em></h2>
+  </div>
+  <p class="sec-sub">
+    Written down on Day 0, not discovered later. Build order = top to bottom.
+    Cut from the bottom up if gates slip.
+  </p>
+
+  <!-- Scope ladder visual -->
+  <div style="margin-top:32px; display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap;">
+
+    <!-- Priority stack SVG indicator -->
+    <div style="flex-shrink:0; padding-top:8px;">
+      <svg width="48" height="290" viewBox="0 0 48 290" fill="none">
+        <!-- vertical track -->
+        <line x1="24" y1="8" x2="24" y2="282" stroke="#242930" stroke-width="1.5"/>
+        <!-- build-down label -->
+        <text x="36" y="14" fill="#525D6B" font-size="8" font-family="monospace" letter-spacing="1">BUILD</text>
+        <text x="36" y="24" fill="#525D6B" font-size="8" font-family="monospace" letter-spacing="1">ORDER</text>
+        <polygon points="20,275 28,275 24,284" fill="#3ECF8E"/>
+        <!-- SPINE dot -->
+        <circle cx="24" cy="44" r="8" fill="rgba(90,169,255,.15)" stroke="#5AA9FF" stroke-width="1.5"/>
+        <text x="24" y="48" text-anchor="middle" fill="#5AA9FF" font-size="7" font-weight="700" font-family="monospace">S</text>
+        <!-- S1 dot -->
+        <circle cx="24" cy="106" r="7" fill="rgba(232,178,58,.12)" stroke="#E8B23A" stroke-width="1.5"/>
+        <text x="24" y="110" text-anchor="middle" fill="#E8B23A" font-size="7" font-weight="700" font-family="monospace">1</text>
+        <!-- S2 dot -->
+        <circle cx="24" cy="163" r="7" fill="rgba(245,181,74,.08)" stroke="#c8963a" stroke-width="1.5"/>
+        <text x="24" y="167" text-anchor="middle" fill="#c8963a" font-size="7" font-weight="700" font-family="monospace">2</text>
+        <!-- S3 dot -->
+        <circle cx="24" cy="220" r="7" fill="rgba(245,181,74,.06)" stroke="#525D6B" stroke-width="1.5"/>
+        <text x="24" y="224" text-anchor="middle" fill="#525D6B" font-size="7" font-weight="700" font-family="monospace">3</text>
+        <!-- DROP dot -->
+        <circle cx="24" cy="272" r="7" fill="rgba(62,207,142,.08)" stroke="#3ECF8E" stroke-width="1.5"/>
+        <text x="24" y="276" text-anchor="middle" fill="#3ECF8E" font-size="7" font-weight="700" font-family="monospace">&#x2713;</text>
+        <!-- cut label -->
+        <text x="36" y="268" fill="#3ECF8E" font-size="7" font-family="monospace" letter-spacing=".5">CUT</text>
+        <text x="36" y="278" fill="#3ECF8E" font-size="7" font-family="monospace" letter-spacing=".5">FIRST</text>
+      </svg>
+    </div>
+
+    <!-- Rungs -->
+    <div style="flex:1; min-width:280px;">
+      <div class="scope-ladder">
+        <!-- SPINE -->
+        <div class="scope-rung spine">
+          <div class="sc-tier"><span class="pill p-spine">SPINE</span></div>
+          <div class="sc-body">
+            <h3>Odra attestation contract on Testnet, one real agent-signed tx, x402 PAY leg, public repo, demo video</h3>
+            <p>Clears Path B + the submission floor on its own. Always shippable.</p>
+          </div>
+          <div class="sc-why">The non-negotiable floor. Ship this, submit. Everything below is upside.</div>
+        </div>
+        <!-- STRETCH 1 -->
+        <div class="scope-rung">
+          <div class="sc-tier"><span class="pill p-s1">STRETCH 1</span></div>
+          <div class="sc-body">
+            <h3>x402 EXPOSE leg + real external counterparty paying it</h3>
+            <p>Turns the demo into genuine machine-to-machine interop. Kills self-dealing.</p>
+          </div>
+          <div class="sc-why">Differentiates from every static x402 oracle in the field.</div>
+        </div>
+        <!-- STRETCH 2 -->
+        <div class="scope-rung">
+          <div class="sc-tier"><span class="pill p-s2">STRETCH 2</span></div>
+          <div class="sc-body">
+            <h3>Live CSPR.trade position via cspr-trade-mcp (the ACT verb)</h3>
+            <p>The real-DeFi moat. Gated on MCP testnet maturity.</p>
+          </div>
+          <div class="sc-why">No other entry runs real DeFi positions. This is the uncopyable proof.</div>
+        </div>
+        <!-- STRETCH 3 -->
+        <div class="scope-rung">
+          <div class="sc-tier"><span class="pill p-s3">STRETCH 3</span></div>
+          <div class="sc-body">
+            <h3>EVM/Base proof adapter</h3>
+            <p>Makes chain-agnostic provable in code, not just claimed in the README.</p>
+          </div>
+          <div class="sc-why">Gabriel's explicit priority. Cut-first if the runway tightens.</div>
+        </div>
+        <!-- DROP -->
+        <div class="scope-rung drop">
+          <div class="sc-tier"><span class="pill p-drop">DROP</span></div>
+          <div class="sc-body">
+            <h3>Dashboard polish, multi-position tracking, escrow beyond a counter</h3>
+            <p>Nice-to-have. Cut first if any gate slips.</p>
+          </div>
+          <div class="sc-why">Zero impact on judging criteria. Sunk cost if the clock runs out.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §5 TIMELINE
+════════════════════════════════════════════ -->
+<section id="timeline">
+  <div class="sec-head">
+    <span class="sec-no">05</span>
+    <h2>Timeline <em>&amp; gates.</em></h2>
+  </div>
+  <p class="sec-sub">
+    The 48h spike alone gives false confidence (validates ~10% of the surface).
+    Hard binary gates. Fail a gate &rarr; cut, harden, ship what's there.
+  </p>
+
+  <div class="timeline">
+    <div class="tl-track"></div>
+
+    <!-- SPIKE -->
+    <div class="tl-item spike">
+      <div class="tl-date">Jun 6–8<br>Day 0–2</div>
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-what">Spike. Hardest leg first.</div>
+        <div class="tl-crit">
+          Install rustup+Odra. Throwaway testnet wallet + faucet. Deploy one Odra contract.
+          <b>Prove headless EIP-712 &rarr; x402 settle on <span class="mono">casper:casper-test</span>.</b>
+          Fail &rarr; fall back to "minimal-real" entry, re-scope immediately. This gate alone validates the bet.
+        </div>
+      </div>
+    </div>
+
+    <!-- GATE: Day 7 -->
+    <div class="tl-item gate">
+      <div class="tl-date">Jun 13<br>Day 7</div>
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-what">GATE A. SPINE feature-complete.</div>
+        <div class="tl-crit">
+          Attestation contract + 1 x402 PAY leg + agent loop writing on-chain.
+          Not working on Testnet &rarr; cut all STRETCH, harden SPINE only.
+          <b>This is the decision point for everything below it.</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- GATE: Day 14 -->
+    <div class="tl-item gate">
+      <div class="tl-date">Jun 20<br>Day 14</div>
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-what">GATE B. Stretch + counterparty + public repo.</div>
+        <div class="tl-crit">
+          STRETCH 1 + (2 or 3) done. Counterparty live. Repo public + secret-scanned.
+          No counterparty &rarr; disclosed second-agent demo (never faked, clearly labeled).
+        </div>
+      </div>
+    </div>
+
+    <!-- DEMO -->
+    <div class="tl-item">
+      <div class="tl-date">Jun 26<br>Day ~20</div>
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-what">Demo video + writeup + dry-run submit</div>
+        <div class="tl-crit">
+          Video recorded. Submission copy drafted in <span class="mono">marketing/</span>.
+          Dry-run through the DoraHacks submission form to confirm no surprises.
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="tl-item gate">
+      <div class="tl-date">Jun 28<br>Day 22</div>
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-what">SUBMIT. 2-day buffer.</div>
+        <div class="tl-crit">
+          Hard deadline is Jun 30. We leave 2 days for the irreversible publish.
+          Nothing is added after submission. The repo is frozen.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §6 ADVANCEMENT
+════════════════════════════════════════════ -->
+<section id="advance">
+  <div class="sec-head">
+    <span class="sec-no">06</span>
+    <h2>Advancement. <em>Three vectors.</em></h2>
+  </div>
+  <p class="sec-sub">
+    We build for all three, weighted. Path B is the spine.
+    Association discretion is the high-value upside. Path A is the long shot.
+  </p>
+
+  <div class="advance-grid">
+    <!-- PRIMARY: Path B -->
+    <div class="advance-col primary">
+      <div class="advance-label blu">Path B · Jury Merit · THE SPINE</div>
+      <h3 style="font-size:18px; margin-bottom:10px;">Working Odra contract + real on-chain tx + clean repo + demo video</h3>
+      <p style="color:var(--ink-dim); font-size:14px; line-height:1.6;">
+        We build to win here regardless of everything else. Every decision in scope, timeline, and counterparty
+        strategy serves this path first. If Path A and discretion both fail, this still places.
+      </p>
+      <div class="weight-bar-wrap">
+        <div style="font:600 10px/1 var(--mono); color:var(--ink-faint); text-transform:uppercase; letter-spacing:.1em; margin-top:14px;">Relative weight</div>
+        <div class="weight-bar" style="margin-top:6px;">
+          <div class="weight-fill" style="width:75%; background:var(--blu);"></div>
+        </div>
+        <div class="weight-text" style="color:var(--blu);">Primary · 75%</div>
+      </div>
+    </div>
+    <!-- SECONDARY: Association -->
+    <div class="advance-col">
+      <div class="advance-label grn">Association Discretion · Reachable · High-Value</div>
+      <h3 style="font-size:15px; margin-bottom:9px;">Earn the @Casper_Network feature</h3>
+      <p style="color:var(--ink-dim); font-size:13.5px; line-height:1.6;">
+        Rules let Casper advance "high-impact teams." Sasha embodies their "trust layer for the agent economy" thesis.
+        Goal: earn the feature organically. Do not farm votes. The Association track is won by product quality, not campaigning.
+      </p>
+      <div class="weight-bar-wrap">
+        <div style="font:600 10px/1 var(--mono); color:var(--ink-faint); text-transform:uppercase; letter-spacing:.1em; margin-top:14px;">Relative weight</div>
+        <div class="weight-bar" style="margin-top:6px;">
+          <div class="weight-fill" style="width:20%; background:var(--grn);"></div>
+        </div>
+        <div class="weight-text" style="color:var(--grn);">Secondary · 20%</div>
+      </div>
+    </div>
+    <!-- TERTIARY: Path A -->
+    <div class="advance-col">
+      <div class="advance-label gold">CSPR.fans Vote · Low-Prob</div>
+      <h3 style="font-size:14px; margin-bottom:9px;">Community vote upside</h3>
+      <p style="color:var(--ink-dim); font-size:13px; line-height:1.6;">
+        Top-3 skip judging. But: CSPR.fans Telegram app + Casper Wallet + fan points.
+        High friction for Sasha's Base/Solana audience. Never depended on.
+      </p>
+      <div class="weight-bar-wrap">
+        <div style="font:600 10px/1 var(--mono); color:var(--ink-faint); text-transform:uppercase; letter-spacing:.1em; margin-top:14px;">Relative weight</div>
+        <div class="weight-bar" style="margin-top:6px;">
+          <div class="weight-fill" style="width:5%; background:var(--gold);"></div>
+        </div>
+        <div class="weight-text" style="color:var(--gold);">Upside only · 5%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §7 COMPETITIVE FIELD
+════════════════════════════════════════════ -->
+<section id="field">
+  <div class="sec-head">
+    <span class="sec-no">07</span>
+    <h2>The field, <em>read cold.</em></h2>
+  </div>
+  <p class="sec-sub">
+    The x402 agent-payment thesis is crowded. Differentiation, not feasibility, is the risk.
+    Sasha's wedge: the only live persona with a real DeFi book, which these repos structurally cannot claim.
+  </p>
+
+  <div class="table-wrap" style="margin-top:28px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Entry</th>
+          <th>Angle</th>
+          <th>Threat</th>
+          <th>The read</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Phoenix Zero</b> <span class="pill p-hi" style="vertical-align:middle;">front-runner</span></td>
+          <td>x402 sequencer-health oracle, 6 chains, claims 206K+ datapoints live since Mar 2026</td>
+          <td style="color:var(--red-hi); font-weight:600;">Strongest</td>
+          <td>Casper-featured. Strong on working contracts + real applicability. No persona, no DeFi book.</td>
+        </tr>
+        <tr>
+          <td><b>AgentPay</b></td>
+          <td>x402 micropayment marketplace for agents (M2M commerce). Full Casper stack.</td>
+          <td style="color:var(--amb); font-weight:600;">High</td>
+          <td>Essentially the generic "Concept 3" we rejected. No differentiation on real usage.</td>
+        </tr>
+        <tr>
+          <td><b>agentpay-guard pack</b> (4–5 repos)</td>
+          <td>x402 payment firewall, policy, escrow</td>
+          <td style="color:var(--amb);">Medium</td>
+          <td>The crowded default thesis. We structurally avoid it by having real positions.</td>
+        </tr>
+        <tr class="field-us">
+          <td><b>Sasha</b> <span class="pill p-lo" style="vertical-align:middle;">us</span></td>
+          <td>Real DeFi book + verifiable agent identity + the only AI-agent persona in the field</td>
+          <td style="color:var(--grn); font-weight:700;">Moat</td>
+          <td>Only persona. Only real-DeFi entry. Uncopyable in the timeframe. The "trust layer" thesis embodied.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §8 RISK REGISTER
+════════════════════════════════════════════ -->
+<section id="risk">
+  <div class="sec-head">
+    <span class="sec-no">08</span>
+    <h2>Risk register, <em>top cascades.</em></h2>
+  </div>
+  <p class="sec-sub">
+    Full pre-mortem: <span class="mono">_ops/pre-mortem-casper-buildathon-2026-06-06.md</span>.
+    Each risk is mitigated in the spec, not just listed here.
+  </p>
+
+  <!-- P×I matrix SVG -->
+  <div class="risk-matrix-svg-wrap">
+    <h3>Probability &times; Impact matrix</h3>
+    <svg width="100%" viewBox="0 0 540 300" fill="none" xmlns="http://www.w3.org/2000/svg" style="min-width:420px;display:block;">
+      <!-- grid background cells -->
+      <!-- row: High Impact -->
+      <rect x="80" y="20"  width="140" height="80" rx="4" fill="rgba(245,181,74,.06)"/>  <!-- med-prob -->
+      <rect x="228" y="20" width="140" height="80" rx="4" fill="rgba(255,67,56,.10)"/>   <!-- high-prob -->
+      <rect x="376" y="20" width="140" height="80" rx="4" fill="rgba(255,67,56,.10)"/>   <!-- v.high-prob -->
+      <!-- row: Med Impact -->
+      <rect x="80" y="108" width="140" height="80" rx="4" fill="rgba(62,207,142,.04)"/>
+      <rect x="228" y="108" width="140" height="80" rx="4" fill="rgba(245,181,74,.06)"/>
+      <rect x="376" y="108" width="140" height="80" rx="4" fill="rgba(245,181,74,.06)"/>
+      <!-- row: Low Impact -->
+      <rect x="80" y="196" width="140" height="80" rx="4" fill="rgba(62,207,142,.04)"/>
+      <rect x="228" y="196" width="140" height="80" rx="4" fill="rgba(62,207,142,.04)"/>
+      <rect x="376" y="196" width="140" height="80" rx="4" fill="rgba(62,207,142,.04)"/>
+
+      <!-- axis labels: columns (probability) -->
+      <text x="150" y="14" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace" letter-spacing=".5">LOW PROB</text>
+      <text x="298" y="14" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace" letter-spacing=".5">MED PROB</text>
+      <text x="446" y="14" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace" letter-spacing=".5">HIGH PROB</text>
+
+      <!-- axis labels: rows (impact) -->
+      <text x="12" y="68" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace"
+            transform="rotate(-90,12,68)">HIGH IMPACT</text>
+      <text x="12" y="156" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace"
+            transform="rotate(-90,12,156)">MED IMPACT</text>
+      <text x="12" y="244" text-anchor="middle" fill="#525D6B" font-size="9.5" font-family="monospace"
+            transform="rotate(-90,12,244)">LOW IMPACT</text>
+
+      <!-- RISK DOTS with labels -->
+      <!-- R1: spike-passes-build-doesnt-fit → HIGH prob × HIGH impact -->
+      <circle cx="408" cy="52" r="22" fill="rgba(255,67,56,.18)" stroke="#FF4338" stroke-width="1.5"/>
+      <text x="408" y="49" text-anchor="middle" fill="#FF7068" font-size="8" font-family="monospace" font-weight="700">SPIKE</text>
+      <text x="408" y="60" text-anchor="middle" fill="#FF7068" font-size="8" font-family="monospace">FAILS</text>
+
+      <!-- R2: counterparty-never-shows → HIGH prob × HIGH impact -->
+      <circle cx="446" cy="82" r="22" fill="rgba(255,67,56,.12)" stroke="#FF4338" stroke-width="1.5"/>
+      <text x="446" y="79" text-anchor="middle" fill="#FF7068" font-size="8" font-family="monospace" font-weight="700">NO</text>
+      <text x="446" y="90" text-anchor="middle" fill="#FF7068" font-size="8" font-family="monospace">CNTRPTY</text>
+
+      <!-- R3: scope creep → HIGH prob × HIGH impact -->
+      <circle cx="365" cy="38" r="22" fill="rgba(255,67,56,.12)" stroke="#FF4338" stroke-width="1.5"/>
+      <text x="365" y="35" text-anchor="middle" fill="#FF7068" font-size="8" font-family="monospace" font-weight="700">SCOPE</text>
+      <text x="365" y="46" text-anchor="middle" fill="#FF7068" font-size="8" font-family="monospace">CREEP</text>
+
+      <!-- R4: dont-place → MED prob × HIGH impact -->
+      <circle cx="280" cy="60" r="20" fill="rgba(245,181,74,.14)" stroke="#F5B54A" stroke-width="1.5"/>
+      <text x="280" y="57" text-anchor="middle" fill="#F5B54A" font-size="8" font-family="monospace" font-weight="700">DON'T</text>
+      <text x="280" y="68" text-anchor="middle" fill="#F5B54A" font-size="8" font-family="monospace">PLACE</text>
+
+      <!-- R5: path-A mirage → MED prob × MED impact -->
+      <circle cx="298" cy="148" r="18" fill="rgba(245,181,74,.10)" stroke="#F5B54A" stroke-width="1.5"/>
+      <text x="298" y="145" text-anchor="middle" fill="#F5B54A" font-size="8" font-family="monospace" font-weight="700">PATH A</text>
+      <text x="298" y="156" text-anchor="middle" fill="#F5B54A" font-size="8" font-family="monospace">MIRAGE</text>
+
+      <!-- R6: secret-leak → MED prob × V.HIGH impact (in HIGH×HIGH zone) -->
+      <circle cx="448" cy="28" r="18" fill="rgba(255,67,56,.20)" stroke="#FF4338" stroke-width="2"/>
+      <text x="448" y="25" text-anchor="middle" fill="#FF7068" font-size="8" font-family="monospace" font-weight="700">SECRET</text>
+      <text x="448" y="36" text-anchor="middle" fill="#FF7068" font-size="8" font-family="monospace">LEAK</text>
+
+      <!-- R7: accepted risk chain-agnostic → ACCEPTED (low-right) -->
+      <circle cx="136" cy="236" r="18" fill="rgba(130,140,150,.10)" stroke="#525D6B" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="136" y="233" text-anchor="middle" fill="#525D6B" font-size="8" font-family="monospace" font-weight="700">CHAIN-AG</text>
+      <text x="136" y="244" text-anchor="middle" fill="#525D6B" font-size="8" font-family="monospace">ACCEPTED</text>
+
+      <!-- border -->
+      <rect x="80" y="20" width="436" height="256" rx="6" stroke="#242930" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <!-- Risk cards grid -->
+  <div class="risk-matrix">
+    <div class="risk-card">
+      <div class="risk-title">Spike passes, full build doesn't fit</div>
+      <div class="risk-badge"><span class="risk-badge-val rb-hh">High &times; High</span></div>
+      <div class="risk-mit">SPINE/STRETCH tiers + Day-7/14 gates. SPINE is always shippable on its own. The spike is binary: pass = build, fail = re-scope immediately.</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-title">Counterparty never shows &rarr; self-dealing</div>
+      <div class="risk-badge"><span class="risk-badge-val rb-hh">High &times; High</span></div>
+      <div class="risk-mit">Three-tier plan: public endpoint &rarr; recruit week 2 &rarr; disclosed second-agent fallback. Never present a self-call as external demand.</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-title">Chain-agnostic scope creep eats runway</div>
+      <div class="risk-badge"><span class="risk-badge-val rb-hh">High &times; High</span></div>
+      <div class="risk-mit">EVM-as-cheap-second-adapter. Casper lands first. Adapter #2 is STRETCH 3 (cut-first). The seam is designed to be thin by choice.</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-title">22 days spent, don't place</div>
+      <div class="risk-badge"><span class="risk-badge-val rb-mh">Med-Hi &times; High</span></div>
+      <div class="risk-mit">Differentiate on real-DeFi + persona. Aim the Association discretion vector. The artifact outlives the hackathon regardless.</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-title">Path A mirage + dead content engine</div>
+      <div class="risk-badge"><span class="risk-badge-val rb-mh">Med-Hi &times; Med</span></div>
+      <div class="risk-mit">Path B is the spine. Path A is bonus, never depended on. Content engine fix is a separate marketing/ workstream, not a build dependency.</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-title">Secret / state leak on public-repo flip</div>
+      <div class="risk-badge"><span class="risk-badge-val rb-hh">Med &times; V.High</span></div>
+      <div class="risk-mit">Fresh repo built from an allowlist. Never flip the private tree. Pre-commit secret scan defined BEFORE any code is written.</div>
+    </div>
+    <div class="risk-card">
+      <div class="risk-title">Accepted risk: full chain-agnostic</div>
+      <div class="risk-badge"><span class="risk-badge-val rb-acc">Accepted</span></div>
+      <div class="risk-mit">Gabriel's explicit call. Mitigated by EVM-as-cheapest-2nd-adapter + cut-first ordering. Not eliminated, consciously carried.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §9 TOOLING
+════════════════════════════════════════════ -->
+<section id="tooling">
+  <div class="sec-head">
+    <span class="sec-no">09</span>
+    <h2>Tooling <em>&amp; footguns.</em></h2>
+  </div>
+  <p class="sec-sub">
+    Low star counts across the board (1–63 stars). Budget real debugging time.
+    The footguns are known; the mitigations are built into the spike.
+  </p>
+
+  <div class="tool-grid">
+    <div class="tool-row">
+      <b>Headless signing (autonomous agent)</b><br>
+      <span class="mono">casper-js-sdk</span> (TransactionV1) or <span class="mono">casper-ecosystem/casper-rust-wasm-sdk</span>,
+      or <span class="mono">cspr-trade-mcp --signer</span>.
+      <span class="warn">NOT CSPR.click</span> (browser / human-in-loop, defeats the autonomy).
+    </div>
+    <div class="tool-row">
+      <b>Use the right SDK</b><br>
+      <span class="good">casper-ecosystem/casper-rust-wasm-sdk</span> is live.
+      <span class="warn">casper-network/casper-rust-sdk is dead</span> and will waste days.
+    </div>
+    <div class="tool-row">
+      <b>Docs target</b><br>
+      <span class="mono">/next/</span> = Casper 2.0 / Condor. Odra <span class="mono">v2.7.x</span>,
+      <span class="mono">llms.txt</span> confirmed live. The "Odra for Solidity devs" tutorial is 404. Skip it.
+    </div>
+    <div class="tool-row">
+      <b>Testnet faucet = once per account</b><br>
+      Pre-create 2–3 spare funded accounts before the spike.
+      NCTL local-net (<span class="mono">casper-nctl-docker</span>) as testnet-outage fallback.
+    </div>
+    <div class="tool-row">
+      <b>x402 stack</b><br>
+      CEP-18 tokens + EIP-712 typed-data sigs, <span class="mono">transfer_with_authorization</span>,
+      net <span class="mono">casper:casper-test</span>. Facilitator base:
+      <span class="mono">https://x402-facilitator.cspr.cloud</span>.
+    </div>
+    <div class="tool-row">
+      <b>Reference repos</b><br>
+      <span class="mono">make-software/casper-x402</span> (Go facilitator + paid demo server + headless client) +
+      <span class="mono">odradev/casper-x402-poc</span> (Rust contract).
+      Hosted MCP: <span class="mono">https://mcp.cspr.trade/mcp</span> (24 tools, zero setup).
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     §10 NEXT STEP
+════════════════════════════════════════════ -->
+<section id="next">
+  <div class="sec-head">
+    <span class="sec-no">10</span>
+    <h2>Next <em>step.</em></h2>
+  </div>
+
+  <div class="callout grn">
+    <b>Spec written and self-reviewed.</b> Awaiting your approval.
+    On your go, the next move is the implementation plan (writing-plans skill). The Day-0 spike
+    becomes step 1: prove a headless EIP-712 &rarr; x402 settle on Casper Testnet before any further
+    build time is committed. That single spike invalidates or confirms the entire bet.
+  </div>
+
+  <div class="callout" style="margin-top:0;">
+    <b>Open decisions with sensible defaults (carried unless you say otherwise):</b><br>
+    Counterparty = public endpoint + recruit attempt week 2, disclosed second-agent guaranteed fallback.
+    Attestation surface = append-only decision log for SPINE. Live position = real testnet swap via
+    <span class="mono">cspr-trade-mcp</span> if STRETCH 2 reached, else attest a read-only snapshot.
+  </div>
+
+  <!-- Decision confirmation -->
+  <div style="margin-top:24px; background:var(--panel2); border:1px solid var(--line); border-radius:var(--r-lg); padding:24px 28px;">
+    <div style="font:600 10.5px/1 var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:18px;">Spec inputs</div>
+    <div class="grid g3" style="gap:8px;">
+      <div style="font-size:13px; color:var(--ink-dim);">
+        <span style="color:var(--grn);">&#10003;</span> Council (5 advisors)
+      </div>
+      <div style="font-size:13px; color:var(--ink-dim);">
+        <span style="color:var(--grn);">&#10003;</span> Research sweep 01–05
+      </div>
+      <div style="font-size:13px; color:var(--ink-dim);">
+        <span style="color:var(--grn);">&#10003;</span> Gary-Klein pre-mortem
+      </div>
+      <div style="font-size:13px; color:var(--ink-dim);">
+        <span style="color:var(--grn);">&#10003;</span> CSPR.fans mechanism verified
+      </div>
+      <div style="font-size:13px; color:var(--ink-dim);">
+        <span style="color:var(--grn);">&#10003;</span> Full spec self-reviewed
+      </div>
+      <div style="font-size:13px; color:var(--ink-dim);">
+        <span style="color:var(--red);">&#10007;</span> <b style="color:var(--ink);">Awaiting approval &rarr; writing-plans</b>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="wrap">
+    <b>Sasha Coin</b> · Casper Agentic Buildathon · Plan v2 · 2026-06-06<br>
+    Build workspace: <b>sasha-coin/</b> · Content + vote campaign: <b>marketing/</b><br>
+    Spec: <b>docs/superpowers/specs/2026-06-06-casper-buildathon-design.md</b> · Pre-mortem: <b>_ops/pre-mortem-casper-buildathon-2026-06-06.md</b>
+  </div>
+</footer>
+
+</body>
+</html>
