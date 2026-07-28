@@ -74,7 +74,7 @@ the `xquik` profile.
 Start the selected Actor asynchronously:
 
 ```text
-POST https://api.apify.com/v2/acts/<actor-selector>/runs
+POST https://api.apify.com/v2/actors/<actor-selector>/runs
 ```
 
 Send `APIFY_TOKEN` through the `Authorization: Bearer` header. Never place
