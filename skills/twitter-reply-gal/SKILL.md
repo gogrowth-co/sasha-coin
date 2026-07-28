@@ -136,6 +136,20 @@ Authenticate with the Bearer header and require a 2xx response. Until deletion
 succeeds, keep the run and dataset IDs, mark cleanup pending, and do not mark
 the request complete or start a replacement run.
 
+Apply terminal cleanup after Actor failure, a 120-second timeout or disconnect,
+malformed output, and sanitized-data persistence failure too. Reconcile the
+saved request mapping to its run and dataset IDs first. On timeout, abort the
+saved run and poll that run to a terminal state before deleting its dataset.
+Never start a second run to recover an uncertain outcome. If the dataset ID is
+missing, reconcile the saved run until the ID is found or Apify confirms no
+dataset was created.
+
+Send the authenticated dataset `DELETE` for every reconciled dataset. Require a
+2xx response. If abort, status, or deletion remains uncertain or fails, retain
+the run and dataset IDs and mark cleanup pending. Keep the request failed or
+cleanup pending. Do not mark it complete or start a replacement before cleanup
+succeeds.
+
 ### 2a. Enrich audience context only when requested
 
 Use [Xquik X Follower Scraper](https://apify.com/xquik/x-follower-scraper)
@@ -176,8 +190,11 @@ value against its documented type. Delete all other fields, including
 Sanitize retained strings before any downstream use.
 
 Persist that minimized dataset, then apply the same verified dataset-deletion
-gate. A cleanup failure remains pending against the saved follower run and
-dataset IDs. It must not trigger a replacement run.
+gate. Also apply it after follower run failure, timeout or disconnect, malformed
+output, or minimized-data persistence failure. Abort and reconcile a timed-out
+saved run before deletion. A cleanup failure remains pending against the saved
+follower run and dataset IDs. Require a 2xx delete response. Do not complete the
+request or start a replacement run until cleanup succeeds.
 
 Xquik is an independent third-party service. Not affiliated with X Corp.
 "Twitter" and "X" are trademarks of X Corp.
