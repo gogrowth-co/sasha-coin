@@ -85,3 +85,6 @@ web/*/data/dashboard.json
 # CROO package build artifacts
 croo/dist/
 croo/node_modules/
+
+# memsearch local cache (machine-specific session index)
+.memsearch/
