@@ -32,6 +32,7 @@ import fs from 'fs'
 import path from 'path'
 import https from 'https'
 import { fileURLToPath } from 'url'
+import { shouldAlert, recordAlert, clearAlert, normalizeReason } from './lib/alert-throttle.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..')
@@ -190,6 +191,7 @@ async function killPosition(position, reason, dryRun) {
         `Pair: ${position.symbol} | Chain: ${position.chain}\nReason: ${reason}\n` +
         `${EXECUTE ? '✅ EXECUTED' : '🔍 DRY RUN'}`
     )
+    if (EXECUTE) clearAlert(WORKSPACE, `lp-rebalancer:kill-pending:${position.id}`)
     return { ...result, action: 'KILL', reason }
 }
 
@@ -266,12 +268,25 @@ async function main() {
         if (action.killSwitch && action.confirmGated && !CONFIRM_KILL) {
             pendingConfirmation = true
             log(`⛔ KILL for ${action.positionId} is confirm-gated — NOT auto-executing (run with --confirm-kill to execute). Reason: ${action.reason}`)
-            sendTelegram(
-                `🚨 <b>[KILL PENDING CONFIRMATION]</b> ${position.symbol} (${position.chain})\n` +
-                `Reason: ${action.reason}\n` +
-                `The monitor flagged a KILL. It will NOT auto-execute.\n` +
-                `To execute: <code>node scripts/lp-rebalancer.js --execute --confirm-kill --position ${action.positionId}</code>`
-            )
+
+            // Throttled: this was previously re-sent verbatim every 30-min cron cycle for as
+            // long as the KILL sat unconfirmed — the dominant source of Telegram noise found
+            // in the 2026-08-19 notification audit. Now it alerts immediately on first flag
+            // and on any real change in cause (normalizeReason strips the drifting minute/%
+            // numbers), then throttles identical repeats to once per cooldown window.
+            const alertKey = `lp-rebalancer:kill-pending:${action.positionId}`
+            const fingerprint = normalizeReason(action.reason)
+            if (shouldAlert(WORKSPACE, alertKey, fingerprint)) {
+                sendTelegram(
+                    `🚨 <b>[KILL PENDING CONFIRMATION]</b> ${position.symbol} (${position.chain})\n` +
+                    `Reason: ${action.reason}\n` +
+                    `The monitor flagged a KILL. It will NOT auto-execute.\n` +
+                    `To execute: <code>node scripts/lp-rebalancer.js --execute --confirm-kill --position ${action.positionId}</code>`
+                )
+                recordAlert(WORKSPACE, alertKey, fingerprint)
+            } else {
+                log(`  (KILL PENDING CONFIRMATION Telegram suppressed — unchanged, within cooldown)`)
+            }
             const gatedResult = { positionId: action.positionId, success: false, action: 'KILL_PENDING_CONFIRMATION', skipped: true, reason: action.reason }
             results.push(gatedResult)
             appendLog({ symbol: position.symbol, chain: position.chain, ...gatedResult, executed: false })
