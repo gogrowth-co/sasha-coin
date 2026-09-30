@@ -14,7 +14,7 @@ Required env vars (in `.env`):
 ```
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
-GOOGLE_REFRESH_TOKEN=...          # gabriel.mangabeira@opascope.com (default)
+GOOGLE_REFRESH_TOKEN_MANGA82=...    # manga82@gmail.com (the only Google account)
 GOOGLE_REFRESH_TOKEN_MANGA82=...  # manga82@gmail.com (if needed)
 ```
 
