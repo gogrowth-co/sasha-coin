@@ -1,0 +1,168 @@
+{
+ "version": "1.0.0",
+ "updated": "2026-10-07",
+ "project": "TEMPLATE: copy to <workspace>/_context/content-contract.json and set site, language and the numbers from the project's publishing-standards.md",
+ "site": "https://example.com",
+ "language": "en",
+ "_purpose": "Single source of this project's editorial numbers. Every gate (plan, draft, live, sweep) reads only this file through content-qa-gate/scripts/qa_core.py. Change a rule here, never in a skill, prompt or script.",
+ "components": {
+  "title": {
+   "headline_min_chars": 40,
+   "headline_max_chars": 70,
+   "min_chars": 40,
+   "max_chars": 60,
+   "rendered_max_chars": 70
+  },
+  "meta_description": {
+   "target_min": 150,
+   "target_max": 160,
+   "hard_min": 140,
+   "hard_max": 170
+  },
+  "faq": {
+   "heading_aliases": [
+    "FAQ",
+    "Frequently Asked Questions"
+   ],
+   "min_questions": 4,
+   "max_questions": 6,
+   "question_format": "h3",
+   "jsonld_required": true
+  },
+  "internal_links": {
+   "min": 2,
+   "max": 6
+  },
+  "external_refs": {
+   "min": 1,
+   "dead_link_policy": "remove (only a confirmed 404/410; never 403/429/0)"
+  },
+  "readability": {
+   "min_words": 800
+  },
+  "typography": {
+   "em_dash_allowed": false
+  },
+  "images": {
+   "featured_required": true,
+   "min_in_article": 1,
+   "density_per_3000_chars": true,
+   "alt_text": {
+    "min_chars": 15,
+    "banned": [
+     "image",
+     "picture",
+     "photo",
+     "imagem",
+     "foto"
+    ]
+   },
+   "real_product": {
+    "rule": "A page about a real product (app, token, tool, device, vehicle) shows the REAL product: the official image (press kit, product page, datasheet, official screenshot) credited to its owner, or an AI image generated FROM that official image as reference, faithful and labeled as AI. Never a render invented from text, never one stock picture shared by several product pages.",
+    "forbidden_filename_markers": [
+     "ai-product-render",
+     "product-render"
+    ]
+   }
+  }
+ },
+ "types": {
+  "article": {
+   "skeleton": [
+    "Opening with the direct answer",
+    "Evidence sections",
+    "What to do with it",
+    "FAQ",
+    "References"
+   ],
+   "min_visuals": 1
+  },
+  "guide": {
+   "skeleton": [
+    "Opening with the direct answer",
+    "Steps or framework",
+    "Common mistakes",
+    "FAQ",
+    "References"
+   ],
+   "min_visuals": 2
+  },
+  "comparison": {
+   "skeleton": [
+    "Direct answer: the winner per profile",
+    "Criteria",
+    "Side-by-side table",
+    "Winner per profile",
+    "FAQ",
+    "References"
+   ],
+   "min_visuals": 2,
+   "comparison_table_required": true,
+   "requires_alternatives": true
+  },
+  "product": {
+   "skeleton": [
+    "Verdict and who it is for",
+    "Official specs with linked source",
+    "The calculation the headline promises",
+    "Comparison with real alternatives",
+    "Who it is not for",
+    "Checklist",
+    "FAQ",
+    "References"
+   ],
+   "min_visuals": 2,
+   "comparison_table_required": true,
+   "requires_promise": true,
+   "requires_alternatives": true
+  },
+  "news": {
+   "skeleton": [
+    "Lede",
+    "Why it matters",
+    "What changes in practice",
+    "Context",
+    "References"
+   ],
+   "min_words": 500,
+   "min_visuals": 1,
+   "faq_required": false,
+   "faq_min_questions": 2,
+   "faq_max_questions": 4
+  }
+ },
+ "audit": {
+  "default_type": "article",
+  "programmatic_types": [
+   "product",
+   "programmatic"
+  ],
+  "product_types": [
+   "product"
+  ],
+  "body_selector": "article",
+  "strip_h1_from_body": true,
+  "chars_per_word": 6.0,
+  "type_rules": [
+   {
+    "pattern": "^/blog/",
+    "type": "article"
+   }
+  ],
+  "leftover_patterns": [
+   "\\bbriefing\\b",
+   "described in the brief",
+   "descrito no brief",
+   "before (?:final )?publication",
+   "publica[cç][aã]o final",
+   "(?-i)\\bTODO\\b",
+   "(?-i)\\bTBD\\b",
+   "(?-i)\\bFIXME\\b",
+   "\\[insert",
+   "\\[inserir",
+   "\\[link",
+   "lorem ipsum",
+   "placeholder"
+  ]
+ }
+}

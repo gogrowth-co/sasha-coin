@@ -229,3 +229,6 @@ This uses Satori (JSX to SVG) + resvg (SVG to PNG) + pdf-lib (PNG to PDF). No br
 ## Research Reference
 
 Full tooling analysis at `research/carousel-generator-tooling-2026-04-27.md`.
+
+## Real product images (2026-10-07, all projects)
+When the visual shows a specific real product (app, token, device, vehicle, equipment), follow the `product-imagery` skill: use the official image (credited) or generate FROM the official image as reference and label it as AI. Never invent a branded render from a text prompt and never reuse one generic picture across several product pages. `content-qa-gate` blocks both.
