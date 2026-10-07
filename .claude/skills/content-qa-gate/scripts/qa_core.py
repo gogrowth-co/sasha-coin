@@ -70,10 +70,14 @@ def head_fields(live_html):
     """(seo title, meta description, og:image) of a rendered page."""
     m = re.search(r'<title>(.*?)</title>', live_html, re.S)
     title = html.unescape(m.group(1)).strip() if m else ''
-    m = re.search(r'<meta\s+name="description"\s+content="([^"]*)"', live_html)
-    meta = html.unescape(m.group(1)) if m else ''
-    m = re.search(r'<meta\s+property="og:image"\s+content="([^"]*)"', live_html)
-    return title, meta, (html.unescape(m.group(1)) if m else '')
+    metas = {}
+    for tag in re.findall(r'<meta\b[^>]*>', live_html, re.I):   # any attribute order, single or double quotes
+        attrs = {k.lower(): v1 if q else v2 for k, q, v1, v2 in
+                 re.findall(r'([\w:-]+)\s*=\s*(?:(["\'])(.*?)\2|([^\s>]+))', tag, re.S)}
+        key = (attrs.get('name') or attrs.get('property') or '').lower()
+        if key and key not in metas and 'content' in attrs:
+            metas[key] = html.unescape(attrs['content'])
+    return title, metas.get('description', ''), metas.get('og:image', '')
 
 
 def _balanced(html_, start, tag):

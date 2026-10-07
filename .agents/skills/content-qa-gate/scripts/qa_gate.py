@@ -27,7 +27,8 @@ def type_for(C, url, override=None):
 
 
 def live_one(G, C, url, t=None, cache=None):
-    url_q = url + ('&' if '?' in url else '?') + f'qa={int(time.time())}'   # fresh query: an edge cache outlives purges
+    base, _, frag = url.partition('#')   # the query goes before any #fragment, or the server never sees it
+    url_q = base + ('&' if '?' in base else '?') + f'qa={int(time.time())}' + ('#' + frag if frag else '')   # fresh query: an edge cache outlives purges
     if C.get('audit', {}).get('render_js'):   # client-rendered site (SPA): read the DOM a browser builds, not the empty shell
         import subprocess
         here = os.path.dirname(os.path.abspath(__file__))
@@ -50,13 +51,19 @@ def live_one(G, C, url, t=None, cache=None):
 
 
 def sitemap_urls(url, limit):
-    xml = fetch(url)
+    try:
+        xml = fetch(url)
+    except Exception as e:
+        raise SystemExit(f'FAIL  sitemap unreachable: {url} ({e!r:.160})')
     locs = re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', xml)
     if any(l.endswith('.xml') or 'sitemap' in l.rsplit('/', 1)[-1] for l in locs):   # an index: read the post sitemaps first
         out = []
         for sm in locs:
             if re.search(r'post|blog|article|news', sm) or len(locs) < 4:
-                out += re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', fetch(sm))
+                try:
+                    out += re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', fetch(sm))
+                except Exception as e:   # one dead sub-sitemap is reported, the rest still get checked
+                    print(f'WARN  sub-sitemap unreachable: {sm} ({e!r:.160})', file=sys.stderr)
         locs = [l for l in out if not l.endswith('.xml')]
     return locs[:limit]
 
@@ -96,7 +103,11 @@ if __name__ == '__main__':
                                        live_html=None, short_update=a.short_update)])
         report(out)
     elif a.mode == 'live':
-        out = G.finalize([live_one(G, C, a.url, a.type)])
+        try:
+            out = G.finalize([live_one(G, C, a.url, a.type)])
+        except Exception as e:   # a fetch or render failure is a FAIL with its reason, never a traceback
+            out = [{'url': a.url, 'type': a.type, 'words': 0, 'internal_unique': 0, 'external_unique': 0, 'visuals': 0,
+                    'verdict': 'FAIL', 'findings': [{'check': 'fetch', 'severity': 'block', 'message': repr(e)[:200]}]}]
         report(out)
     else:
         urls = sitemap_urls(a.sitemap, a.limit) if a.sitemap else [u.strip() for u in open(a.urls) if u.strip()][:a.limit]
