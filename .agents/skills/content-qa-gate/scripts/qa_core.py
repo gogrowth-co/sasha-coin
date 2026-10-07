@@ -76,12 +76,28 @@ def head_fields(live_html):
     return title, meta, (html.unescape(m.group(1)) if m else '')
 
 
+def _balanced(html_, start, tag):
+    """Inner HTML of the element whose start tag ends at `start`, counting nested tags of the same name."""
+    depth, i = 1, start
+    for m in re.finditer(rf'<(/?){tag}\b[^>]*>', html_[start:], re.I):
+        depth += -1 if m.group(1) else 1
+        if depth == 0:
+            return html_[start:start + m.start()]
+    return html_[start:]
+
+
 def body_of(live_html, selector=None):
-    """Article body of any rendered page: the contract's selector tag, else <article>, else <main>, else <body>."""
-    for tag in ([selector] if selector else []) + ['article', 'main', 'body']:
-        m = re.search(rf'<{tag}\b[^>]*>(.*)</{tag}>', live_html, re.S | re.I)
+    """Article body of any rendered page. selector: a tag ("article") or a class (".entry-content", the element carrying
+    that class, nested tags counted); else <article>, else <main>, else <body>."""
+    for sel in ([selector] if selector else []) + ['article', 'main', 'body']:
+        if sel.startswith('.'):
+            m = re.search(r'<(\w+)\b[^>]*class="[^"]*\b' + re.escape(sel[1:]) + r'\b[^"]*"[^>]*>', live_html, re.I)
+            if m:
+                return _balanced(live_html, m.end(), m.group(1))
+            continue
+        m = re.search(rf'<{sel}\b[^>]*>', live_html, re.I)
         if m:
-            return m.group(1)
+            return _balanced(live_html, m.end(), sel)
     return live_html
 
 
