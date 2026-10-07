@@ -78,8 +78,10 @@ def head_fields(live_html):
 
 def _balanced(html_, start, tag):
     """Inner HTML of the element whose start tag ends at `start`, counting nested tags of the same name."""
-    depth, i = 1, start
-    for m in re.finditer(rf'<(/?){tag}\b[^>]*>', html_[start:], re.I):
+    depth = 1
+    for m in re.finditer(rf'<!--.*?-->|<(/?){tag}\b[^>]*?(/?)>', html_[start:], re.I | re.S):
+        if m.group(0).startswith('<!--') or m.group(2):   # comments and self-closing tags do not change depth
+            continue
         depth += -1 if m.group(1) else 1
         if depth == 0:
             return html_[start:start + m.start()]
@@ -91,7 +93,8 @@ def body_of(live_html, selector=None):
     that class, nested tags counted); else <article>, else <main>, else <body>."""
     for sel in ([selector] if selector else []) + ['article', 'main', 'body']:
         if sel.startswith('.'):
-            m = re.search(r'<(\w+)\b[^>]*class="[^"]*\b' + re.escape(sel[1:]) + r'\b[^"]*"[^>]*>', live_html, re.I)
+            m = re.search(r'<(\w+)\b[^>]*class=(["\'])(?:(?!\2).)*?(?<![\w-])' + re.escape(sel[1:]) + r'(?![\w-])(?:(?!\2).)*\2[^>]*>',
+                          live_html, re.I | re.S)
             if m:
                 return _balanced(live_html, m.end(), m.group(1))
             continue
