@@ -320,3 +320,6 @@ social/x/x-img-2026-04-13-beforeafter-token-emissions.png
 8. **Use real photos for face formats.** Don't generate AI photos when a real one from the library works.
 9. **system_instruction is 512 chars max.** Use the shortened version from this skill, not a longer one.
 10. **Infographic formats use `"pro"` model.** Step grids (5), before/after (6), sketchnotes (7), and mind maps (8) benefit from the higher reasoning quality of the pro tier.
+
+## Real product images (2026-10-07, all projects)
+When the visual shows a specific real product (app, token, device, vehicle, equipment), follow the `product-imagery` skill: use the official image (credited) or generate FROM the official image as reference and label it as AI. Never invent a branded render from a text prompt and never reuse one generic picture across several product pages. `content-qa-gate` blocks both.

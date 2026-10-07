@@ -134,3 +134,6 @@ When generating prompts or selecting directions:
 - This skill keeps any **skill-specific** anti-patterns that the universal floor does not cover (e.g., thumbnails ban neutral expressions; landing pages ban 3-column logo carousels; ads enforce single-accent for conversion). These remain in this file and stack on top of the universal floor.
 
 The combinatorial dimensions in this skill produce *variety above a quality floor*. They are not a license to drop below it.
+
+## Real product images (2026-10-07, all projects)
+When the visual shows a specific real product (app, token, device, vehicle, equipment), follow the `product-imagery` skill: use the official image (credited) or generate FROM the official image as reference and label it as AI. Never invent a branded render from a text prompt and never reuse one generic picture across several product pages. `content-qa-gate` blocks both.
