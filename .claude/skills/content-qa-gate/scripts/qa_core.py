@@ -74,9 +74,9 @@ def head_fields(live_html):
     for tag in re.findall(r'<meta\b[^>]*>', live_html, re.I):   # any attribute order, single or double quotes
         attrs = {k.lower(): v1 if q else v2 for k, q, v1, v2 in
                  re.findall(r'([\w:-]+)\s*=\s*(?:(["\'])(.*?)\2|([^\s>]+))', tag, re.S)}
-        key = (attrs.get('name') or attrs.get('property') or '').lower()
-        if key and key not in metas and 'content' in attrs:
-            metas[key] = html.unescape(attrs['content'])
+        for key in {(attrs.get('name') or '').lower(), (attrs.get('property') or '').lower()} - {''}:   # a tag may carry both
+            if key not in metas and 'content' in attrs:
+                metas[key] = html.unescape(attrs['content'])
     return title, metas.get('description', ''), metas.get('og:image', '')
 
 
