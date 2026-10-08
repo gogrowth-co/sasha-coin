@@ -66,6 +66,8 @@ def sitemap_urls(url, limit, failed=None):
                 except Exception as e:   # the rest still get checked, but a partial sweep is never a PASS
                     if failed is not None:
                         failed.append((sm, repr(e)[:160]))
+                    else:
+                        print(f'WARN  sub-sitemap unreachable: {sm} ({e!r:.160})', file=sys.stderr)
         locs = [l for l in out if not l.endswith('.xml')]
     return locs[:limit]
 
