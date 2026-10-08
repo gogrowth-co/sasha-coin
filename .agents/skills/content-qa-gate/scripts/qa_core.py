@@ -71,7 +71,7 @@ def head_fields(live_html):
     m = re.search(r'<title>(.*?)</title>', live_html, re.S)
     title = html.unescape(m.group(1)).strip() if m else ''
     metas = {}
-    for tag in re.findall(r'<meta\b[^>]*>', live_html, re.I):   # any attribute order, single or double quotes
+    for tag in re.findall(r'<meta\b(?:[^>"\']|"[^"]*"|\'[^\']*\')*>', live_html, re.I):   # any attribute order and quote style; ">" inside quotes kept
         attrs = {k.lower(): v1 if q else v2 for k, q, v1, v2 in
                  re.findall(r'([\w:-]+)\s*=\s*(?:(["\'])(.*?)\2|([^\s>]+))', tag, re.S)}
         for key in {(attrs.get('name') or '').lower(), (attrs.get('property') or '').lower()} - {''}:   # a tag may carry both
@@ -83,8 +83,8 @@ def head_fields(live_html):
 def _balanced(html_, start, tag):
     """Inner HTML of the element whose start tag ends at `start`, counting nested tags of the same name."""
     depth = 1
-    for m in re.finditer(rf'<!--.*?-->|<(/?){tag}\b[^>]*?(/?)>', html_[start:], re.I | re.S):
-        if m.group(0).startswith('<!--') or m.group(2):   # comments and self-closing tags do not change depth
+    for m in re.finditer(rf'<!--.*?-->|<(/?){tag}\b[^>]*>', html_[start:], re.I | re.S):
+        if m.group(0).startswith('<!--'):   # commented-out tags do not count; <div/> does (browsers open it)
             continue
         depth += -1 if m.group(1) else 1
         if depth == 0:

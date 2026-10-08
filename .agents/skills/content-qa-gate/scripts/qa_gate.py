@@ -50,7 +50,8 @@ def live_one(G, C, url, t=None, cache=None):
     return G.audit_core(slug, url, headline, title, meta, body, type_for(C, url, t), live_html=page, link_cache=cache, cover=og)
 
 
-def sitemap_urls(url, limit):
+def sitemap_urls(url, limit, failed=None):
+    """Page URLs from a sitemap or sitemap index. Sub-sitemaps that cannot be read go into `failed` (the sweep fails on them)."""
     try:
         xml = fetch(url)
     except Exception as e:
@@ -62,8 +63,9 @@ def sitemap_urls(url, limit):
             if re.search(r'post|blog|article|news', sm) or len(locs) < 4:
                 try:
                     out += re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', fetch(sm))
-                except Exception as e:   # one dead sub-sitemap is reported, the rest still get checked
-                    print(f'WARN  sub-sitemap unreachable: {sm} ({e!r:.160})', file=sys.stderr)
+                except Exception as e:   # the rest still get checked, but a partial sweep is never a PASS
+                    if failed is not None:
+                        failed.append((sm, repr(e)[:160]))
         locs = [l for l in out if not l.endswith('.xml')]
     return locs[:limit]
 
@@ -110,8 +112,13 @@ if __name__ == '__main__':
                     'verdict': 'FAIL', 'findings': [{'check': 'fetch', 'severity': 'block', 'message': repr(e)[:200]}]}]
         report(out)
     else:
-        urls = sitemap_urls(a.sitemap, a.limit) if a.sitemap else [u.strip() for u in open(a.urls) if u.strip()][:a.limit]
+        failed = []
+        urls = sitemap_urls(a.sitemap, a.limit, failed) if a.sitemap else [u.strip() for u in open(a.urls) if u.strip()][:a.limit]
         cache, out = {}, []
+        for sm, err in failed:
+            out.append({'url': sm, 'type': 'sitemap', 'words': 0, 'internal_unique': 0, 'external_unique': 0, 'visuals': 0,
+                        'verdict': 'FAIL', 'findings': [{'check': 'sitemap', 'severity': 'block', 'message': 'sub-sitemap unreachable: ' + err}],
+                        '_paras': []})
         for u in urls:
             try:
                 out.append(live_one(G, C, u, cache=cache))
