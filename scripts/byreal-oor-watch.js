@@ -166,7 +166,7 @@ async function main() {
                 const msg = `✅ <b>[BYREAL-OOR-WATCH]</b> ${pair} back in range after ${oorMin} min`
                 log(`back in range: ${pair} (was OOR ${oorMin} min)`)
                 sendTelegram(msg)
-                clearAlert(WORKSPACE, alertKey)
+                if (!DRY_RUN) clearAlert(WORKSPACE, alertKey)
             } else {
                 log(`${pair} in range ($${liqUsd} liq)`)
             }

@@ -311,9 +311,11 @@ async function evaluatePosition(position) {
         position.firstOorAt = null  // reset OOR timer — a wick that reverts cancels the timer
         // Clear any pending OOR/KILL alert cooldowns so the next breach alerts fresh instead
         // of inheriting a stale fingerprint from before this position went back in range.
-        clearAlert(WORKSPACE, `position-monitor:${position.id}:OOR_ALERT`)
-        clearAlert(WORKSPACE, `position-monitor:${position.id}:KILL`)
-        clearAlert(WORKSPACE, `lp-rebalancer:kill-pending:${position.id}`)
+        if (!DRY_RUN) {
+            clearAlert(WORKSPACE, `position-monitor:${position.id}:OOR_ALERT`)
+            clearAlert(WORKSPACE, `position-monitor:${position.id}:KILL`)
+            clearAlert(WORKSPACE, `lp-rebalancer:kill-pending:${position.id}`)
+        }
     }
 
     // Fee claim — per-position threshold overrides global

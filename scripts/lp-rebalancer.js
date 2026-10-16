@@ -64,13 +64,18 @@ function warn(msg) { console.warn(`[rebalancer] ⚠  ${msg}`) }
 function sendTelegram(msg) {
     const token  = process.env.TELEGRAM_BOT_TOKEN
     const chatId = process.env.TELEGRAM_CHAT_ID
-    if (!token || !chatId) return
+    if (!token || !chatId) return Promise.resolve(false)
     const body = JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
     const options = {
         hostname: 'api.telegram.org', path: `/bot${token}/sendMessage`, method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
     }
-    const req = https.request(options, () => {}); req.on('error', () => {}); req.write(body); req.end()
+    // Resolves true only when Telegram accepted the message (cooldowns are recorded on delivery only).
+    return new Promise((resolve) => {
+        const req = https.request(options, (res) => { res.resume(); resolve(res.statusCode >= 200 && res.statusCode < 300) })
+        req.setTimeout(15000, () => { req.destroy(); resolve(false) })
+        req.on('error', () => resolve(false)); req.write(body); req.end()
+    })
 }
 
 function loadJson(p) {
@@ -277,13 +282,14 @@ async function main() {
             const alertKey = `lp-rebalancer:kill-pending:${action.positionId}`
             const fingerprint = normalizeReason(action.reason)
             if (shouldAlert(WORKSPACE, alertKey, fingerprint)) {
-                sendTelegram(
+                const delivered = await sendTelegram(
                     `🚨 <b>[KILL PENDING CONFIRMATION]</b> ${position.symbol} (${position.chain})\n` +
                     `Reason: ${action.reason}\n` +
                     `The monitor flagged a KILL. It will NOT auto-execute.\n` +
                     `To execute: <code>node scripts/lp-rebalancer.js --execute --confirm-kill --position ${action.positionId}</code>`
                 )
-                recordAlert(WORKSPACE, alertKey, fingerprint)
+                if (delivered) recordAlert(WORKSPACE, alertKey, fingerprint)
+                else log(`  KILL PENDING alert not delivered — cooldown NOT recorded, will retry next run`)
             } else {
                 log(`  (KILL PENDING CONFIRMATION Telegram suppressed — unchanged, within cooldown)`)
             }
