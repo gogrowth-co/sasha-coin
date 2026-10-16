@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Usage: access-token.sh [account]
-# account: "manga82" or omit for default (gabriel.mangabeira@opascope.com)
+# account: manga82 (the only account; "default"/no-arg also resolves to manga82, since 2026-09-29)
 # Prints a fresh Google OAuth access token to stdout.
 # All other scripts call this at the top.
 
@@ -36,17 +36,12 @@ _load_var() {
 if [ -n "$ENV_FILE" ] && [ -f "$ENV_FILE" ]; then
   GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID:-$(_load_var GOOGLE_CLIENT_ID)}"
   GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET:-$(_load_var GOOGLE_CLIENT_SECRET)}"
-  GOOGLE_REFRESH_TOKEN="${GOOGLE_REFRESH_TOKEN:-$(_load_var GOOGLE_REFRESH_TOKEN)}"
   GOOGLE_REFRESH_TOKEN_MANGA82="${GOOGLE_REFRESH_TOKEN_MANGA82:-$(_load_var GOOGLE_REFRESH_TOKEN_MANGA82)}"
 fi
 
 ACCOUNT="${1:-default}"
 
-if [ "$ACCOUNT" = "manga82" ]; then
-  REFRESH="${GOOGLE_REFRESH_TOKEN_MANGA82:-}"
-else
-  REFRESH="${GOOGLE_REFRESH_TOKEN:-}"
-fi
+REFRESH="${GOOGLE_REFRESH_TOKEN_MANGA82:-}"
 
 if [ -z "${GOOGLE_CLIENT_ID:-}" ] || [ -z "${GOOGLE_CLIENT_SECRET:-}" ]; then
   echo "ERROR: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set in .env" >&2
