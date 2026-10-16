@@ -154,9 +154,13 @@ async function main() {
     process.exit(1)
   }
 
-  if (liquidity === 0n) { log('  liquidity is already 0 — nothing to decrease.'); }
+  if (liquidity === 0n) {
+    // A 0-liquidity decrease reverts; the owed tokens are swept by the collect-only path.
+    log(`  liquidity is already 0 — nothing to decrease. Sweep the owed tokens with: node scripts/lp-close.js --token-id ${TOKEN_ID} --collect-only${EXECUTE ? ' --execute' : ''}`)
+    process.exit(0)
+  }
 
-  const { a0, a1 } = clAmounts(sqrtP, tickLower, tickUpper, Number(liquidity))
+  const { a0, a1 } = clAmounts(sqrtP, tickLower, tickUpper, Number(liquidity)) // float copy for slippage math only; the tx encodes the bigint `liquidity`
   const a0min = BigInt(Math.floor(a0 * (1 - SLIPPAGE)))
   const a1min = BigInt(Math.floor(a1 * (1 - SLIPPAGE)))
 
