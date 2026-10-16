@@ -84,7 +84,7 @@ function saveJson(p, data) {
 function sendTelegram(msg) {
     const token  = process.env.TELEGRAM_BOT_TOKEN
     const chatId = process.env.TELEGRAM_CHAT_ID
-    if (!token || !chatId) return
+    if (!token || !chatId) return Promise.resolve(false)
     const body = JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
     const options = {
         hostname: 'api.telegram.org',
@@ -92,10 +92,18 @@ function sendTelegram(msg) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
     }
-    const req = https.request(options, () => {})
-    req.on('error', () => {})
-    req.write(body)
-    req.end()
+    // Resolves true only when Telegram accepted the message, so callers can record an
+    // alert cooldown only for alerts that were actually delivered.
+    return new Promise((resolve) => {
+        const req = https.request(options, (res) => {
+            res.resume()
+            resolve(res.statusCode >= 200 && res.statusCode < 300)
+        })
+        req.setTimeout(15000, () => { req.destroy(); resolve(false) })
+        req.on('error', () => resolve(false))
+        req.write(body)
+        req.end()
+    })
 }
 
 function fetchJson(url) {
@@ -461,12 +469,13 @@ async function main() {
             if (alertable.length > 0) {
                 const killSwitchActions = alertable.filter(a => a.killSwitch)
                 const alertLevel = killSwitchActions.length > 0 ? '🚨' : '⚠️'
-                sendTelegram(
+                const delivered = await sendTelegram(
                     `${alertLevel} <b>[POSITION_MONITOR]</b> ${alertable.length} action(s)\n` +
                     alertable.map(a => `${a.killSwitch ? '🚨' : '•'} [${a.chain}] ${a.symbol}: ${a.type} — ${a.reason}`).join('\n') +
                     `\n\nRun: <code>node scripts/lp-rebalancer.js --execute</code>`
                 )
-                for (const a of alertable) {
+                if (!delivered) log('Telegram delivery failed — cooldown NOT recorded, will alert again next run')
+                for (const a of (delivered ? alertable : [])) {
                     recordAlert(WORKSPACE, `position-monitor:${a.positionId}:${a.type}`, normalizeReason(a.reason))
                 }
             } else {

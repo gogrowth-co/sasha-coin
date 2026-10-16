@@ -41,8 +41,8 @@ const STATE_PATH = path.join(WORKSPACE, 'state', 'byreal-oor-watch.json')
 function sendTelegram(msg) {
     const token  = process.env.TELEGRAM_BOT_TOKEN
     const chatId = process.env.TELEGRAM_CHAT_ID
-    if (!token || !chatId) { log('no Telegram creds — skipping alert'); return }
-    if (DRY_RUN) { log(`[dry-run] Telegram: ${msg}`); return }
+    if (!token || !chatId) { log('no Telegram creds — skipping alert'); return Promise.resolve(false) }
+    if (DRY_RUN) { log(`[dry-run] Telegram: ${msg}`); return Promise.resolve(false) }
     const body = JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
     const options = {
         hostname: 'api.telegram.org',
@@ -50,10 +50,18 @@ function sendTelegram(msg) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
     }
-    const req = https.request(options, () => {})
-    req.on('error', () => {})
-    req.write(body)
-    req.end()
+    // Resolves true only when Telegram accepted the message, so callers can record an
+    // alert cooldown only for alerts that were actually delivered.
+    return new Promise((resolve) => {
+        const req = https.request(options, (res) => {
+            res.resume()
+            resolve(res.statusCode >= 200 && res.statusCode < 300)
+        })
+        req.setTimeout(15000, () => { req.destroy(); resolve(false) })
+        req.on('error', () => resolve(false))
+        req.write(body)
+        req.end()
+    })
 }
 
 function log(m) { console.log(`[byreal-oor-watch] ${m}`) }
@@ -142,8 +150,8 @@ async function main() {
                     `Liquidity: $${liqUsd} | Earned: $${earned} | PnL: $${pnl}\n` +
                     `<i>Trader hibernated — manual action required. Check positions.js or close via byreal-cli.</i>`
                 log(`OOR alert: ${pair}${tag}`)
-                sendTelegram(msg)
-                recordAlert(WORKSPACE, alertKey, 'OOR')
+                if (await sendTelegram(msg)) recordAlert(WORKSPACE, alertKey, 'OOR')
+                else log('alert not delivered (or dry-run) — cooldown NOT recorded')
             } else {
                 log(`${pair} still OOR (${oorMin} min) — Telegram suppressed (cooldown)`)
             }
