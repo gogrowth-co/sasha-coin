@@ -17,6 +17,12 @@ GOOGLE_REFRESH_TOKEN_MANGA82=...    # manga82@gmail.com (the only Google account
 
 ---
 
+## Scopes (deliberate)
+
+`get-token-gtm.py` requests Drive, Docs, Sheets, Calendar, Search Console, Tag Manager, Analytics (incl. `analytics.edit`), AdSense read-only, and **`gmail.modify`**. Gmail is read-write on purpose: the account-consolidation decision of 2026-09-29 moved mail work (sending replies, labelling, archiving) onto manga82, which `gmail.readonly` cannot do. The token lives only in the gitignored workspace `.env` and is never printed.
+
+---
+
 ## One-time setup
 
 Run once (from the workspace root) to get the refresh token:
