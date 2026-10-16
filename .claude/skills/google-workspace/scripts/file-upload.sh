@@ -20,14 +20,20 @@ else
   META=$(python3 -c "import json; print(json.dumps({'name': '$NAME'}))")
 fi
 
-echo "$META" > /tmp/gw_upload_meta.json
+BODY_FILE="$(mktemp)"
+trap 'rm -f "$BODY_FILE"' EXIT
+
+{
+  printf -- '--gw_boundary\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n%s\r\n--gw_boundary\r\nContent-Type: %s\r\n\r\n' "$META" "$MIME"
+  cat "$LOCAL"
+  printf -- '\r\n--gw_boundary--\r\n'
+} > "$BODY_FILE"
 
 curl -s -X POST \
   "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: multipart/related; boundary=gw_boundary" \
-  --data-binary $'--gw_boundary\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'"$(cat /tmp/gw_upload_meta.json)"$'\r\n--gw_boundary\r\nContent-Type: '"${MIME}"$'\r\n\r\n' \
-  --data-binary "@${LOCAL}" \
+  --data-binary "@${BODY_FILE}" \
   | python3 -c "
 import json, sys
 d = json.load(sys.stdin)

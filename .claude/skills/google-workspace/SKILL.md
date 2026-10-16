@@ -1,38 +1,35 @@
 # google-workspace
 
-Direct Google Workspace integration via OAuth 2.0 refresh tokens. Replaces Maton MCP for Drive, Docs, Sheets, Gmail, and Calendar. No middleware — calls Google APIs directly, so there are no third-party connection expiry issues.
-
-**Replaces:** `mcp__maton-google-drive__*`, `mcp__maton-google-docs__*`, `mcp__maton-google-sheet__*`, `mcp__maton-google-calendar__*`, `mcp__maton-google-mail__*` and the Maton gateway curl pattern in `google-doc-formatter`.
+Direct Google Workspace integration via OAuth 2.0 refresh tokens. The only path for Drive, Docs, Sheets, Gmail, and Calendar. No middleware — calls Google APIs directly, so there are no third-party connection expiry issues.
 
 ---
 
 ## Auth model
 
-All scripts call `scripts/access-token.sh` first. That script exchanges `$GOOGLE_REFRESH_TOKEN` for a fresh 1-hour access token via a single curl POST. No session, no MCP server, no middleware.
+All scripts call `scripts/access-token.sh` first. That script exchanges `$GOOGLE_REFRESH_TOKEN_MANGA82` for a fresh 1-hour access token via a single curl POST. No session, no MCP server, no middleware.
 
 Required env vars (in `.env`):
 ```
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GOOGLE_REFRESH_TOKEN_MANGA82=...    # manga82@gmail.com (the only Google account)
-GOOGLE_REFRESH_TOKEN_MANGA82=...  # manga82@gmail.com (if needed)
 ```
 
 ---
 
 ## One-time setup
 
-Run once per Google account to get the refresh token:
+Run once (from the workspace root) to get the refresh token:
 
 ```bash
-python3 .claude/skills/google-workspace/scripts/get-token.py
+python3 .claude/skills/google-workspace/scripts/get-token-gtm.py
 ```
 
 Prerequisites:
 1. `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` set in `.env` (client ID is already there; get the secret from GCP Console → Credentials → MangaOS → Client secrets → Add secret)
 2. `http://localhost:8080` added to Authorized redirect URIs on the MangaOS credential (done)
 
-The script reads credentials from `.env`, opens your browser, handles the consent flow, and prints the refresh token to paste into `.env`.
+The script reads credentials from `.env`, opens your browser, handles the consent flow, and writes `GOOGLE_REFRESH_TOKEN_MANGA82` straight into the workspace `.env`. It never prints the token. (`get-token.py` is retired: it printed secrets.)
 
 ---
 
@@ -42,7 +39,7 @@ All scripts load env vars from the workspace `.env` automatically.
 
 | Script | Args | What it does |
 |---|---|---|
-| `get-token.py` | _(interactive)_ | One-time OAuth flow → prints refresh token |
+| `get-token-gtm.py` | _(interactive)_ | One-time OAuth flow → writes refresh token to `.env` (never prints it) |
 | `access-token.sh` | `[account]` | Returns fresh access token (default / manga82) |
 | `drive-list.sh` | `[folder_id]` | List files in Drive root or a specific folder |
 | `drive-find.sh` | `"query"` | Search Drive — accepts any Drive query string |
@@ -78,17 +75,8 @@ GDRIVE = "https://www.googleapis.com/drive/v3"
 GSHEETS = "https://sheets.googleapis.com/v4"
 ```
 
-### Replacing the Maton gateway pattern
+### Calling the Google APIs directly
 
-Old (Maton):
-```python
-MATON_API_KEY = os.environ["MATON_API_KEY"]
-GATEWAY = "https://gateway.maton.ai"
-# curl ... -H f"Authorization: Bearer {MATON_API_KEY}"
-# URL: f"{GATEWAY}/google-docs/v1/documents/{DOC_ID}:batchUpdate"
-```
-
-New (direct):
 ```python
 TOKEN = get_access_token()  # from the helper above
 GDOCS  = "https://docs.googleapis.com"
@@ -121,7 +109,7 @@ Auth header for all: `Authorization: Bearer {ACCESS_TOKEN}`
 
 | Error | Cause | Fix |
 |---|---|---|
-| `invalid_grant` from token exchange | Refresh token revoked or account removed from test users | Re-run `get-token.py` |
+| `invalid_grant` from token exchange | Refresh token revoked or account removed from test users | Re-run `get-token-gtm.py` |
 | `403 Forbidden` from Drive/Docs | Wrong account token, or file not shared with that account | Check which account owns the file; use `account` arg |
 | `400 Bad Request` on batchUpdate | Malformed requests JSON | Validate JSON; check index ordering (requests must be sequential) |
 | `401 Unauthorized` | Access token expired mid-script | Access tokens last 1 hour; re-run `access-token.sh` at top of long scripts |
@@ -132,5 +120,4 @@ Auth header for all: `Authorization: Bearer {ACCESS_TOKEN}`
 
 | Account | Env var | Use for |
 |---|---|---|
-| primary (gabriel) | `GOOGLE_REFRESH_TOKEN` | Default — marketing Drive/Docs |
-| manga82 | `GOOGLE_REFRESH_TOKEN_MANGA82` | Routines / scheduling account |
+| manga82 | `GOOGLE_REFRESH_TOKEN_MANGA82` | The only account (consolidated 2026-09-29) |
