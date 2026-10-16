@@ -1,0 +1,333 @@
+{
+  "asset": "ETH",
+  "capital": 94,
+  "from": null,
+  "to": null,
+  "hodl": {
+    "totalRet": -0.45329091235773855,
+    "cagr": -0.11776697140604175,
+    "maxDD": 0.7850811833460757
+  },
+  "results": [
+    {
+      "name": "gabriel-raw",
+      "label": "Gabriel raw: static full-delta short @10x, $6 kicker liq=lower-band, kicker always on",
+      "totalRet": -0.6978440669515806,
+      "cagr": -0.21990814659469293,
+      "maxDD": 0.8526136892677567,
+      "annVol": 0.7505292342606618,
+      "sharpe": 0.049592040207720324,
+      "sortino": 0.0473230676450714,
+      "monthsPositivePct": 0.4576271186440678,
+      "worstMonth": [
+        "2025-02",
+        -0.4836064860962188
+      ],
+      "bestMonth": [
+        "2025-07",
+        0.8474157500077477
+      ],
+      "worstDay": -0.2613741703818505,
+      "inRangePct": 0.759090909090909,
+      "maxNetDelta": 2.6669533444336513,
+      "avgNetDelta": 0.990355139683375,
+      "fees": 46.26343487763043,
+      "funding": 6.085405322093362,
+      "stableYield": 1.8177025565094473,
+      "costs": 5.090633278765859,
+      "events": {
+        "rebalances": 869,
+        "lpReopens": 95,
+        "hedgeResizes": 0,
+        "hedgeLiq": 7,
+        "hedgeStop": 0,
+        "kickerLiq": 33,
+        "kickerOpens": 62,
+        "lpExitStable": 0
+      },
+      "n0": 93.96287671232876,
+      "nF": 28.391440684927296,
+      "yrs": 4.8191780821917805
+    },
+    {
+      "name": "gabriel-fixed",
+      "label": "Gabriel fixed: dynamic 3x hedge + stop, vol-widened skewed range, $6 kicker liq=band (uptrend only)",
+      "totalRet": -0.4688691138928467,
+      "cagr": -0.12304329811210812,
+      "maxDD": 0.487040819474354,
+      "annVol": 0.12873861467736075,
+      "sharpe": -0.9551859245750545,
+      "sortino": -0.7688568916533596,
+      "monthsPositivePct": 0.3389830508474576,
+      "worstMonth": [
+        "2022-11",
+        -0.11049778967985047
+      ],
+      "bestMonth": [
+        "2025-07",
+        0.12366567607723877
+      ],
+      "worstDay": -0.048119029611226716,
+      "inRangePct": 0.8630681818181818,
+      "maxNetDelta": 0.8404037693748477,
+      "avgNetDelta": 0.12290940295701387,
+      "fees": 42.30477526365631,
+      "funding": 4.502752911147474,
+      "stableYield": 3.1737708936654165,
+      "costs": 3.974233148368781,
+      "events": {
+        "rebalances": 589,
+        "lpReopens": 62,
+        "hedgeResizes": 163,
+        "hedgeLiq": 0,
+        "hedgeStop": 8,
+        "kickerLiq": 2,
+        "kickerOpens": 26,
+        "lpExitStable": 0
+      },
+      "n0": 93.96287671232876,
+      "nF": 49.90658596939638,
+      "yrs": 4.8191780821917805
+    },
+    {
+      "name": "trend-flex",
+      "label": "Trend-flex: hedge ratio 0.5/1.0/1.25 by trend, skewed range, low-lev kicker in uptrends",
+      "totalRet": -0.5609319951009513,
+      "cagr": -0.15700728320674306,
+      "maxDD": 0.5689581163245517,
+      "annVol": 0.11445222186848443,
+      "sharpe": -1.4341902595338178,
+      "sortino": -1.0661905680768564,
+      "monthsPositivePct": 0.4067796610169492,
+      "worstMonth": [
+        "2022-11",
+        -0.12680903603209703
+      ],
+      "bestMonth": [
+        "2025-08",
+        0.047113934876686026
+      ],
+      "worstDay": -0.05632284123781173,
+      "inRangePct": 0.8630681818181818,
+      "maxNetDelta": 0.582072933095297,
+      "avgNetDelta": 0.11483338759701417,
+      "fees": 38.94438035462712,
+      "funding": 4.016621275339379,
+      "stableYield": 3.3789863492822065,
+      "costs": 4.39734285382633,
+      "events": {
+        "rebalances": 589,
+        "lpReopens": 62,
+        "hedgeResizes": 205,
+        "hedgeLiq": 0,
+        "hedgeStop": 17,
+        "kickerLiq": 0,
+        "kickerOpens": 27,
+        "lpExitStable": 0
+      },
+      "n0": 93.96287671232876,
+      "nF": 41.256092812657485,
+      "yrs": 4.8191780821917805
+    },
+    {
+      "name": "trend-flex-hc",
+      "label": "Trend-flex high-conviction: directional legs only when trendStrength >= 0.5",
+      "totalRet": -0.5368293575660472,
+      "cagr": -0.1476070730506751,
+      "maxDD": 0.5452850088320174,
+      "annVol": 0.11646425134134994,
+      "sharpe": -1.3124410769125348,
+      "sortino": -1.0112015187461876,
+      "monthsPositivePct": 0.3389830508474576,
+      "worstMonth": [
+        "2022-11",
+        -0.09636050413478581
+      ],
+      "bestMonth": [
+        "2024-07",
+        0.07228723561176875
+      ],
+      "worstDay": -0.05211063933158899,
+      "inRangePct": 0.8630681818181818,
+      "maxNetDelta": 0.7489532075876894,
+      "avgNetDelta": 0.11425665773544726,
+      "fees": 45.26565554394798,
+      "funding": 4.198954275009235,
+      "stableYield": 2.910199015508654,
+      "costs": 4.371053496017035,
+      "events": {
+        "rebalances": 589,
+        "lpReopens": 62,
+        "hedgeResizes": 204,
+        "hedgeLiq": 0,
+        "hedgeStop": 17,
+        "kickerLiq": 0,
+        "kickerOpens": 21,
+        "lpExitStable": 0
+      },
+      "n0": 93.96287671232876,
+      "nF": 43.520845971791616,
+      "yrs": 4.8191780821917805
+    },
+    {
+      "name": "stable-default",
+      "label": "Stable-default: trend-flex + fully exit LP to USD in confirmed downtrends",
+      "totalRet": -0.3276021527204558,
+      "cagr": -0.07905917555773812,
+      "maxDD": 0.48517669269487756,
+      "annVol": 0.16603976801003134,
+      "sharpe": -0.41255579296253087,
+      "sortino": -0.35258545891946763,
+      "monthsPositivePct": 0.3728813559322034,
+      "worstMonth": [
+        "2022-07",
+        -0.12256432710842013
+      ],
+      "bestMonth": [
+        "2022-05",
+        0.11613451693177557
+      ],
+      "worstDay": -0.06752728999194668,
+      "inRangePct": 0.5454545454545454,
+      "maxNetDelta": 0.5732792874744959,
+      "avgNetDelta": 0.18283677958391903,
+      "fees": 43.139162753118555,
+      "funding": 3.9643374353268066,
+      "stableYield": 7.907462342845908,
+      "costs": 5.193057615064748,
+      "events": {
+        "rebalances": 473,
+        "lpReopens": 60,
+        "hedgeResizes": 168,
+        "hedgeLiq": 0,
+        "hedgeStop": 14,
+        "kickerLiq": 0,
+        "kickerOpens": 27,
+        "lpExitStable": 20
+      },
+      "n0": 93.96287671232878,
+      "nF": 63.18043602556308,
+      "yrs": 4.8191780821917805
+    },
+    {
+      "name": "regime-gated",
+      "label": "Regime-gated: LP+trend-flex only when calm & rangey; USD lending in vol/strong-trend",
+      "totalRet": -0.3270403972706124,
+      "cagr": -0.078899574411182,
+      "maxDD": 0.5043278204037946,
+      "annVol": 0.18348970146099267,
+      "sharpe": -0.35587259665506954,
+      "sortino": -0.3154563955114397,
+      "monthsPositivePct": 0.4067796610169492,
+      "worstMonth": [
+        "2022-07",
+        -0.18435592914010068
+      ],
+      "bestMonth": [
+        "2022-06",
+        0.134819943529777
+      ],
+      "worstDay": -0.0625943627422294,
+      "inRangePct": 0.31931818181818183,
+      "maxNetDelta": 0.469009566234046,
+      "avgNetDelta": 0.2059666455115631,
+      "fees": 26.581896779266184,
+      "funding": 5.0821288639393405,
+      "stableYield": 15.911621745243272,
+      "costs": 3.4071164872089144,
+      "events": {
+        "rebalances": 256,
+        "lpReopens": 26,
+        "hedgeResizes": 135,
+        "hedgeLiq": 0,
+        "hedgeStop": 15,
+        "kickerLiq": 0,
+        "kickerOpens": 27,
+        "lpExitStable": 23
+      },
+      "n0": 94.01545205479452,
+      "nF": 63.26860126521831,
+      "yrs": 4.8191780821917805
+    },
+    {
+      "name": "neutral-only",
+      "label": "Neutral-only: LP + continuous dynamic full hedge, no kicker, no skew",
+      "totalRet": -0.5763676949556205,
+      "cagr": -0.16324437265574743,
+      "maxDD": 0.5776233896886169,
+      "annVol": 0.08011343939588131,
+      "sharpe": -2.1835188255622584,
+      "sortino": -1.3927726585149107,
+      "monthsPositivePct": 0.288135593220339,
+      "worstMonth": [
+        "2024-08",
+        -0.09954782880878754
+      ],
+      "bestMonth": [
+        "2023-05",
+        0.03029763986047662
+      ],
+      "worstDay": -0.0563035702170499,
+      "inRangePct": 0.8630681818181818,
+      "maxNetDelta": 0.7522098573177778,
+      "avgNetDelta": 0.05722600555225134,
+      "fees": 52.269321540854236,
+      "funding": 4.29407700490699,
+      "stableYield": 2.2366478573992667,
+      "costs": 4.024644548746999,
+      "events": {
+        "rebalances": 587,
+        "lpReopens": 61,
+        "hedgeResizes": 168,
+        "hedgeLiq": 0,
+        "hedgeStop": 2,
+        "kickerLiq": 0,
+        "kickerOpens": 0,
+        "lpExitStable": 0
+      },
+      "n0": 93.96287671232876,
+      "nF": 39.80571005024469,
+      "yrs": 4.8191780821917805
+    },
+    {
+      "name": "lp-naked",
+      "label": "LP-naked: LP only, no hedge, no kicker (shows unhedged drawdown)",
+      "totalRet": -0.551058145555972,
+      "cagr": -0.15310813345945573,
+      "maxDD": 0.6586614225181174,
+      "annVol": 0.37147796021015117,
+      "sharpe": -0.2603899564589598,
+      "sortino": -0.23998206187224622,
+      "monthsPositivePct": 0.576271186440678,
+      "worstMonth": [
+        "2022-06",
+        -0.3114963786242293
+      ],
+      "bestMonth": [
+        "2022-07",
+        0.34185955241404664
+      ],
+      "worstDay": -0.12401492535880987,
+      "inRangePct": 0.9056818181818181,
+      "maxNetDelta": 0.9022786234473759,
+      "avgNetDelta": 0.4167528989271583,
+      "fees": 44.788930354305,
+      "funding": 0,
+      "stableYield": 2.929278064173727,
+      "costs": 2.4225322841231582,
+      "events": {
+        "rebalances": 478,
+        "lpReopens": 45,
+        "hedgeResizes": 0,
+        "hedgeLiq": 0,
+        "hedgeStop": 0,
+        "kickerLiq": 0,
+        "kickerOpens": 0,
+        "lpExitStable": 0
+      },
+      "n0": 93.96287671232875,
+      "nF": 42.18386812012844,
+      "yrs": 4.8191780821917805
+    }
+  ]
+}

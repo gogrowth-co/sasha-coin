@@ -47,3 +47,17 @@ the headline promises and a real alternative with its source.
 4. Weekly sweep: failing pages become repair work items for human approval (never silent edits of live copy).
 5. Product pages: images via the `product-imagery` skill.
 In V4, `routines/_shared.md` carries these rules into every client's routines automatically.
+
+
+## Brief gate additions (2026-10-09)
+
+- **Content inventory** (`scripts/inventory.mjs`). This is the measured "is this new?" check. It compares a pitch with site URLs (sitemaps), Content
+  Engine cards, pitches in flight, and posts live on the channel (Zernio, 365 days). Similarity is the overlap of normalized content words.
+  The brief gate fails at >= 0.75 with the same channel's cards, pitches and live posts, and fails a destination already posted on the channel within 90 days.
+  Site articles are repeats only for site briefs (social pieces are meant to point at our articles). A site match there means a REFRESH of that URL, or
+  `distinct_from: [{url, why}]`. CLI: `node scripts/inventory.mjs --context <ctx> --text "..." --channel pinterest`.
+- **Destination answers the topic.** A live destination that shares no subject word with the pitch is a `missing_destination`. The briefing writes the
+  destination's own brief and sets `Publish After` on the dependent piece (produced in parallel, published after the destination is live).
+- **Article types** come from the article contract and its aliases (v1.5: 17 types). An unknown type fails before approval with the closest types.
+  `requires_price_ledger` types need a `price_ledger` from the `price-research` skill; `requires_destination` (ferramenta) needs a live tool page.
+- Tests: `node --test scripts/test/*.test.mjs`.

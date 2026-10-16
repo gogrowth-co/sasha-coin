@@ -10,9 +10,9 @@
  * Reads:  live byreal-cli output (on-chain, not a cached file)
  * Writes: state/byreal-oor-watch.json  (last run state, for dashboard visibility)
  *
- * Alert logic:
+ * Alert logic (throttled via scripts/lib/alert-throttle.js — see state/alert-cooldowns.json):
  *   - First OOR detection: Telegram alert "OOR detected on <pair>"
- *   - Sustained OOR (≥ 60 min): re-alert every 60 min until back in range
+ *   - Sustained OOR: re-alert every ALERT_COOLDOWN_MINUTES (default 4h) until back in range
  *   - Back in range after OOR: Telegram confirmation "back in range"
  *
  * Usage:
@@ -27,6 +27,7 @@ import fs from 'fs'
 import path from 'path'
 import https from 'https'
 import { fileURLToPath } from 'url'
+import { shouldAlert, recordAlert, clearAlert } from './lib/alert-throttle.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..')
@@ -34,9 +35,6 @@ const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..'
 const DRY_RUN = process.argv.slice(2).includes('--dry-run')
 
 const STATE_PATH = path.join(WORKSPACE, 'state', 'byreal-oor-watch.json')
-
-// Re-alert every 60 min for sustained OOR
-const REALER_INTERVAL_MS = 60 * 60 * 1000
 
 // ─── Telegram ──────────────────────────────────────────────────────────────
 
@@ -125,39 +123,42 @@ async function main() {
 
         summary.push({ key, pair, inRange, liquidityUsd: liqUsd, earnedUsd: earned, pnlUsd: pnl })
 
+        // Alert cooldown is delegated to the shared throttle (state/alert-cooldowns.json)
+        // so it stays consistent with position-monitor.js / lp-rebalancer.js instead of
+        // this script's own bespoke 60-min timer. Fingerprint is constant per key ('OOR')
+        // since liquidity/earned/pnl drift every cycle but don't represent a real state
+        // change — only the in-range/out-of-range transition does.
+        const alertKey = `byreal-oor-watch:${key}`
+
         if (!inRange) {
             const prev = prevOor[key] || {}
             const firstOorAt = prev.firstOorAt || new Date().toISOString()
-            const lastAlertAt = prev.lastAlertAt || null
-            const oorMs = now - new Date(firstOorAt).getTime()
-            const oorMin = Math.round(oorMs / 60_000)
-            const shouldAlert = !lastAlertAt || (now - new Date(lastAlertAt).getTime()) >= REALER_INTERVAL_MS
+            const oorMin = Math.round((now - new Date(firstOorAt).getTime()) / 60_000)
+            const willAlert = shouldAlert(WORKSPACE, alertKey, 'OOR')
 
-            if (shouldAlert) {
+            if (willAlert) {
                 const tag = oorMin > 0 ? ` (OOR for ${oorMin} min)` : ' (just went OOR)'
                 const msg = `🔴 <b>[BYREAL-OOR-WATCH]</b> ${pair} out of range${tag}\n` +
                     `Liquidity: $${liqUsd} | Earned: $${earned} | PnL: $${pnl}\n` +
                     `<i>Trader hibernated — manual action required. Check positions.js or close via byreal-cli.</i>`
                 log(`OOR alert: ${pair}${tag}`)
                 sendTelegram(msg)
+                recordAlert(WORKSPACE, alertKey, 'OOR')
             } else {
-                log(`${pair} still OOR (${oorMin} min), next alert in ${Math.round((REALER_INTERVAL_MS - (now - new Date(lastAlertAt).getTime())) / 60_000)} min`)
+                log(`${pair} still OOR (${oorMin} min) — Telegram suppressed (cooldown)`)
             }
 
-            newOor[key] = {
-                pair,
-                firstOorAt,
-                lastAlertAt: shouldAlert ? new Date().toISOString() : lastAlertAt,
-                liquidityUsd: liqUsd,
-            }
+            newOor[key] = { pair, firstOorAt, liquidityUsd: liqUsd }
         } else {
-            // Back in range — alert if was previously OOR
+            // Back in range — alert if was previously OOR, and reset the cooldown so the
+            // next OOR excursion alerts fresh.
             if (prevOor[key]) {
                 const oorMs = now - new Date(prevOor[key].firstOorAt).getTime()
                 const oorMin = Math.round(oorMs / 60_000)
                 const msg = `✅ <b>[BYREAL-OOR-WATCH]</b> ${pair} back in range after ${oorMin} min`
                 log(`back in range: ${pair} (was OOR ${oorMin} min)`)
                 sendTelegram(msg)
+                clearAlert(WORKSPACE, alertKey)
             } else {
                 log(`${pair} in range ($${liqUsd} liq)`)
             }

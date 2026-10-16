@@ -4,6 +4,17 @@
 
 ---
 
+## WORKSPACE POINTER
+
+You are in `sasha-coin/` (repo `gogrowth-co/sasha-coin`) — code/runtime only as of
+the 2026-05-27 split (see TWO-LAYER ARCHITECTURE below). All Sasha content
+production happens in `marketing/` via `sasha-coin-am`. Cross-project decisions/
+facts/research live in the separate `shared-memory` repo:
+`~/Documents/Gabriel Mangabeira/shared/`. Full repo topology:
+`~/Documents/Gabriel Mangabeira/shared/CONTEXT-MAP.md`.
+
+---
+
 ## TWO-LAYER ARCHITECTURE
 
 This repo holds two layers in one tree:

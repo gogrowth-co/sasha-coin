@@ -10,7 +10,7 @@ Live/sweep read what a reader and a crawler get: the rendered page (title, meta,
 Page types for live/sweep come from --type, the contract's `audit.type_rules` ([{"pattern": regex on the URL path, "type"}]),
 or `audit.default_type`.
 """
-import argparse, json, os, re, sys, time
+import argparse, json, os, re, sys, time, urllib.parse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import qa_core
 from qa_core import Gate, body_of, fetch, head_fields, strip_tags
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     ap.add_argument('--out', help='write the JSON report here')
     sub = ap.add_subparsers(dest='mode', required=True)
     p = sub.add_parser('plan'); p.add_argument('file')
-    d = sub.add_parser('draft'); d.add_argument('--html', required=True); d.add_argument('--title', required=True)
+    d = sub.add_parser('draft'); d.add_argument('--manifest', help='package manifest.json (default: next to --html)'); d.add_argument('--html', required=True); d.add_argument('--title', required=True)
     d.add_argument('--meta', required=True); d.add_argument('--type', required=True); d.add_argument('--url', required=True)
     d.add_argument('--short-update')
     l = sub.add_parser('live'); l.add_argument('url'); l.add_argument('--type')
@@ -103,8 +103,21 @@ if __name__ == '__main__':
         print(json.dumps(res, ensure_ascii=False, indent=1))
         out = [res]
     elif a.mode == 'draft':
-        out = G.finalize([G.audit_core(a.url.rstrip('/').split('/')[-1], a.url, a.title, a.title, a.meta, open(a.html).read(), a.type,
-                                       live_html=None, short_update=a.short_update)])
+        draft_body = open(a.html).read()
+        # visual types come from the package manifest's slots when the figures carry no data-* annotation
+        manifest_path = getattr(a, 'manifest', None) or os.path.join(os.path.dirname(os.path.abspath(a.html)), 'manifest.json')
+        if os.path.exists(manifest_path):
+            G.manifest = G._load_manifest(manifest_path)
+        draft_cover = head_fields(draft_body)[2]
+        # Producer packages can retain the producer's absolute workspace path
+        # in og:image. Draft QA must inspect the package copy, when present,
+        # rather than treating that stale path as proof that the cover is absent.
+        if draft_cover and not urllib.parse.urlsplit(draft_cover).scheme and not os.path.exists(draft_cover):
+            package_cover = os.path.join(os.path.dirname(os.path.abspath(a.html)), 'assets', os.path.basename(draft_cover))
+            if os.path.exists(package_cover):
+                draft_cover = package_cover
+        out = G.finalize([G.audit_core(a.url.rstrip('/').split('/')[-1], a.url, a.title, a.title, a.meta, draft_body, a.type,
+                                       live_html=None, short_update=a.short_update, cover=draft_cover)])
         report(out)
     elif a.mode == 'live':
         try:
@@ -115,8 +128,16 @@ if __name__ == '__main__':
         report(out)
     else:
         failed = []
-        urls = sitemap_urls(a.sitemap, a.limit, failed) if a.sitemap else [u.strip() for u in open(a.urls) if u.strip()][:a.limit]
+        # listing pages (home, blog index, categories, tags, authors, pagination) are not articles: never judged as one
+        # listing routes only: /blog/<slug> articles stay in (a site whose articles live under /blog/ keeps its whole content set)
+        skip = re.compile(C.get('audit', {}).get('sweep_exclude',
+                          r'^/?$|^/(blog|noticias|news|artigos|articles)/?$|^/(category|categoria|tag|author|autor)/|/page/\d+/?$'))
+        keep = lambda u: not skip.search(re.sub(r'^https?://[^/]+', '', u) or '/')
+        urls = [u for u in (sitemap_urls(a.sitemap, 10 ** 9, failed) if a.sitemap else [u.strip() for u in open(a.urls) if u.strip()]) if keep(u)][:a.limit]   # filter, then limit
         cache, out = {}, []
+        if not urls:   # nothing to audit is not a pass
+            out.append({'url': a.sitemap or a.urls, 'type': None, 'words': 0, 'internal_unique': 0, 'external_unique': 0, 'visuals': 0,
+                        'verdict': 'FAIL', 'findings': [{'check': 'sweep_empty', 'severity': 'block', 'message': 'no article URLs left to audit after excluding listing pages'}], '_paras': []})
         for sm, err in failed:
             out.append({'url': sm, 'type': 'sitemap', 'words': 0, 'internal_unique': 0, 'external_unique': 0, 'visuals': 0,
                         'verdict': 'FAIL', 'findings': [{'check': 'sitemap', 'severity': 'block', 'message': 'sub-sitemap unreachable: ' + err}],

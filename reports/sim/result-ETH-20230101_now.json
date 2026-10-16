@@ -1,0 +1,53 @@
+{
+  "asset": "ETH",
+  "capital": 94,
+  "from": "2023-01-01",
+  "to": null,
+  "hodl": {
+    "totalRet": 0.5973904581423339,
+    "cagr": 0.1426506017791278,
+    "maxDD": 0.6755345017766712
+  },
+  "results": [
+    {
+      "name": "trend-flex-hc",
+      "label": "Trend-flex high-conviction: directional legs only when trendStrength >= 0.5",
+      "totalRet": -0.311536527099727,
+      "cagr": -0.10082785037045383,
+      "maxDD": 0.34177436126398286,
+      "annVol": 0.0945375082030065,
+      "sharpe": -1.0763179170642183,
+      "sortino": -0.7605804661447243,
+      "monthsPositivePct": 0.4418604651162791,
+      "worstMonth": [
+        "2024-03",
+        -0.08750834272445296
+      ],
+      "bestMonth": [
+        "2024-01",
+        0.03037293197607016
+      ],
+      "worstDay": -0.06082329441615986,
+      "inRangePct": 0.8371005455962588,
+      "maxNetDelta": 0.5524087419128652,
+      "avgNetDelta": 0.09205650884520619,
+      "fees": 44.75269579467389,
+      "funding": 4.100631517679489,
+      "stableYield": 3.9031222531816234,
+      "costs": 3.571652039440899,
+      "events": {
+        "rebalances": 457,
+        "lpReopens": 49,
+        "hedgeResizes": 167,
+        "hedgeLiq": 0,
+        "hedgeStop": 8,
+        "kickerLiq": 0,
+        "kickerOpens": 14,
+        "lpExitStable": 0
+      },
+      "n0": 93.96287671232876,
+      "nF": 64.69000842507005,
+      "yrs": 3.5123287671232877
+    }
+  ]
+}

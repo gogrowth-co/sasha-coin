@@ -30,6 +30,7 @@ import fs from 'fs'
 import path from 'path'
 import https from 'https'
 import { fileURLToPath } from 'url'
+import { shouldAlert, recordAlert, clearAlert, normalizeReason } from './lib/alert-throttle.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const WORKSPACE = process.env.OPENCLAW_WORKSPACE || path.resolve(__dirname, '..')
@@ -300,6 +301,11 @@ async function evaluatePosition(position) {
         }
     } else {
         position.firstOorAt = null  // reset OOR timer — a wick that reverts cancels the timer
+        // Clear any pending OOR/KILL alert cooldowns so the next breach alerts fresh instead
+        // of inheriting a stale fingerprint from before this position went back in range.
+        clearAlert(WORKSPACE, `position-monitor:${position.id}:OOR_ALERT`)
+        clearAlert(WORKSPACE, `position-monitor:${position.id}:KILL`)
+        clearAlert(WORKSPACE, `lp-rebalancer:kill-pending:${position.id}`)
     }
 
     // Fee claim — per-position threshold overrides global
@@ -442,14 +448,30 @@ async function main() {
             log(`Rebalance signal written to content/lp-rebalance-signal.json`)
             log(`Run: node scripts/lp-rebalancer.js --execute`)
 
-            // Alert
-            const killSwitchActions = rebalanceActions.filter(a => a.killSwitch)
-            const alertLevel = killSwitchActions.length > 0 ? '🚨' : '⚠️'
-            sendTelegram(
-                `${alertLevel} <b>[POSITION_MONITOR]</b> ${rebalanceActions.length} action(s)\n` +
-                rebalanceActions.map(a => `${a.killSwitch ? '🚨' : '•'} [${a.chain}] ${a.symbol}: ${a.type} — ${a.reason}`).join('\n') +
-                `\n\nRun: <code>node scripts/lp-rebalancer.js --execute</code>`
-            )
+            // Alert — throttled per position so an unresolved condition (e.g. sustained
+            // OOR) doesn't re-send the identical Telegram message every 30-min cron tick.
+            // A real change (new action type, new reason, escalation) always alerts
+            // immediately; an unchanged condition only re-alerts after the cooldown.
+            const alertable = rebalanceActions.filter(a => {
+                const key = `position-monitor:${a.positionId}:${a.type}`
+                const fingerprint = normalizeReason(a.reason)
+                return shouldAlert(WORKSPACE, key, fingerprint)
+            })
+
+            if (alertable.length > 0) {
+                const killSwitchActions = alertable.filter(a => a.killSwitch)
+                const alertLevel = killSwitchActions.length > 0 ? '🚨' : '⚠️'
+                sendTelegram(
+                    `${alertLevel} <b>[POSITION_MONITOR]</b> ${alertable.length} action(s)\n` +
+                    alertable.map(a => `${a.killSwitch ? '🚨' : '•'} [${a.chain}] ${a.symbol}: ${a.type} — ${a.reason}`).join('\n') +
+                    `\n\nRun: <code>node scripts/lp-rebalancer.js --execute</code>`
+                )
+                for (const a of alertable) {
+                    recordAlert(WORKSPACE, `position-monitor:${a.positionId}:${a.type}`, normalizeReason(a.reason))
+                }
+            } else {
+                log(`${rebalanceActions.length} action(s) unchanged since last alert — Telegram suppressed (cooldown)`)
+            }
         }
     } else {
         log('All positions healthy — no actions needed')
