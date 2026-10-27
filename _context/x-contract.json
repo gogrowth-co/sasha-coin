@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "updated": "2026-10-27",
   "project": "sasha-coin",
   "channel": "x",
@@ -76,11 +76,10 @@
       "solscan.io",
       "open.spotify.com"
     ],
-    "hub_paths": [
-      "/"
-    ],
+    "hub_paths": [],
     "placement": "last",
-    "_placement": "brand-voice.md: no links unless necessary. When a post carries one, it is her own dashboard or the explorer page that proves the claim, in the last post."
+    "_placement": "brand-voice.md: no links unless necessary. When a post carries one, it is her own dashboard or the explorer page that proves the claim, in the last post.",
+    "_hub_paths": "Sasha has no articles (2026-10-27, X only): a dashboard page or an explorer page is the destination, so no path is treated as a hub."
   },
   "media": {
     "max_images": 1,
@@ -128,10 +127,9 @@
     "required_fields": [
       "x_format"
     ],
-    "own_domain_fields": [
-      "destination"
-    ],
-    "_claim": "The pitch carries the claim Gabriel approves (one sentence in English); every number in it is verified live on-chain or from a primary source before production (her fact-check gate)."
+    "own_domain_fields": [],
+    "_claim": "The pitch carries the claim Gabriel approves (one sentence in English); every number in it is verified live on-chain or from a primary source before production (her fact-check gate).",
+    "_own_domain_fields": "Her receipts link explorers (allowed_hosts), not only her own domain; the X QA keeps every link on allowed_hosts."
   },
   "publish": {
     "post_time_brt": "13:00",
