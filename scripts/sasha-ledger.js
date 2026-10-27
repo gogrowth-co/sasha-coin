@@ -371,7 +371,7 @@ async function oraclePoolFees() {
         const Q128 = 1n << 128n, M256 = (1n << 256n)
         const stateSlot = BigInt(ethers.keccak256(abi.encode(['bytes32', 'uint256'], [dep.poolId, 6n])))
         const slotHex = n => ethers.toBeHex(n % M256, 32)
-        const { tickLower, tickUpper, liquidity: addedLiquidity } = dep.liquidityRange
+        const { tickLower, tickUpper } = dep.liquidityRange
         const posKey = ethers.solidityPackedKeccak256(['address', 'int24', 'int24', 'bytes32'], [dep.liquidityHelper, tickLower, tickUpper, ethers.ZeroHash])
         const posSlot = BigInt(ethers.keccak256(abi.encode(['bytes32', 'uint256'], [posKey, stateSlot + 6n])))
         const tickSlot = t => BigInt(ethers.keccak256(abi.encode(['int24', 'uint256'], [t, stateSlot + 4n])))
@@ -400,11 +400,23 @@ async function oraclePoolFees() {
         if (okb == null) throw new Error('no current OKB price')
         // currency0 = USDC.e (6 decimals, par), currency1 = WOKB (18 decimals)
         const allTime = Number(ethers.formatUnits(fee0, 6)) + Number(ethers.formatUnits(fee1, 18)) * okb
-        const untouched = BigInt(addedLiquidity) === read.liq
+        // The add tx's ModifyLiquidity delta, read once: equal to the position's liquidity means one
+        // add and no change since, so the accrued fees are every fee since launch.
+        if (cache.poolAddDelta == null && dep.liquidityAddTx) {
+            const raw = await rpc('xlayer', p => p.send('eth_getTransactionReceipt', [dep.liquidityAddTx]))
+            const ml = new ethers.Interface(['event ModifyLiquidity(bytes32 indexed id, address indexed sender, int24 tickLower, int24 tickUpper, int256 liquidityDelta, bytes32 salt)'])
+            for (const lg of raw?.logs || []) {
+                let ev
+                try { ev = ml.parseLog(lg) } catch { continue }
+                if (ev && ev.args.id === dep.poolId) cache.poolAddDelta = ev.args.liquidityDelta.toString()
+            }
+        }
+        const addedLiquidity = cache.poolAddDelta ?? 'not read'
+        const untouched = cache.poolAddDelta != null && BigInt(cache.poolAddDelta) === read.liq
         const { d7, note } = cumulativeD7(def.id, allTime)
         line({ ...def, status: untouched ? 'ok' : 'partial', allTime, d7,
             detail: [`accrued, not collected: ${ethers.formatUnits(fee0, 6)} USDC.e + ${ethers.formatUnits(fee1, 18)} WOKB; WOKB at the current OKB price`,
-                untouched ? 'liquidity equals the one add, so this is every fee since launch' : `position liquidity ${read.liq} differs from the recorded add (${addedLiquidity}): fees collected at that change are not counted`,
+                untouched ? 'liquidity equals the one add, so this is every fee since launch' : `position liquidity ${read.liq} differs from the add tx's ${addedLiquidity}: fees collected at a later change are not counted`,
                 note].filter(Boolean).join('. ') })
     })
 }
