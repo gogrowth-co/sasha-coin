@@ -1,0 +1,5 @@
+{
+  "_comment": "sasha-ledger.js settings. server_share_usd_month is Gabriel's fixed monthly VPS share for Sasha; null = the ledger shows the line as unknown.",
+  "ledger_start": "2026-05-25",
+  "server_share_usd_month": null
+}

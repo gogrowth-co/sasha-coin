@@ -51,8 +51,18 @@
   .card .go{color:var(--accent);font-size:12px}
   .aud{font-size:11px;color:var(--text-quaternary);font-style:italic;margin-top:6px}
   .legend{display:flex;gap:16px;font-size:11px;color:var(--text-tertiary);padding:0 0 20px}
+  .ledger{border:1px solid var(--border-default);background:var(--surface-raised);border-radius:14px;padding:20px;margin:0 0 20px;display:none}
+  .ledger .lh{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .ledger .lh .nm{font-family:var(--font-display);font-size:17px;font-weight:600}
+  .ledger .sub{font-size:12px;color:var(--text-tertiary);margin-bottom:14px}
+  .ledger .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .ledger .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary)}
+  .ledger .num{font-family:var(--font-mono);font-size:26px;font-weight:500;margin-top:2px}
+  .ledger .wk{font-size:12px;color:var(--text-secondary);margin-top:2px}
+  .ledger .unk{font-size:12px;color:var(--warning);margin-top:14px;padding-top:12px;border-top:1px solid var(--border-subtle)}
+  .ledger .unk a{color:var(--text-tertiary)}
   footer{padding:24px 0 60px;border-top:1px solid var(--border-subtle);color:var(--text-tertiary);font-size:12px;font-family:var(--font-mono);line-height:1.8}
-  @media(max-width:820px){.grid{grid-template-columns:1fr}.hero .total{font-size:40px}}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}.ledger .nums{grid-template-columns:1fr}.hero .total{font-size:40px}}
 </style>
 </head>
 <body>
@@ -75,6 +85,17 @@
       <span><span class="dot live"></span> live</span>
       <span><span class="dot idle"></span> idle</span>
       <span style="color:var(--text-quaternary)">value updates every ~5 min · trend fills in over time</span>
+    </div>
+
+    <div class="ledger" id="ledger">
+      <div class="lh"><span class="dot live"></span><span class="nm">What I earn vs what I cost</span><span class="kind money">ledger</span></div>
+      <div class="sub" id="ledger-sub">Read from the chain and my providers' usage APIs. A cost I can't source shows as unknown, never as a guess.</div>
+      <div class="nums">
+        <div><div class="lbl">Earned</div><div class="num" id="l-earned">$—</div><div class="wk" id="l-earned-7">last 7 days $—</div></div>
+        <div><div class="lbl">Known costs</div><div class="num" id="l-cost">$—</div><div class="wk" id="l-cost-7">last 7 days $—</div></div>
+        <div><div class="lbl" id="l-gap-lbl">Gap</div><div class="num" id="l-gap">$—</div><div class="wk" id="l-gap-7">last 7 days $—</div></div>
+      </div>
+      <div class="unk" id="l-unk"></div>
     </div>
 
     <div class="grid" id="grid"></div>
@@ -151,6 +172,26 @@ async function load(){
   }
 }
 load(); setInterval(load,POLL_MS)
+
+// Ledger tile: earned vs known costs, from scripts/sasha-ledger.js (data/ledger.json).
+async function loadLedger(){
+  try{
+    const res=await fetch('./data/ledger.json?t='+Date.now(),{cache:'no-store'})
+    if(!res.ok) return
+    const d=await res.json(), a=d.totals?.all_time||{}, w=d.totals?.d7||{}
+    const gapCol=v=>v==null?'':(v>=0?'var(--positive)':'var(--negative)')
+    $('l-earned').textContent=fmtUsd(a.earned_usd); $('l-cost').textContent=fmtUsd(a.cost_known_usd)
+    // An incomplete gap stays neutral: unknown costs would lower it.
+    $('l-gap').textContent=fmtUsd(a.gap_usd); $('l-gap').style.color=a.complete?gapCol(a.gap_usd):''
+    $('l-gap-lbl').textContent=a.complete?'Gap':'Gap, known costs only'
+    $('l-earned-7').textContent='last 7 days '+fmtUsd(w.earned_usd); $('l-cost-7').textContent='last 7 days '+fmtUsd(w.cost_known_usd); $('l-gap-7').textContent='last 7 days '+fmtUsd(w.gap_usd)
+    $('ledger-sub').textContent='Since '+esc(d.since)+', updated '+relTime(d.asOf)+'. Read from the chain and my providers\' usage APIs. A cost I can\'t source shows as unknown, never as a guess.'
+    const unk=a.unknown_cost_lines||[]
+    $('l-unk').innerHTML=unk.length?`The gap is not complete yet: ${unk.length} cost line(s) are unknown or partly known: ${unk.map(esc).join(' · ')}. <a href="./data/ledger.json" target="_blank" rel="noopener">every line ↗</a>`:'Every cost line is sourced. <a href="./data/ledger.json" target="_blank" rel="noopener">every line ↗</a>'
+    $('ledger').style.display='block'
+  }catch(e){}
+}
+loadLedger(); setInterval(loadLedger,POLL_MS)
 </script>
 </body>
 </html>
