@@ -1,0 +1,154 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-10-27",
+  "project": "sasha-coin",
+  "channel": "x",
+  "format": "X Post",
+  "language": "en",
+  "_purpose": "Sasha Coin's X contract for Manga OS V4 (from manga-os-v4 contracts/x-contract.starter.json). DRAFT: copied to /root/workspaces/sasha-coin/_context/x-contract.json at onboarding, after the strategy session is locked. Voice rules come from _context/brand-voice.md; copy.banned_patterns turns her banned vocabulary, \"we\" and political topics into checks.",
+  "identity": {
+    "handle": "@SashaCoin95",
+    "voice": "agent persona, first person singular: the voice from _context/brand-voice.md (I, never we; data first; witty, sharp, self-aware)"
+  },
+  "kinds": [
+    "single",
+    "thread"
+  ],
+  "post": {
+    "max_chars": 280,
+    "url_chars": 23,
+    "_url_chars": "X counts every link as 23 characters (t.co), whatever its length. Her hooks stay under 240 characters (brand-voice.md); the hard limit is X's."
+  },
+  "thread": {
+    "min_posts": 2,
+    "max_posts": 12
+  },
+  "copy": {
+    "forbid_em_dash": true,
+    "banned_chars": [
+      "—",
+      "–"
+    ],
+    "financial_advice_patterns": [
+      "\\byou should (buy|sell|invest|hold|short|ape)\\b",
+      "\\b(buy|sell) (it|this|now|the dip)\\b",
+      "\\b(not financial advice|nfa|dyor and buy)\\b",
+      "\\bguaranteed (returns?|profits?|gains?|yield)\\b",
+      "\\bprice (targets?|predictions?)\\b",
+      "\\b(to the moon|moonshot|100x|1000x|10x gem|next 100x)\\b",
+      "\\bwill (pump|moon|explode|10x|100x)\\b",
+      "\\b(safe|good|great|best) (investment|buy|bet|entry)\\b",
+      "\\binvest(ing)? in (this|it) (now|today)\\b",
+      "\\b(load up|ape in|ape into|get in early)\\b"
+    ],
+    "leftover_patterns": [
+      "(?-i)\\bTODO\\b",
+      "(?-i)\\bTBD\\b",
+      "\\[inserir",
+      "\\[insert",
+      "\\bbriefing\\b",
+      "\\blorem ipsum\\b"
+    ],
+    "banned_patterns": [
+      "\\b(we|we're|we've|our|ours|us)\\b",
+      "\\brevolutionar(y|ize|izing)\\b",
+      "\\bwen\\b",
+      "\\bfrens?\\b",
+      "\\b(bullish|bearish)\\b",
+      "\\bon-chain\\b",
+      "\\b(dive in|deep dive into|navigate|harness|leverage|in the realm of)\\b",
+      "\\b(game-changing|game changer|disruptive|synergy)\\b",
+      "\\b(trump|biden|harris|vance|maga|gop|democrats?|republicans?|congress|senate|white house|supreme court|election|voting|tariffs?|lobbying|deep state)\\b",
+      "\\b(israel|palestine|gaza|ukraine|russia|immigration|border wall|abortion|gun control)\\b"
+    ],
+    "_banned_patterns": "From _context/brand-voice.md (2026-10-27): first person singular only, banned vocabulary (\"onchain\" is one word), no political or geopolitical topics. gm/gn and alpha are allowed only when deliberate, so they are left to review, not to the check."
+  },
+  "hashtags": {
+    "max_per_post": 0,
+    "_hashtags": "brand-voice.md: no hashtags on original posts."
+  },
+  "link": {
+    "allowed_hosts": [
+      "sasha-dashboards.pages.dev",
+      "basescan.org",
+      "www.oklink.com",
+      "explorer.mantle.xyz",
+      "solscan.io",
+      "open.spotify.com"
+    ],
+    "hub_paths": [
+      "/"
+    ],
+    "placement": "last",
+    "_placement": "brand-voice.md: no links unless necessary. When a post carries one, it is her own dashboard or the explorer page that proves the claim, in the last post."
+  },
+  "media": {
+    "max_images": 1,
+    "allowed_sources": [
+      "ai"
+    ],
+    "allowed_ext": [
+      "png",
+      "jpg",
+      "jpeg",
+      "webp"
+    ],
+    "max_bytes": 5000000,
+    "alt_min_chars": 15,
+    "alt_max_chars": 1000,
+    "disclosure_required": true,
+    "_media": "AI images only until the strategy session decides on factual sources (her dashboard screenshots and charts are the obvious candidates)."
+  },
+  "links": {
+    "own_domain": "sasha-dashboards.pages.dev"
+  },
+  "brief": {
+    "_purpose": "What brief_gate.mjs judges in an X commission's Payload JSON before production.",
+    "text_fields": [
+      "claim",
+      "hook",
+      "promise",
+      "posts",
+      "cta",
+      "title"
+    ],
+    "copy_list": "posts",
+    "copy_count": [
+      1,
+      12
+    ],
+    "claims_field": "claim_ledger",
+    "sources_fields": [
+      "source",
+      "sources",
+      "claim_ledger"
+    ],
+    "destination_field": "destination",
+    "uniqueness_field": "uniqueness",
+    "required_fields": [
+      "x_format"
+    ],
+    "own_domain_fields": [
+      "destination"
+    ],
+    "_claim": "The pitch carries the claim Gabriel approves (one sentence in English); every number in it is verified live on-chain or from a primary source before production (her fact-check gate)."
+  },
+  "publish": {
+    "post_time_brt": "13:00",
+    "_post_time_brt": "Proposed for the strategy session (her old cadence was 09/13/18 BRT); not ratified.",
+    "single": {
+      "tool": "buffer",
+      "account": "SASHA_COIN",
+      "channel": "x",
+      "accounts_file": "_context/buffer-accounts.json",
+      "_credentials": "BUFFER_ACCESS_TOKEN_SASHA_COIN, BUFFER_ORGANIZATION_ID_SASHA_COIN, BUFFER_CHANNEL_ID_SASHA_COIN_X (names only; values go to Infisical /v4-runtime at onboarding)"
+    },
+    "thread": {
+      "tool": "typefully",
+      "key_env": "TYPEFULLY_API_KEY_SASHA_COIN",
+      "accounts_file": "_context/typefully-accounts.json",
+      "account": "SASHA_COIN"
+    },
+    "_routes": "Route adapters live in manga-os-v4 ops/publish/site/channels/x-routes/ (buffer, typefully, zernio); an unknown tool fails closed. Decision S1 (2026-10-27): V4 publishes her planned posts and threads; OpenCLAW's twitter-scheduled-post is switched off only at go-live, on Gabriel's typed yes."
+  }
+}
